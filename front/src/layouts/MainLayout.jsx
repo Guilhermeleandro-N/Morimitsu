@@ -9,6 +9,9 @@ export default function MainLayout(){
     <div>
         <Header isOpen={isOpen} setIsOpen={setIsOpen} />
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
+        <main>
+                <Outlet />
+        </main>
     </div>
     )
 }

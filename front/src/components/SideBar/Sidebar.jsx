@@ -1,10 +1,11 @@
 import {useState} from "react";
 import "./Sidebar.css";
 import logo from "../../assets/morimitsu.png";
+import { useNavigate } from "react-router-dom";
 function Sidebar({isOpen, setIsOpen}) {
     const user = "Saulo"
     console.log(isOpen)
-
+    const navigate = useNavigate()
     return (
             <aside className={`sidebar ${isOpen ? 'open' : 'closed'}` }> 
             
@@ -20,7 +21,7 @@ function Sidebar({isOpen, setIsOpen}) {
                   </div>
             <nav>
                 <ul>
-                    <li>
+                    <li onClick={()=> {navigate("cadastrarAluno")}}  >
                         Cadastrar Aluno
                     </li>
                     <li>
