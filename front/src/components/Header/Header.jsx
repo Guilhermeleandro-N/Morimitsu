@@ -30,7 +30,7 @@ const Header = ({isOpen, setIsOpen}) => {
       </div>
 
     <div className='header-right'>
-      <IoIosLogOut size={24}/>
+      <IoIosLogOut size={24}  />
     </div>
     </header>
   )

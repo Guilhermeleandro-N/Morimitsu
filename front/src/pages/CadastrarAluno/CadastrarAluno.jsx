@@ -140,7 +140,7 @@ const CadastrarAluno = () => {
 
       {/* FREQUÊNCIA */}
       <div className="form__group">
-        <label htmlFor="frequencia">Frequência semanal</label>
+        <label htmlFor="frequencia">Frequência atual</label>
         <input
           type="number"
           id="frequencia"

@@ -52,7 +52,7 @@ const EditarAluno = () => {
   <div className="register__header-text">
     <h2 className="register__title">Editar Aluno</h2>
     <p className="register__subtitle">
-      Adicione um novo aluno ao sistema
+      Edite dados de um aluno no sistema
     </p>
   </div>
 </div>
@@ -64,14 +64,14 @@ const EditarAluno = () => {
     {/* NOME (Adicione a classe aqui) */}
     <div className="form__group form__group--full">
       <label htmlFor="nome">Nome</label>
-      <input type="text" id="nome" name="nome" placeholder="Nome Completo" onChange={handleChange} />
+      <input type="text" id="nome" name="nome" placeholder="Nome" onChange={handleChange} />
     </div>
 
     {/* ... (os outros campos, sem mudar nada, pois já estão com form__group) ... */}
     
     <div className="form__group">
       <label htmlFor="email">E-mail</label>
-      <input type="email" id="email" name="email" placeholder="example@email.com" onChange={handleChange} />
+      <input type="email" id="email" name="email" placeholder="email@example.com" onChange={handleChange} />
     </div>
 
     {/* FAIXA (Adicione a classe form__group) */}
@@ -92,7 +92,16 @@ const EditarAluno = () => {
     <div className="form__group">
       <label htmlFor="grau">Grau Atual</label>
       <select id="grau" name="grau" onChange={handleChange}>
-         {/* suas opções */}
+          <option value="">Selecione</option>
+          <option value="branca">Branca</option>
+          <option value="cinza">Cinza</option>
+          <option value="amarela">Amarela</option>
+          <option value="laranja">Laranja</option>
+          <option value="verde">Verde</option>
+          <option value="azul">Azul</option>
+          <option value="roxa">Roxa</option>
+          <option value="marrom">Marrom</option>
+          <option value="preta">Preta</option>
       </select>
     </div>
 
