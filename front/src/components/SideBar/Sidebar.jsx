@@ -24,6 +24,9 @@ function Sidebar({isOpen, setIsOpen}) {
                     <li onClick={()=> {navigate("cadastrarAluno")}}  >
                         Cadastrar Aluno
                     </li>
+                    <li onClick={()=> {navigate("editarAluno")}} >
+                        Editar Aluno
+                    </li>
                     <li>
                         Ver Alunos
                     </li>
