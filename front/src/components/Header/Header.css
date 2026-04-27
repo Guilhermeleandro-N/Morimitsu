@@ -1,0 +1,97 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 20px;
+  height: 70px;
+
+  background: linear-gradient(90deg, #1a1a1a, #2a2a2a);
+  color: #fff;
+
+  border-bottom: 1px solid #444;
+}
+
+/* LEFT SIDE */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* HAMBURGER */
+.hamburguer {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* LOGO + TEXT */
+.nome-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 1rem;
+}
+
+/* LOGO IMAGE */
+.nome-logo img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+/* TEXT CONTAINER */
+.nome-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+/* NAME */
+.nome-logo-text .titulo {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* SUBTITLE */
+.nome-logo-text .subtitulo {
+  font-size: 14px;
+  color: #ccc;
+}
+
+/* RIGHT SIDE */
+.header-right {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+  .nome-logo img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .nome-logo-text .titulo {
+    font-size: 16px;
+  }
+
+  .nome-logo-text .subtitulo {
+    font-size: 12px;
+  }
+  .header-right{
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .header-right{
+        display: none;
+    }
+  .header {
+    padding: 10px;
+  }
+}
