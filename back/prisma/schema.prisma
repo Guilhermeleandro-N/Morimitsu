@@ -12,14 +12,52 @@ datasource db {
 }
 
 model Usuario {
-  id        String    @id @default(uuid())
-  nome      String
-  email     String    @unique
-  senha     String
-  telefone  String?
-  status    String    @default("ENABLED")
-  aluno     Aluno?
-  professor Professor?
+  id         String      @id @default(uuid())
+  nome       String
+  email      String      @unique
+  senha      String
+  telefone   String?
+  status     String      @default("ENABLED")
+  aluno      Aluno?
+  professor  Professor?
+  userPerfis UserPerfil[]
+}
+
+model Perfil {
+  id               String             @id @default(uuid())
+  nome             String
+  descricao        String
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  userPerfis       UserPerfil[]
+  perfilPermissions PerfilPermission[]
+}
+
+model Permission {
+  id                String             @id @default(uuid())
+  codigo            String             @unique
+  descricao         String
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  perfilPermissions PerfilPermission[]
+}
+
+model UserPerfil {
+  usuario_id String
+  perfil_id  String
+  usuario    Usuario @relation(fields: [usuario_id], references: [id])
+  perfil     Perfil  @relation(fields: [perfil_id], references: [id])
+
+  @@id([usuario_id, perfil_id])
+}
+
+model PerfilPermission {
+  perfil_id     String
+  permission_id String
+  perfil        Perfil     @relation(fields: [perfil_id], references: [id])
+  permission    Permission @relation(fields: [permission_id], references: [id])
+
+  @@id([perfil_id, permission_id])
 }
 
 model Aluno {
