@@ -1,23 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
+import { AlunoRepository } from './aluno.repository.js';
 import { CreateAlunoDto } from './dtos/create-aluno.dto.js';
 import { AlunoEntity } from './entities/aluno.entity.js';
-import { AlunoRepository } from './aluno.repository.js';
 
 @Injectable()
 export class AlunoService {
   constructor(private readonly repository: AlunoRepository) {}
 
   async criar(dto: CreateAlunoDto): Promise<AlunoEntity> {
-    return this.repository.criar(dto);
-  }
+    const usuarioExiste = await this.repository.usuarioExiste(dto.usuarioId);
 
-  async buscarPorIdOuFalhar(id: string): Promise<AlunoEntity> {
-    const aluno = await this.repository.buscarPorId(id);
-
-    if (!aluno) {
-      throw new NotFoundException(`Aluno com id ${id} não encontrado`);
+    if (!usuarioExiste) {
+      throw new BadRequestException('Usuário não encontrado');
     }
 
-    return aluno;
+    const alunoJaExiste = await this.repository.alunoJaExiste(dto.usuarioId);
+
+    if (alunoJaExiste) {
+      throw new ConflictException('Usuário já é aluno');
+    }
+
+    return this.repository.criar(dto);
   }
 }
