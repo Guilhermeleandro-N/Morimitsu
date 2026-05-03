@@ -1,6 +1,6 @@
 import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
-export class CreateAlunoDto {
+export class CreateProfessorDto {
   @IsString()
   @IsNotEmpty({ message: 'usuarioId é obrigatório' })
   usuarioId!: string;
@@ -12,5 +12,5 @@ export class CreateAlunoDto {
   @IsInt()
   @Min(0)
   @IsOptional()
-  grau_faixa?: number;
+  grau?: number;
 }

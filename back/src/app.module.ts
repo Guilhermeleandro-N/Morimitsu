@@ -6,16 +6,20 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module.js';
-import { AlunoModule } from './aluno/aluno.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { AuthorizationModule } from './authorization/authorization.module.js';
 import { JwtAuthMiddleware } from './auth/middlewares/jwt-auth.middleware.js';
+import { ProfessorModule } from './professor/professor.module.js';
+import { AlunoModule } from './aluno/aluno.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
-    AlunoModule,
     AuthModule,
+    AuthorizationModule,
+    ProfessorModule,
+    AlunoModule,
   ],
   providers: [JwtAuthMiddleware],
 })
