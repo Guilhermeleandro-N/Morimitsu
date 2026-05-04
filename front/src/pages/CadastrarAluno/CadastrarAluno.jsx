@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-dom";
 import { BsPersonPlus } from "react-icons/bs";
 import { FaRegCircle } from "react-icons/fa6";
 import addUser from "../../assets/addUser.png"
-import "./cadastrarAluno.css"
+import "./CadastrarAluno.css"
 const CadastrarAluno = () => {
     const [form, setForm] = useState({
         nome: "",

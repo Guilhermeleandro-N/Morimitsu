@@ -1,0 +1,316 @@
+/* Configurações Gerais */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.main {
+   display: block; /* Mude de flex para block ou remova a centralização */
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f4f7f6;
+
+}
+
+.container {
+  max-width: 1200px;
+  /* REMOVA o max-height fixo. Isso impede que o conteúdo cresça no mobile */
+  /* max-height: 500px; <--- REMOVER */
+  margin: 0 auto;
+  padding: 40px 20px;
+  height: 100%;
+
+}
+
+/* Cabeçalho */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  width: 60%;
+  
+}
+
+.header-info h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.header-info p {
+  color: #666;
+  font-size: 14px;
+}
+
+.btn-edit {
+  background-color: #c1272d;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-edit:hover {
+  opacity: 0.9;
+}
+
+/* Grid Principal */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Estilo Comum dos Cards */
+.sidebar-card, .content-card {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.card-title {
+  color: #c1272d;
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 700;
+}
+
+/* Sidebar (Dados Pessoais) */
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #f9d9d9;
+  color: #555;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 500;
+}
+
+.student-name {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+.status-badge {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 30px;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-badge.ativo {
+  background-color: #009432;
+  color: white;
+}
+
+.personal-details {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 20px;
+}
+
+.personal-details p {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #888;
+}
+
+.personal-details strong {
+  color: #555;
+  margin-right: 4px;
+}
+
+/* Indicadores (Cards de Cima) */
+.indicators-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.indicator-box {
+  flex: 1;
+  background-color: #f9d9d9;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  position: relative;
+}
+
+.indicator-box span {
+  display: block;
+  color: #c1272d;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.indicator-box strong {
+  color: #c1272d;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Badge Flutuante no Indicador "Faixa" */
+.indicator-box.highlight .floating-icon {
+  position: absolute;
+  top: -12px;
+  right: -10px;
+  width: 32px;
+  height: 32px;
+  background-color: #1a1a1a; /* Cor de fundo do círculo pequeno */
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Tabela de Histórico */
+.history-section h3 {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th {
+  text-align: left;
+  font-size: 12px;
+  color: #999;
+  padding-bottom: 12px;
+  font-weight: 400;
+}
+
+.history-table td {
+  padding: 14px 0;
+  font-size: 14px;
+  border-top: 1px solid #f0f0f0;
+  color: #444;
+}
+
+/* Ponto de Presença */
+.presence-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.presence-dot.presente { background-color: #009432; }
+.presence-dot.ausente { background-color: #c1272d; }
+
+/* --- RESPONSIVIDADE --- */
+
+/* Ajuste para Tablets e telas médias */
+@media (max-width: 992px) {
+ 
+  .profile-grid {
+    grid-template-columns: 1fr; /* Sidebar vai para cima do conteúdo principal */
+  }
+
+  .page-header {
+    width: 100%; /* Corrigindo o width fixo para ocupar o espaço disponível */
+  }
+
+  .sidebar-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+  }
+
+  .personal-details {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+
+/* Ajuste para Celulares */
+@media (max-width: 600px  ) {
+  
+  .container {
+    padding: 20px 15px;
+    
+
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .btn-edit {
+    width: 100%; /* Botão ocupa toda a largura no mobile */
+    padding: 14px;
+  }
+
+  .indicators-row {
+    flex-direction: column; /* Cards de indicadores ficam um abaixo do outro */
+    gap: 15px;
+  }
+
+  .indicator-box {
+    max-width: 100%;
+  }
+
+  /* Transformando a tabela em cards para melhor leitura no celular */
+  .history-table thead {
+    display: none; /* Esconde o cabeçalho da tabela */
+  }
+
+  .history-table, 
+  .history-table tbody, 
+  .history-table tr, 
+  .history-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .history-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .history-table td {
+    border: none;
+    padding: 8px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Adiciona rótulos para a "tabela" em modo card */
+  .history-table td::before {
+    content: attr(data-label); /* Se você adicionou data-label no JSX */
+    font-weight: bold;
+    color: #999;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+}

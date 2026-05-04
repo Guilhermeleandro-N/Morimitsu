@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import {useNavigate} from "react-router-dom";
 import logo from "../../assets/morimitsu.png"
-import "./login.css"
+import "./Login.css"
 const Login = () => {
     console.log("login")
     const [email, setEmail] = useState("");
