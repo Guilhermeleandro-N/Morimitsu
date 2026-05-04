@@ -1,6 +1,14 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
+import 'dotenv/config';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) throw new Error('DATABASE_URL is not set');
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString }),
+});
 
 const PROFESSOR_PERMISSIONS = [
   { codigo: 'turma.create', descricao: 'Criar turma' },
@@ -16,7 +24,10 @@ const PROFESSOR_PERMISSIONS = [
   { codigo: 'attendance.create', descricao: 'Registrar presença' },
   { codigo: 'attendance.read', descricao: 'Visualizar presença' },
   { codigo: 'attendance.update', descricao: 'Atualizar presença' },
-  { codigo: 'attendance.history.read', descricao: 'Visualizar histórico de presença' },
+  {
+    codigo: 'attendance.history.read',
+    descricao: 'Visualizar histórico de presença',
+  },
   { codigo: 'training.create', descricao: 'Marcar treino' },
   { codigo: 'training.update', descricao: 'Editar treino' },
   { codigo: 'training.cancel', descricao: 'Cancelar treino' },
@@ -42,7 +53,11 @@ async function main() {
   const professor = await prisma.perfil.upsert({
     where: { id: 'perfil-professor' },
     update: {},
-    create: { id: 'perfil-professor', nome: 'PROFESSOR', descricao: 'Perfil do professor' },
+    create: {
+      id: 'perfil-professor',
+      nome: 'PROFESSOR',
+      descricao: 'Perfil do professor',
+    },
   });
 
   const aluno = await prisma.perfil.upsert({
@@ -58,7 +73,12 @@ async function main() {
     const permissionId = permMap.get(perm.codigo);
     if (!permissionId) continue;
     await prisma.perfilPermission.upsert({
-      where: { perfil_id_permission_id: { perfil_id: professor.id, permission_id: permissionId } },
+      where: {
+        perfil_id_permission_id: {
+          perfil_id: professor.id,
+          permission_id: permissionId,
+        },
+      },
       update: {},
       create: { perfil_id: professor.id, permission_id: permissionId },
     });
@@ -68,11 +88,30 @@ async function main() {
     const permissionId = permMap.get(perm.codigo);
     if (!permissionId) continue;
     await prisma.perfilPermission.upsert({
-      where: { perfil_id_permission_id: { perfil_id: aluno.id, permission_id: permissionId } },
+      where: {
+        perfil_id_permission_id: {
+          perfil_id: aluno.id,
+          permission_id: permissionId,
+        },
+      },
       update: {},
       create: { perfil_id: aluno.id, permission_id: permissionId },
     });
   }
+
+  // Usuário admin padrão (sem vínculo com aluno/professor → role admin automática)
+  const senhaHash = await argon2.hash('Admin@1234');
+  await prisma.usuario.upsert({
+    where: { email: 'admin@morimitsu.com' },
+    update: {},
+    create: {
+      nome: 'Administrador',
+      email: 'admin@morimitsu.com',
+      senha: senhaHash,
+    },
+  });
+
+  console.log('Seed concluída. Admin: admin@morimitsu.com / Admin@1234');
 }
 
 main()
