@@ -171,4 +171,13 @@ export class AuthService {
       roles: auth.roles,
     };
   }
+<<<<<<< Updated upstream
+=======
+
+  private revokeToken(token: string): void {
+    const payload = this.jwtService.decode(token);
+    const expiresAtMs = payload?.exp ? payload.exp * 1000 : undefined;
+    this.tokenBlacklistService.revoke(token, expiresAtMs);
+  }
+>>>>>>> Stashed changes
 }
