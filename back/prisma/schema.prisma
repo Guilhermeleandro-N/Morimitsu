@@ -61,19 +61,102 @@ model PerfilPermission {
 }
 
 model Aluno {
-  id              String  @id @default(uuid())
-  frequencia_atual Int     @default(0)
-  grau_faixa      Int     @default(0)
-  faixa           String  @default("BRANCA")
-  usuarioId       String  @unique
-  usuario         Usuario @relation(fields: [usuarioId], references: [id])
+  id               String           @id @default(uuid())
+  frequencia_atual Int              @default(0)
+  grau_faixa       Int              @default(0)
+  faixa            String           @default("BRANCA")
+  usuarioId        String           @unique
+  usuario          Usuario          @relation(fields: [usuarioId], references: [id])
+  frequencias      FrequenciaAluno[]
+  alunoTurmas      AlunoTurma[]
 }
 
 model Professor {
-  id        String  @id @default(uuid())
-  faixa     String  @default("BRANCA")
-  grau      Int     @default(0)
-  usuarioId String  @unique
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  id                         String           @id @default(uuid())
+  faixa                      String           @default("BRANCA")
+  grau                       Int              @default(0)
+  usuarioId                  String           @unique
+  usuario                    Usuario          @relation(fields: [usuarioId], references: [id])
+  frequenciasAlunoRegistradas FrequenciaAluno[]
+  professorTurmas            ProfessorTurma[]
+  frequenciasProfessor       FrequenciaProf[]
+}
+
+model Turma {
+  id             String           @id @default(uuid())
+  nome           String
+  horario_inicio DateTime
+  horario_fim    DateTime
+  data_especifica DateTime?
+  segunda        Boolean          @default(false)
+  terca          Boolean          @default(false)
+  quarta         Boolean          @default(false)
+  quinta         Boolean          @default(false)
+  sexta          Boolean          @default(false)
+  sabado         Boolean          @default(false)
+  domingo        Boolean          @default(false)
+  frequenciasAluno FrequenciaAluno[]
+  alunoTurmas    AlunoTurma[]
+  professorTurmas ProfessorTurma[]
+  frequenciasProfessor FrequenciaProf[]
+
+  @@map("turma")
+}
+
+model FrequenciaAluno {
+  id            String         @id @default(uuid())
+  aluno_id      String
+  professor_id  String
+  turma_id      String
+  data          DateTime
+  horario_inicio DateTime
+  horario_fim   DateTime
+  status_presenca String
+  aluno         Aluno          @relation(fields: [aluno_id], references: [id])
+  professor     Professor      @relation(fields: [professor_id], references: [id])
+  turma         Turma          @relation(fields: [turma_id], references: [id])
+
+  @@index([aluno_id])
+  @@index([professor_id])
+  @@index([turma_id])
+  @@map("frequencia_aluno")
+}
+
+model AlunoTurma {
+  aluno_id   String
+  turma_id   String
+  frequente  String          @default("N")
+  aluno      Aluno           @relation(fields: [aluno_id], references: [id])
+  turma      Turma           @relation(fields: [turma_id], references: [id])
+
+  @@id([aluno_id, turma_id])
+  @@index([turma_id])
+  @@map("aluno_turma")
+}
+
+model ProfessorTurma {
+  professor_id String
+  turma_id     String
+  professor    Professor      @relation(fields: [professor_id], references: [id])
+  turma        Turma          @relation(fields: [turma_id], references: [id])
+
+  @@id([professor_id, turma_id])
+  @@index([turma_id])
+  @@map("professor_turma")
+}
+
+model FrequenciaProf {
+  id            String       @id @default(uuid())
+  data          DateTime
+  professor_id  String
+  turma_id      String
+  status_aula   String
+  data_remarcacao DateTime?
+  professor     Professor    @relation(fields: [professor_id], references: [id])
+  turma         Turma        @relation(fields: [turma_id], references: [id])
+
+  @@index([professor_id])
+  @@index([turma_id])
+  @@map("frequencia_prof")
 }
 
