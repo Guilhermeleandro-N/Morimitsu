@@ -5,6 +5,7 @@ import { StringValue } from 'ms';
 import { AuthController } from './auth.controller.js';
 import { AuthRepository } from './auth.repository.js';
 import { AuthService } from './auth.service.js';
+import { TokenBlacklistService } from './token-blacklist.service.js';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { AuthService } from './auth.service.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository],
-  exports: [AuthService, JwtModule],
+  providers: [AuthService, AuthRepository, TokenBlacklistService],
+  exports: [AuthService, JwtModule, TokenBlacklistService],
 })
 export class AuthModule {}

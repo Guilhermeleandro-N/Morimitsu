@@ -15,6 +15,7 @@ import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto.js';
 import { UpdateUsuarioDto } from './dtos/update-usuario.dto.js';
 import { UsuarioResponseDto } from './dtos/usuario-response.dto.js';
 import { AuthEntity } from './entities/auth.entity.js';
+import { TokenBlacklistService } from './token-blacklist.service.js';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly repository: AuthRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   async criarUsuario(dto: CreateUsuarioDto): Promise<UsuarioResponseDto> {
@@ -101,6 +103,10 @@ export class AuthService {
   }
 
   async refreshToken(dto: RefreshTokenRequestDto): Promise<LoginResponseDto> {
+    if (this.tokenBlacklistService.isRevoked(dto.refreshToken)) {
+      throw new UnauthorizedException('Refresh token inválido ou expirado');
+    }
+
     const refreshSecret =
       this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
 
@@ -125,6 +131,16 @@ export class AuthService {
     }
 
     return this.gerarTokens(auth);
+  }
+
+  async logout(accessToken: string, refreshToken?: string): Promise<void> {
+    if (accessToken) {
+      this.revokeToken(accessToken);
+    }
+
+    if (refreshToken) {
+      this.revokeToken(refreshToken);
+    }
   }
 
   private async gerarTokens(auth: AuthEntity): Promise<LoginResponseDto> {
@@ -170,5 +186,11 @@ export class AuthService {
       status: auth.status,
       roles: auth.roles,
     };
+  }
+
+  private revokeToken(token: string): void {
+    const payload = this.jwtService.decode(token) as { exp?: number } | null;
+    const expiresAtMs = payload?.exp ? payload.exp * 1000 : undefined;
+    this.tokenBlacklistService.revoke(token, expiresAtMs);
   }
 }
