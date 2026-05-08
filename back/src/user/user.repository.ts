@@ -12,7 +12,12 @@ export class UserRepository {
   async criar(dto: CreateUserDto): Promise<UserEntity> {
     const senhaHash = await argon2.hash(dto.senha);
     const usuario = await this.prisma.usuario.create({
-      data: { nome: dto.nome, email: dto.email, senha: senhaHash, telefone: dto.telefone },
+      data: {
+        nome: dto.nome,
+        email: dto.email,
+        senha: senhaHash,
+        telefone: dto.telefone,
+      },
       include: { aluno: true, professor: true },
     });
     return this.toEntity(usuario);
@@ -60,7 +65,11 @@ export class UserRepository {
   }
 
   async deletar(id: string): Promise<void> {
-    await this.prisma.usuario.delete({ where: { id } });
+    await this.prisma.$transaction([
+      this.prisma.aluno.deleteMany({ where: { usuarioId: id } }),
+      this.prisma.professor.deleteMany({ where: { usuarioId: id } }),
+      this.prisma.usuario.delete({ where: { id } }),
+    ]);
   }
 
   private toEntity(usuario: {
@@ -75,7 +84,7 @@ export class UserRepository {
     const roles: string[] = [];
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
-    if (roles.length === 0) roles.push('admin');
+    if (roles.length === 0) roles.push('user');
 
     const entity = new UserEntity();
     entity.id = usuario.id;
