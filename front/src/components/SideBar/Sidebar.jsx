@@ -27,8 +27,8 @@ function Sidebar({isOpen, setIsOpen}) {
                     <li onClick={()=> {navigate("editarAluno")}} >
                         Editar Aluno
                     </li>
-                    <li>
-                        Ver Alunos
+                    <li onClick={()=> {navigate("perfilAluno")}} >
+                        Ver Perfil
                     </li>
                     <li>
                         Cadastrar Turma
@@ -38,7 +38,7 @@ function Sidebar({isOpen, setIsOpen}) {
                     </li>
                 </ul>
             </nav>
-            <button className="logout-btn"  >Sair</button>
+            <button className="logout-btn"  onClick= {()=> {navigate("login")}} >Sair</button>
             </aside>
     )
 }

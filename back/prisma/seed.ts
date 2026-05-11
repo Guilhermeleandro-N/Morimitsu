@@ -41,8 +41,50 @@ const ALUNO_PERMISSIONS = [
   { codigo: 'training.read', descricao: 'Visualizar treino' },
 ];
 
+const SCREEN_PROFESSOR_PERMISSIONS = [
+  { codigo: 'screen.dashboard', descricao: 'Acessar dashboard' },
+  { codigo: 'screen.aluno.criar', descricao: 'Tela de criação de aluno' },
+  { codigo: 'screen.aluno.listar', descricao: 'Tela de listagem de alunos' },
+  { codigo: 'screen.aluno.perfil', descricao: 'Tela de perfil do aluno' },
+  { codigo: 'screen.turma.criar', descricao: 'Tela de criação de turma' },
+  { codigo: 'screen.turma.listar', descricao: 'Tela de listagem de turmas' },
+  { codigo: 'screen.presenca', descricao: 'Tela de gerenciamento de presenças' },
+  {
+    codigo: 'screen.presenca.visualizar',
+    descricao: 'Tela de visualização de presenças',
+  },
+  { codigo: 'screen.treino', descricao: 'Tela de gerenciamento de treinos' },
+  {
+    codigo: 'screen.treino.visualizar',
+    descricao: 'Tela de visualização de treinos',
+  },
+  { codigo: 'screen.perfil', descricao: 'Tela do próprio perfil' },
+  {
+    codigo: 'screen.professor.perfil',
+    descricao: 'Tela do perfil do professor',
+  },
+];
+
+const SCREEN_ALUNO_PERMISSIONS = [
+  { codigo: 'screen.dashboard', descricao: 'Acessar dashboard' },
+  { codigo: 'screen.perfil', descricao: 'Tela do próprio perfil' },
+  {
+    codigo: 'screen.presenca.visualizar',
+    descricao: 'Tela de visualização de presenças',
+  },
+  {
+    codigo: 'screen.treino.visualizar',
+    descricao: 'Tela de visualização de treinos',
+  },
+];
+
 async function main() {
-  for (const perm of [...PROFESSOR_PERMISSIONS, ...ALUNO_PERMISSIONS]) {
+  for (const perm of [
+    ...PROFESSOR_PERMISSIONS,
+    ...ALUNO_PERMISSIONS,
+    ...SCREEN_PROFESSOR_PERMISSIONS,
+    ...SCREEN_ALUNO_PERMISSIONS,
+  ]) {
     await prisma.permission.upsert({
       where: { codigo: perm.codigo },
       update: {},
@@ -69,7 +111,7 @@ async function main() {
   const allPermissions = await prisma.permission.findMany();
   const permMap = new Map(allPermissions.map((p) => [p.codigo, p.id]));
 
-  for (const perm of PROFESSOR_PERMISSIONS) {
+  for (const perm of [...PROFESSOR_PERMISSIONS, ...SCREEN_PROFESSOR_PERMISSIONS]) {
     const permissionId = permMap.get(perm.codigo);
     if (!permissionId) continue;
     await prisma.perfilPermission.upsert({
@@ -84,7 +126,7 @@ async function main() {
     });
   }
 
-  for (const perm of ALUNO_PERMISSIONS) {
+  for (const perm of [...ALUNO_PERMISSIONS, ...SCREEN_ALUNO_PERMISSIONS]) {
     const permissionId = permMap.get(perm.codigo);
     if (!permissionId) continue;
     await prisma.perfilPermission.upsert({
@@ -99,7 +141,6 @@ async function main() {
     });
   }
 
-  // Usuário admin padrão (sem vínculo com aluno/professor → role admin automática)
   const senhaHash = await argon2.hash('Admin@1234');
   await prisma.usuario.upsert({
     where: { email: 'admin@morimitsu.com' },
