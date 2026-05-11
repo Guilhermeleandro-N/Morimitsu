@@ -1,0 +1,90 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 999;
+}
+
+.modal-container {
+  background-color: white;
+  width: 600px;
+  border-radius: 16px;
+  padding: 30px;
+  animation: aparecer 0.2s ease;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-container h2 {
+  margin-bottom: 30px;
+}
+
+.modal-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.input-group input {
+  height: 45px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 0 12px;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #c41e1e;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.btn-sair {
+  background-color: #d9d9d9;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-salvar {
+  background-color: #c41e1e;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
