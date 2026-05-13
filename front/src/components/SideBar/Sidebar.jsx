@@ -2,10 +2,22 @@ import {useState} from "react";
 import "./Sidebar.css";
 import logo from "../../assets/morimitsu.png";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 function Sidebar({isOpen, setIsOpen}) {
-    const user = "Saulo"
+
+    const {user} = useContext(AuthContext)
+    const {logout} = useContext(AuthContext)
     console.log(isOpen)
     const navigate = useNavigate()
+
+    const handleLogout = () => {
+        logout();
+        navigate("login");
+    }
+
+
+
     return (
             <aside className={`sidebar ${isOpen ? 'open' : 'closed'}` }> 
             
@@ -16,7 +28,7 @@ function Sidebar({isOpen, setIsOpen}) {
                     <img src={logo} alt="logo" />
                     <div className="nome-logo-text">
                       <span className="titulo">Morimitsu</span>
-                      <span className="subtitulo">{user}</span>
+                      <span className="subtitulo">{user.nome}</span>
                     </div>
                   </div>
             <nav>
@@ -38,7 +50,7 @@ function Sidebar({isOpen, setIsOpen}) {
                     </li>
                 </ul>
             </nav>
-            <button className="logout-btn"  onClick= {()=> {navigate("login")}} >Sair</button>
+            <button className="logout-btn"  onClick= {handleLogout} >Sair</button>
             </aside>
     )
 }
