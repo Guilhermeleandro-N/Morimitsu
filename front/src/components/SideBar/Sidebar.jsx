@@ -8,7 +8,6 @@ function Sidebar({isOpen, setIsOpen}) {
 
     const {user} = useContext(AuthContext)
     const {logout} = useContext(AuthContext)
-    console.log(isOpen)
     const navigate = useNavigate()
 
     const handleLogout = () => {
@@ -16,6 +15,12 @@ function Sidebar({isOpen, setIsOpen}) {
         navigate("login");
     }
 
+    let nome;
+    if (!user){
+        nome = "Saulo";
+     }else{
+         nome = user.nome;
+    }
 
 
     return (
@@ -28,7 +33,7 @@ function Sidebar({isOpen, setIsOpen}) {
                     <img src={logo} alt="logo" />
                     <div className="nome-logo-text">
                       <span className="titulo">Morimitsu</span>
-                      <span className="subtitulo">{user.nome}</span>
+                      <span className="subtitulo">{nome}</span>
                     </div>
                   </div>
             <nav>

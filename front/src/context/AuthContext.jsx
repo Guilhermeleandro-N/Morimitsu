@@ -15,18 +15,14 @@ export function AuthProvider({children}){
                 email, 
                 senha
             })
-            
-            
 
             const data = response.data;
-
-            
 
             localStorage.setItem(
                 "accessToken",
                 data.token
             );
-
+            
             localStorage.setItem(
                 "refreshToken",
                 data.refreshToken
@@ -42,11 +38,23 @@ export function AuthProvider({children}){
         
     }
 
-    function logout(){ 
-            console.log(localStorage.removeItem("accessToken"))
-            localStorage.removeItem("accessToken"); 
-            console.log(localStorage.removeItem("accessToken")) 
-            localStorage.removeItem("refreshToken"); setUser(null); 
+    async function logout(){ 
+        try{
+            console.log("Rodou 1")
+            const refreshToken = localStorage.getItem("refreshToken");
+            console.log("Rodou 2")
+            const response =  await api.post("auth/logout", {
+                refreshToken
+            })
+            console.log(response.data)
+            console.log(response); 
+        }catch (error){
+            console.log(error.response)
+        } finally{
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken"); 
+            setUser(null); 
+        }
         }
     
 
