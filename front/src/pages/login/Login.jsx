@@ -1,20 +1,21 @@
-import {useState} from 'react'
+import {useState, useContext} from 'react'
+import { AuthContext } from '../../context/AuthContext';
 import {useNavigate} from "react-router-dom";
 import logo from "../../assets/morimitsu.png"
 import "./Login.css"
 const Login = () => {
-    console.log("login")
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState ("");
     const [message, setMessage] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const {login} = useContext(AuthContext);
     
 
     async function handleSubmit(e){
         e.preventDefault()
         try{
-            const response = true;
+            const response = await login(email, senha);
             if (response){
                 navigate("/");
             }else{

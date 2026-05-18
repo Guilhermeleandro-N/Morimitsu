@@ -5,15 +5,22 @@ import Login from "../pages/login/Login";
 import Home from "../pages/Home/Home";
 import CadastrarAluno from "../pages/CadastrarAluno/CadastrarAluno";
 import EditarAluno from "../pages/EditarAluno/EditarAluno";
+import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
 import PerfilAluno from "../pages/PerfilAluno/PerfilAluno";
+import ProtectedRoute from "./ProtectedRoutes";
 export default function AppRoutes(){
     return (
         <Routes>
             <Route path="/login" element={<Login />} />
-            <Route element={<MainLayout/>}>
+            <Route element={
+                <ProtectedRoute>
+                    <MainLayout/>
+                </ProtectedRoute>
+            }>
                 <Route path="/" element={<Home/>} />
                 <Route path="/cadastrarAluno" element={<CadastrarAluno/>}></Route>
                 <Route path="/editarAluno" element={<EditarAluno/>} ></Route>
+                <Route path="/turmas" element={<VisualizarTurmas />} />
                 <Route path="/perfilAluno" element={<PerfilAluno/>} ></Route>
             </Route>
         </Routes>
