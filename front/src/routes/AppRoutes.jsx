@@ -17,7 +17,7 @@ export default function AppRoutes(){
                     <MainLayout/>
                 </ProtectedRoute>
             }>
-                <Route path="/" element={<Home/>} />
+                <Route path="/" element={<VisualizarTurmas/>} />
                 <Route path="/cadastrarAluno" element={<CadastrarAluno/>}></Route>
                 <Route path="/editarAluno" element={<EditarAluno/>} ></Route>
                 <Route path="/turmas" element={<VisualizarTurmas />} />

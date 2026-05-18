@@ -50,8 +50,8 @@ function Sidebar({isOpen, setIsOpen}) {
                     <li>
                         Cadastrar Turma
                     </li>
-                    <li>
-                        Ver Turmas
+                    <li onClick={()=> {navigate("Turmas")}}>
+                        Turmas
                     </li>
                 </ul>
             </nav>
