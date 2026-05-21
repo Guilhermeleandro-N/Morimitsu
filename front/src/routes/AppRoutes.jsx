@@ -22,6 +22,7 @@ export default function AppRoutes(){
                 <Route path="/editarAluno" element={<EditarAluno/>} ></Route>
                 <Route path="/turmas" element={<VisualizarTurmas />} />
                 <Route path="/perfilAluno" element={<PerfilAluno/>} ></Route>
+                <Route path="/teste" element={<Home/>} ></Route>
             </Route>
         </Routes>
     )

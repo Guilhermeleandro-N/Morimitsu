@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
-
+import api from '../../api/axios';
+import { criarAluno } from '../../services/alunoService';
 import {useNavigate} from "react-router-dom";
 import { BsPersonPlus } from "react-icons/bs";
 import { FaRegCircle } from "react-icons/fa6";
@@ -12,17 +13,18 @@ const CadastrarAluno = () => {
         email: "",
         faixa: "",
         telefone: "",
-        grau: "",
+        grau_faixa: 0,
         data_nasc: "",
-        frequencia: ""
+        frequencia: 0,
+        senha: ""
     });
     const [message, setMessage] = useState("");
     const navigate = useNavigate();
-
     async function handleSubmit(e){
         e.preventDefault();
         try{
-            const response = true;
+            const response = await criarAluno(String(form.nome),String( form.email),String( form.faixa), String(form.telefone),parseInt(form.grau_faixa),String( form.senha));
+            console.log(response)
             if (response){
                 setMessage("Aluno cadastrado com sucesso");
             } else {
@@ -127,25 +129,37 @@ const CadastrarAluno = () => {
 
       {/* GRAU */}
       <div className="form__group">
-        <label htmlFor="grau">Grau atual</label>
-        <select id="grau" name="grau" onChange={handleChange}>
+        <label htmlFor="grau_faixa">Grau atual</label>
+        <select id="grau_faixa" name="grau_faixa" onChange={handleChange}>
           <option value="">Selecione</option>
-          <option value="0">0</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
+          <option value={0}>0</option>
+          <option value={1}>1</option>
+          <option value={2}>2</option>
+          <option value={3}>3</option>
+          <option value={4}>4</option>
         </select>
       </div>
 
       {/* FREQUÊNCIA */}
       <div className="form__group">
-        <label htmlFor="frequencia">Frequência atual</label>
+        <label htmlFor="frequencia">Frequência</label>
         <input
           type="number"
           id="frequencia"
           name="frequencia"
           placeholder="Ex: 3"
+          onChange={handleChange}
+        />
+      </div>
+
+      {/* Senha */}
+      <div className="form__group">
+        <label htmlFor="senha">Senha</label>
+        <input
+          type="password"
+          id="senha"
+          name="senha"
+          placeholder="Senha"
           onChange={handleChange}
         />
       </div>
