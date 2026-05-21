@@ -53,6 +53,9 @@ function Sidebar({isOpen, setIsOpen}) {
                     <li onClick={()=> {navigate("Turmas")}}>
                         Turmas
                     </li>
+                    <li onClick={()=> {navigate("listarAluno")}}>
+                        Lista de Alunos
+                    </li>
                 </ul>
             </nav>
             <button className="logout-btn"  onClick= {handleLogout} >Sair</button>
