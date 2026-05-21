@@ -7,16 +7,24 @@ import CadastrarAluno from "../pages/CadastrarAluno/CadastrarAluno";
 import EditarAluno from "../pages/EditarAluno/EditarAluno";
 import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
 import PerfilAluno from "../pages/PerfilAluno/PerfilAluno";
+import ProtectedRoute from "./ProtectedRoutes";
+import ListarAluno from "../pages/ListarAlunos/ListarALunos";
 export default function AppRoutes(){
     return (
         <Routes>
             <Route path="/login" element={<Login />} />
-            <Route element={<MainLayout/>}>
-                <Route path="/" element={<Home/>} />
+            <Route element={
+                <ProtectedRoute>
+                    <MainLayout/>
+                </ProtectedRoute>
+            }>
+                <Route path="/" element={<VisualizarTurmas/>} />
                 <Route path="/cadastrarAluno" element={<CadastrarAluno/>}></Route>
                 <Route path="/editarAluno" element={<EditarAluno/>} ></Route>
                 <Route path="/turmas" element={<VisualizarTurmas />} />
                 <Route path="/perfilAluno" element={<PerfilAluno/>} ></Route>
+                <Route path="/teste" element={<Home/>} ></Route>
+                <Route path="/listarAluno" element={<ListarAluno/>} ></Route>
             </Route>
         </Routes>
     )

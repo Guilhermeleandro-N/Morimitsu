@@ -1,0 +1,252 @@
+.listar-container {
+
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 40px;
+
+    background-color: #f5f5f5;
+}
+
+.listar-card {
+
+    width: 100%;
+    max-width: 1300px;
+
+    background-color: white;
+
+    border-radius: 18px;
+
+    padding: 30px;
+
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.listar-header {
+
+    margin-bottom: 25px;
+}
+
+.listar-header h2 {
+
+    font-size: 24px;
+    font-weight: 700;
+
+    color: #1f1f1f;
+}
+
+.listar-header p {
+
+    margin-top: 6px;
+
+    color: #777;
+    font-size: 14px;
+}
+
+.table-container {
+
+    overflow-x: auto;
+}
+
+.tabela-alunos {
+
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+.tabela-alunos thead tr {
+
+    border-bottom: 2px solid #ececec;
+}
+
+.tabela-alunos th {
+
+    text-align: left;
+
+    padding: 16px 12px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    color: #222;
+
+    white-space: nowrap;
+}
+
+.tabela-alunos td {
+
+    padding: 18px 12px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 14px;
+
+    color: #444;
+
+    white-space: nowrap;
+}
+
+.nome-aluno {
+
+    font-weight: 500;
+}
+
+/* ===================== */
+/* FAIXAS */
+/* ===================== */
+
+.faixa {
+
+    padding: 6px 14px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    text-transform: capitalize;
+}
+
+.branca {
+
+    background-color: #f2f2f2;
+    color: #555;
+}
+
+.amarela {
+
+    background-color: #fff3b0;
+    color: #9b7b00;
+}
+
+.laranja {
+
+    background-color: #ffd8b0;
+    color: #d96b00;
+}
+
+.verde {
+
+    background-color: #d8f5d0;
+    color: #2e8b57;
+}
+
+.azul {
+
+    background-color: #d6e4ff;
+    color: #2563eb;
+}
+
+/* ===================== */
+/* STATUS */
+/* ===================== */
+
+.status {
+
+    padding: 6px 16px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ativo {
+
+    background-color: #16a34a;
+    color: white;
+}
+
+.inativo {
+
+    background-color: #e5e5e5;
+    color: #777;
+}
+
+/* ===================== */
+/* BOTÕES */
+/* ===================== */
+
+.icon-btn {
+
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    color: #777;
+
+    transition: 0.2s;
+}
+
+.icon-btn:hover {
+
+    transform: scale(1.1);
+}
+
+.delete:hover {
+
+    color: #dc2626;
+}
+
+.perfil-btn {
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border: none;
+
+    background-color: transparent;
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    color: #222;
+
+    transition: 0.2s;
+}
+
+.perfil-btn:hover {
+
+    color: #2563eb;
+}
+
+/* ===================== */
+/* RESPONSIVIDADE */
+/* ===================== */
+
+@media (max-width: 900px) {
+
+    .listar-container {
+
+        padding: 20px;
+    }
+
+    .listar-card {
+
+        padding: 20px;
+    }
+
+    .tabela-alunos th,
+    .tabela-alunos td {
+
+        padding: 14px 10px;
+
+        font-size: 13px;
+    }
+
+    .perfil-btn {
+
+        font-size: 13px;
+    }
+}
