@@ -18,23 +18,25 @@ export class CreateFrequenciaDto {
   @IsNotEmpty({ message: 'turma_id é obrigatório' })
   turma_id!: string;
 
-  @ApiProperty({ example: '2024-06-15T00:00:00.000Z' })
+  @ApiProperty({ example: '25/06/2024' })
   @Type(() => Date)
   @IsDate()
   data!: Date;
 
-  @ApiProperty({ example: '2024-06-15T08:00:00.000Z' })
+  @ApiProperty({ example: '07:00:00' })
   @Type(() => Date)
   @IsDate()
   horario_inicio!: Date;
 
-  @ApiProperty({ example: '2024-06-15T09:00:00.000Z' })
+  @ApiProperty({ example: '08:00:00' })
   @Type(() => Date)
   @IsDate()
   horario_fim!: Date;
 
   @ApiProperty({ enum: ['PRESENTE', 'AUSENTE'] })
   @IsString()
-  @IsIn(['PRESENTE', 'AUSENTE'], { message: 'status_presenca deve ser PRESENTE ou AUSENTE' })
+  @IsIn(['PRESENTE', 'AUSENTE'], {
+    message: 'status_presenca deve ser PRESENTE ou AUSENTE',
+  })
   status_presenca!: string;
 }

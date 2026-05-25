@@ -1,5 +1,20 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateUserDto } from './dtos/create-user.dto.js';
 import { UpdateUserDto } from './dtos/update-user.dto.js';
 import { UserEntity } from './entities/user.entity.js';
@@ -38,7 +53,10 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar usuário' })
   @ApiResponse({ status: 200, type: UserEntity })
-  async atualizar(@Param('id') id: string, @Body() dto: UpdateUserDto): Promise<UserEntity> {
+  async atualizar(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+  ): Promise<UserEntity> {
     return this.service.atualizar(id, dto);
   }
 

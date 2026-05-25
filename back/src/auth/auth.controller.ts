@@ -1,5 +1,17 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 import { LoginRequestDto } from './dtos/login-request.dto.js';
 import { LoginResponseDto } from './dtos/login-response.dto.js';
@@ -23,7 +35,9 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Renovar token de acesso' })
   @ApiResponse({ status: 200, type: LoginResponseDto })
-  async refreshToken(@Body() dto: RefreshTokenRequestDto): Promise<LoginResponseDto> {
+  async refreshToken(
+    @Body() dto: RefreshTokenRequestDto,
+  ): Promise<LoginResponseDto> {
     return this.service.refreshToken(dto);
   }
 
@@ -32,7 +46,10 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Encerrar sessão do usuário' })
   @ApiResponse({ status: 204 })
-  async logout(@Req() request: Record<string, unknown>, @Body() dto: LogoutRequestDto): Promise<void> {
+  async logout(
+    @Req() request: Record<string, unknown>,
+    @Body() dto: LogoutRequestDto,
+  ): Promise<void> {
     const headers = (request['headers'] as Record<string, string>) ?? {};
     const authorization = headers.authorization ?? '';
     const [, accessToken = ''] = authorization.split(' ');
