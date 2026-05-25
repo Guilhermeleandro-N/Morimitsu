@@ -17,4 +17,10 @@ export class CreateAlunoDto {
   @Min(0)
   @IsOptional()
   grau_faixa?: number;
+
+  @ApiProperty({ example: 20 })
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  frequencia_atual?: number;
 }

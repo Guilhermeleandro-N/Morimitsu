@@ -11,7 +11,6 @@ const prisma = new PrismaClient({
 });
 
 const PROFESSOR_PERMISSIONS = [
-  { codigo: 'turma.create', descricao: 'Criar turma' },
   { codigo: 'turma.read', descricao: 'Visualizar turma' },
   { codigo: 'turma.update', descricao: 'Atualizar turma' },
   { codigo: 'student.create', descricao: 'Criar aluno' },
@@ -33,12 +32,20 @@ const PROFESSOR_PERMISSIONS = [
   { codigo: 'training.cancel', descricao: 'Cancelar treino' },
   { codigo: 'training.read', descricao: 'Visualizar treino' },
   { codigo: 'student.profile.read', descricao: 'Visualizar perfil do aluno' },
+  { codigo: 'notification.read', descricao: 'Visualizar notificações' },
 ];
 
 const ALUNO_PERMISSIONS = [
   { codigo: 'profile.read', descricao: 'Visualizar próprio perfil' },
   { codigo: 'attendance.read', descricao: 'Visualizar presença' },
   { codigo: 'training.read', descricao: 'Visualizar treino' },
+];
+
+const ADMIN_ONLY_PERMISSIONS = [
+  { codigo: 'turma.create', descricao: 'Criar turma' },
+  { codigo: 'professor.create', descricao: 'Criar professor' },
+  { codigo: 'professor.read', descricao: 'Visualizar professor' },
+  { codigo: 'professor.update', descricao: 'Atualizar professor' },
 ];
 
 const SCREEN_PROFESSOR_PERMISSIONS = [
@@ -84,6 +91,7 @@ async function main() {
     ...ALUNO_PERMISSIONS,
     ...SCREEN_PROFESSOR_PERMISSIONS,
     ...SCREEN_ALUNO_PERMISSIONS,
+    ...ADMIN_ONLY_PERMISSIONS,
   ]) {
     await prisma.permission.upsert({
       where: { codigo: perm.codigo },
@@ -110,6 +118,15 @@ async function main() {
 
   const allPermissions = await prisma.permission.findMany();
   const permMap = new Map(allPermissions.map((p) => [p.codigo, p.id]));
+
+  // Remover permissões admin-only do perfil professor (caso existam de seeds anteriores)
+  for (const perm of ADMIN_ONLY_PERMISSIONS) {
+    const permissionId = permMap.get(perm.codigo);
+    if (!permissionId) continue;
+    await prisma.perfilPermission.deleteMany({
+      where: { perfil_id: professor.id, permission_id: permissionId },
+    });
+  }
 
   for (const perm of [...PROFESSOR_PERMISSIONS, ...SCREEN_PROFESSOR_PERMISSIONS]) {
     const permissionId = permMap.get(perm.codigo);

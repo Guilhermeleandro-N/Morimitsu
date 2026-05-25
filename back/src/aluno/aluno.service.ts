@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AlunoRepository } from './aluno.repository.js';
 import { CreateAlunoDto } from './dtos/create-aluno.dto.js';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto.js';
@@ -20,6 +25,12 @@ export class AlunoService {
 
   async listar(): Promise<AlunoEntity[]> {
     return this.repository.listar();
+  }
+
+  async listarDaTurmaDoProfessor(
+    professorUsuarioId: string,
+  ): Promise<AlunoEntity[]> {
+    return this.repository.listarPorProfessorUsuarioId(professorUsuarioId);
   }
 
   async buscarPorId(id: string): Promise<AlunoEntity> {

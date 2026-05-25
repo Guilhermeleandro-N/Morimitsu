@@ -37,7 +37,8 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token inválido ou expirado');
     }
 
-    const refreshSecret = this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
+    const refreshSecret =
+      this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
 
     let payload: { sub: string; email: string; roles: string[] };
 
@@ -75,13 +76,23 @@ export class AuthService {
   private async gerarTokens(auth: AuthEntity): Promise<LoginResponseDto> {
     const jwtPayload = { sub: auth.id, email: auth.email, roles: auth.roles };
 
-    const accessExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN', '2h') as StringValue;
-    const refreshExpiresIn = this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '8h') as StringValue;
-    const refreshSecret = this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
+    const accessExpiresIn = this.configService.get<string>(
+      'JWT_EXPIRES_IN',
+      '2h',
+    ) as StringValue;
+    const refreshExpiresIn = this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES_IN',
+      '8h',
+    ) as StringValue;
+    const refreshSecret =
+      this.configService.getOrThrow<string>('JWT_REFRESH_SECRET');
 
     const [token, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, { expiresIn: accessExpiresIn }),
-      this.jwtService.signAsync(jwtPayload, { secret: refreshSecret, expiresIn: refreshExpiresIn }),
+      this.jwtService.signAsync(jwtPayload, {
+        secret: refreshSecret,
+        expiresIn: refreshExpiresIn,
+      }),
     ]);
 
     return {
@@ -95,7 +106,7 @@ export class AuthService {
   }
 
   private revokeToken(token: string): void {
-    const payload = this.jwtService.decode(token) as { exp?: number } | null;
+    const payload = this.jwtService.decode(token);
     const expiresAtMs = payload?.exp ? payload.exp * 1000 : undefined;
     this.tokenBlacklistService.revoke(token, expiresAtMs);
   }

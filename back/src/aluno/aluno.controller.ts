@@ -10,7 +10,14 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { JwtPayload } from '../auth/decorators/current-user.decorator.js';
 import { Permissions } from '../authorization/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard.js';
 import { AlunoService } from './aluno.service.js';
@@ -41,6 +48,19 @@ export class AlunoController {
   @ApiResponse({ status: 200, type: [AlunoEntity] })
   async listar(): Promise<AlunoEntity[]> {
     return this.service.listar();
+  }
+
+  @Get('minha-turma')
+  @UseGuards(PermissionsGuard)
+  @Permissions('student.list.by_turma')
+  @ApiOperation({
+    summary: 'Listar alunos das turmas do professor logado (ativos e inativos)',
+  })
+  @ApiResponse({ status: 200, type: [AlunoEntity] })
+  async listarDaMinhaTurma(
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<AlunoEntity[]> {
+    return this.service.listarDaTurmaDoProfessor(usuario.sub);
   }
 
   @Get('usuario/:usuarioId')

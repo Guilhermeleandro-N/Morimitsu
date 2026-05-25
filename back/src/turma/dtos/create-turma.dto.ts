@@ -1,6 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateTurmaDto {
   @ApiProperty({ example: 'Turma Infantil' })
@@ -8,12 +14,12 @@ export class CreateTurmaDto {
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   nome!: string;
 
-  @ApiProperty({ example: '2024-01-01T08:00:00.000Z' })
+  @ApiProperty({ example: '08:00:00' })
   @Type(() => Date)
   @IsDate()
   horario_inicio!: Date;
 
-  @ApiProperty({ example: '2024-01-01T09:00:00.000Z' })
+  @ApiProperty({ example: '09:00:00' })
   @Type(() => Date)
   @IsDate()
   horario_fim!: Date;

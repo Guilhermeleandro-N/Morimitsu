@@ -1,5 +1,13 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
+import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto.js';
 import { CreateFrequenciaDto } from './dtos/create-frequencia.dto.js';
+import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto.js';
+import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto.js';
+import { FrequenciaProfEntity } from './entities/frequencia-prof.entity.js';
 import { FrequenciaEntity } from './entities/frequencia.entity.js';
 import { FrequenciaRepository } from './frequencia.repository.js';
 
@@ -8,24 +16,76 @@ export class FrequenciaService {
   constructor(private readonly repository: FrequenciaRepository) {}
 
   async registrar(dto: CreateFrequenciaDto): Promise<FrequenciaEntity> {
-    const professorNaTurma = await this.repository.professorExisteNaTurma(dto.professor_id, dto.turma_id);
+    const professorNaTurma = await this.repository.professorExisteNaTurma(
+      dto.professor_id,
+      dto.turma_id,
+    );
     if (!professorNaTurma) {
       throw new ForbiddenException('Professor não está vinculado a esta turma');
     }
 
-    const alunoNaTurma = await this.repository.alunoExisteNaTurma(dto.aluno_id, dto.turma_id);
+    const alunoNaTurma = await this.repository.alunoExisteNaTurma(
+      dto.aluno_id,
+      dto.turma_id,
+    );
     if (!alunoNaTurma) {
       throw new BadRequestException('Aluno não está vinculado a esta turma');
     }
 
-    return this.repository.registrar(dto);
+    const resultado = await this.repository.registrar(dto);
+    return resultado.frequencia;
   }
 
-  async listarPorAluno(alunoId: string): Promise<FrequenciaEntity[]> {
+  async atualizar(
+    id: string,
+    dto: UpdateFrequenciaDto,
+  ): Promise<FrequenciaEntity> {
+    return this.repository.atualizar(id, dto);
+  }
+
+  async listarPorAluno(
+    alunoId: string,
+    professorUsuarioId?: string,
+  ): Promise<FrequenciaEntity[]> {
+    if (professorUsuarioId) {
+      const temVinculo = await this.repository.alunoTemVinculoComProfessor(
+        alunoId,
+        professorUsuarioId,
+      );
+      if (!temVinculo) {
+        throw new ForbiddenException('Você não possui vínculo com este aluno');
+      }
+    }
     return this.repository.listarPorAluno(alunoId);
   }
 
   async listarPorTurma(turmaId: string): Promise<FrequenciaEntity[]> {
     return this.repository.listarPorTurma(turmaId);
+  }
+
+  async registrarTreino(
+    dto: CreateFrequenciaProfDto,
+  ): Promise<FrequenciaProfEntity> {
+    const professorNaTurma = await this.repository.professorExisteNaTurma(
+      dto.professor_id,
+      dto.turma_id,
+    );
+    if (!professorNaTurma) {
+      throw new ForbiddenException('Professor não está vinculado a esta turma');
+    }
+    return this.repository.registrarTreino(dto);
+  }
+
+  async atualizarTreino(
+    id: string,
+    dto: UpdateFrequenciaProfDto,
+  ): Promise<FrequenciaProfEntity> {
+    return this.repository.atualizarTreino(id, dto);
+  }
+
+  async listarTreinosPorProfessor(
+    professorId: string,
+  ): Promise<FrequenciaProfEntity[]> {
+    return this.repository.listarTreinosPorProfessor(professorId);
   }
 }
