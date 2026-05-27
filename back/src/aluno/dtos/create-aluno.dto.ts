@@ -1,5 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateAlunoDto {
   @ApiProperty()
@@ -7,20 +14,25 @@ export class CreateAlunoDto {
   @IsNotEmpty({ message: 'usuarioId é obrigatório' })
   usuarioId!: string;
 
-  @ApiProperty({ example: 'Branca' })
+  @ApiPropertyOptional({ example: 'Branca' })
   @IsString()
   @IsOptional()
   faixa?: string;
 
-  @ApiProperty({ example: 0 })
+  @ApiPropertyOptional({ example: 0 })
   @IsInt()
   @Min(0)
   @IsOptional()
   grau_faixa?: number;
 
-  @ApiProperty({ example: 20 })
+  @ApiPropertyOptional({ example: 20 })
   @IsInt()
   @Min(0)
   @IsOptional()
   frequencia_atual?: number;
+
+  @ApiPropertyOptional({ example: '2000-01-01' })
+  @IsDateString()
+  @IsOptional()
+  data_nascimento?: string;
 }
