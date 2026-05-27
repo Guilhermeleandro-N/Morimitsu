@@ -9,5 +9,6 @@ import { AlunoService } from './aluno.service.js';
   imports: [PrismaModule, AuthorizationModule],
   controllers: [AlunoController],
   providers: [AlunoService, AlunoRepository],
+  exports: [AlunoService],
 })
 export class AlunoModule {}

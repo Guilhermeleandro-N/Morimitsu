@@ -65,6 +65,7 @@ model Aluno {
   frequencia_atual Int              @default(0)
   grau_faixa       Int              @default(0)
   faixa            String           @default("BRANCA")
+  data_nascimento  DateTime?
   usuarioId        String           @unique
   usuario          Usuario          @relation(fields: [usuarioId], references: [id])
   frequencias      FrequenciaAluno[]

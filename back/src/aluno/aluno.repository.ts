@@ -51,6 +51,9 @@ export class AlunoRepository {
           faixa: dto.faixa ?? 'BRANCA',
           grau_faixa: dto.grau_faixa ?? 0,
           frequencia_atual: dto.frequencia_atual ?? 0,
+          data_nascimento: dto.data_nascimento
+            ? new Date(dto.data_nascimento)
+            : null,
           usuarioId: dto.usuarioId,
         },
       });
@@ -107,7 +110,18 @@ export class AlunoRepository {
             },
           },
         },
-        include: { aluno: true },
+        include: {
+          aluno: {
+            select: {
+              id: true,
+              frequencia_atual: true,
+              grau_faixa: true,
+              faixa: true,
+              data_nascimento: true,
+              usuarioId: true,
+            },
+          },
+        },
         distinct: ['aluno_id'],
       });
 
@@ -156,6 +170,10 @@ export class AlunoRepository {
       if (dto.grau_faixa !== undefined) data.grau_faixa = dto.grau_faixa;
       if (dto.frequencia_atual !== undefined)
         data.frequencia_atual = dto.frequencia_atual;
+      if (dto.data_nascimento !== undefined)
+        data.data_nascimento = dto.data_nascimento
+          ? new Date(dto.data_nascimento)
+          : null;
 
       const aluno = await this.prisma.aluno.update({ where: { id }, data });
       return this.toEntity(aluno);
@@ -191,6 +209,7 @@ export class AlunoRepository {
     frequencia_atual: number;
     grau_faixa: number;
     faixa: string;
+    data_nascimento: Date | null;
     usuarioId: string;
   }): AlunoEntity {
     const entity = new AlunoEntity();
@@ -198,6 +217,7 @@ export class AlunoRepository {
     entity.frequencia_atual = aluno.frequencia_atual;
     entity.grau_faixa = aluno.grau_faixa;
     entity.faixa = aluno.faixa;
+    entity.data_nascimento = aluno.data_nascimento;
     entity.usuarioId = aluno.usuarioId;
     return entity;
   }
