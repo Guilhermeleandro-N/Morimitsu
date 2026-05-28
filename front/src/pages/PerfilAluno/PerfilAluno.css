@@ -135,7 +135,8 @@
   text-transform: capitalize;
 }
 
-.status-badge.ativo {
+.status-badge.ativo,
+.status-badge.enabled {
   background-color: #009432;
   color: white;
 }
