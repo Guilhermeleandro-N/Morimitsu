@@ -9,41 +9,41 @@ const PerfilAluno = () => {
   const Navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.id;
-  const [alunoData, setAlunoData ]= useState("")
+  const [alunoData, setAlunoData] = useState(null)
   const [primeiraLetra, setPrimeiraLetra] = useState("")
+
+  function formatarDataBR(data) {
+    if (!data) return "--"
+    const iso = data.toString()
+    const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (match) {
+      return `${match[3]}/${match[2]}/${match[1]}`
+    }
+    return data
+  }
+
   useEffect(() => {
     async function buscarAluno() {
+      if (!userId) return;
+
       try {
         const response = await BuscarAlunoCompletoPorUserId(userId)
         setAlunoData(response)
-        setPrimeiraLetra(response.nome.charAt(0))
-        console.log(alunoData);
+        setPrimeiraLetra(response?.nome?.charAt(0) ?? "")
+        console.log(response);
       } catch (error) {
         console.log(error);
       }
-  }
-  buscarAluno();
-  }, []
-  )
-  const studentData = {
-    nome: "Carlos de Souza",
-    status: "Ativo",
-    email: "carlosou@gmail.com",
-    telefone: "(88) 9 9999-9999",
-    nascimento: "12/09/2001",
-    indicadores: {
-      presenca: 54,
-      faixa: "Branca",
-      graus: "II"
-    },
-    historico: [
-      { data: "19/03/2026", frequencia: "Presente", turma: "Noite" },
-      { data: "12/03/2026", frequencia: "Ausente", turma: "Noite" },
-      { data: "05/03/2026", frequencia: "Presente", turma: "Tarde" },
-      { data: "26/02/2026", frequencia: "Presente", turma: "Noite" },
-      { data: "19/02/2026", frequencia: "Presente", turma: "Tarde" }
-    ]
-  };
+    }
+
+    buscarAluno();
+  }, [userId])
+
+  const dadosAluno = alunoData || {}
+  const faixa = dadosAluno.faixa ?? ""
+  const grau = dadosAluno.grau_faixa ?? ""
+  const presencas = dadosAluno.frequencia_atual ?? 0
+  const historico = dadosAluno.historico || []
 
   return (
     <div className='main'>
@@ -68,17 +68,17 @@ const PerfilAluno = () => {
               </div>
             </div>
 
-            <h3 className="student-name">{alunoData.nome}</h3>
-            <span className={`status-badge ${studentData.status.toLowerCase()}`}>
-              {alunoData.status}
+            <h3 className="student-name">{dadosAluno.nome || "Aluno"}</h3>
+            <span className={`status-badge ${String(dadosAluno.status || "").toLowerCase()}`}>
+              {dadosAluno.status || "--"}
             </span>
 
             <div className="personal-details">
-              <p><strong>E-mail:</strong> {alunoData.email}</p>
-              <p><strong>Telefone:</strong> {alunoData.telefone}</p>
-              <p><strong>Nascimento:</strong> {alunoData.data_nascimento}</p>
-              <p><strong>Faixa:</strong> {studentData.indicadores.faixa}</p>
-              <p><strong>Grau:</strong> {studentData.indicadores.graus}</p>
+              <p><strong>E-mail:</strong> {dadosAluno.email || "--"}</p>
+              <p><strong>Telefone:</strong> {dadosAluno.telefone || "--"}</p>
+              <p><strong>Nascimento:</strong> {formatarDataBR(dadosAluno.data_nascimento)}</p>
+              <p><strong>Faixa:</strong> {faixa || "--"}</p>
+              <p><strong>Grau:</strong> {grau || "--"}</p>
             </div>
             <button className="btn-graduate">Graduar Aluno</button>
           </aside>
@@ -90,7 +90,7 @@ const PerfilAluno = () => {
 
               <div className="presence-total">
                 <span>Presenças:</span>
-                <strong>{studentData.indicadores.presenca}</strong>
+                <strong>{presencas}</strong>
               </div>
             </div>
 
@@ -104,7 +104,7 @@ const PerfilAluno = () => {
               </thead>
 
               <tbody>
-                {studentData.historico.map((item, index) => (
+                {historico.map((item, index) => (
                   <tr key={index}>
                     <td data-label="Data">{item.data}</td>
 
