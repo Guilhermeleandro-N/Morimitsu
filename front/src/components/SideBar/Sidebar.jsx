@@ -47,9 +47,7 @@ function Sidebar({isOpen, setIsOpen}) {
                     <li onClick={()=> {navigate("perfilAluno")}} >
                         Ver Perfil
                     </li>
-                    <li>
-                        Cadastrar Turma
-                    </li>
+                    
                     <li onClick={()=> {navigate("Turmas")}}>
                         Turmas
                     </li>

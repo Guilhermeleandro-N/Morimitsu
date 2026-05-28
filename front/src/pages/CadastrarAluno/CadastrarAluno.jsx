@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { criarAluno } from '../../services/alunoService';
 import {useNavigate} from "react-router-dom";
@@ -8,6 +8,8 @@ import { FaRegCircle } from "react-icons/fa6";
 import addUser from "../../assets/addUser.png"
 import "./CadastrarAluno.css"
 const CadastrarAluno = () => {
+
+    
     const [form, setForm] = useState({
         nome: "",
         email: "",
@@ -18,20 +20,26 @@ const CadastrarAluno = () => {
         frequencia: 0,
         senha: ""
     });
+    useEffect(()=>{
+      console.log(form.data_nasc)
+    }, [form.data_nasc]);
     const [message, setMessage] = useState("");
     const navigate = useNavigate();
     async function handleSubmit(e){
         e.preventDefault();
         try{
-            const response = await criarAluno(String(form.nome),String( form.email),String( form.faixa), String(form.telefone),parseInt(form.grau_faixa),String( form.senha));
+            const response = await criarAluno(String(form.nome),String( form.email) ,String( form.senha), String(form.telefone),String(form.data_nasc), String(form.faixa), parseInt(form.grau_faixa), parseInt(form.frequencia));
             console.log(response)
-            if (response){
+            if (response.status === 201){
                 setMessage("Aluno cadastrado com sucesso");
+                console.log("if")
             } else {
-                setMessage("Erro ao cadastrar.");        
+                setMessage("Erro ao cadastrar.\nVerifique as informações e tente novamente!");    
+                console.log("Else")    
             }
         } catch (error){
             setMessage("Erro ao conectar com o servidor.")
+            console.log("catch")
         }
         
     }
@@ -105,7 +113,7 @@ const CadastrarAluno = () => {
         <input
           type="date"
           id="dataNascimento"
-          name="dataNascimento"
+          name="data_nasc"
           onChange={handleChange}
         />
       </div>
@@ -166,6 +174,12 @@ const CadastrarAluno = () => {
 
       {/* BOTÃO */}
       </div>
+
+      {message && (
+       <div className={`message ${message.includes("sucesso") ? "success" : "error"}`}>
+        {message}
+  </div>
+      )}
 <div className="form__actions">
   <button type="submit" className="btn-primary">
     Salvar Alterações

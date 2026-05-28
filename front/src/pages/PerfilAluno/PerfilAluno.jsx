@@ -1,9 +1,30 @@
 import React from 'react';
 import "./PerfilAluno.css"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BuscarAlunoCompletoPorUserId } from '../../services/alunoService';
+
 const PerfilAluno = () => {
   // Simulação de dados recebidos de uma API
   const Navigate = useNavigate();
+  const location = useLocation();
+  const userId = location.state?.id;
+  const [alunoData, setAlunoData ]= useState("")
+  const [primeiraLetra, setPrimeiraLetra] = useState("")
+  useEffect(() => {
+    async function buscarAluno() {
+      try {
+        const response = await BuscarAlunoCompletoPorUserId(userId)
+        setAlunoData(response)
+        setPrimeiraLetra(response.nome.charAt(0))
+        console.log(alunoData);
+      } catch (error) {
+        console.log(error);
+      }
+  }
+  buscarAluno();
+  }, []
+  )
   const studentData = {
     nome: "Carlos de Souza",
     status: "Ativo",
@@ -43,19 +64,19 @@ const PerfilAluno = () => {
 
             <div className="avatar-container">
               <div className="avatar-placeholder">
-                {studentData.nome.charAt(0)}
+                {primeiraLetra}
               </div>
             </div>
 
-            <h3 className="student-name">{studentData.nome}</h3>
+            <h3 className="student-name">{alunoData.nome}</h3>
             <span className={`status-badge ${studentData.status.toLowerCase()}`}>
-              {studentData.status}
+              {alunoData.status}
             </span>
 
             <div className="personal-details">
-              <p><strong>E-mail:</strong> {studentData.email}</p>
-              <p><strong>Telefone:</strong> {studentData.telefone}</p>
-              <p><strong>Nascimento:</strong> {studentData.nascimento}</p>
+              <p><strong>E-mail:</strong> {alunoData.email}</p>
+              <p><strong>Telefone:</strong> {alunoData.telefone}</p>
+              <p><strong>Nascimento:</strong> {alunoData.data_nascimento}</p>
               <p><strong>Faixa:</strong> {studentData.indicadores.faixa}</p>
               <p><strong>Grau:</strong> {studentData.indicadores.graus}</p>
             </div>

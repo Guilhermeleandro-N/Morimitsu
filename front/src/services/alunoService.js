@@ -1,14 +1,49 @@
 import api from "../api/axios"
-import { criarUser } from "./userService"
+import { criarUser, buscarUser } from "./userService"
+
 
 export async function criarAluno(
+    nome,
+    email,
+    senha,
+    telefone,
+    data_nascimento,
+    faixa,
+    grau,
+    frequencia_atual 
+) {
+    try {
+        const response = await api.post("user/aluno", {
+            nome: nome,
+            email: email,
+            senha: senha,
+            telefone: telefone,
+            data_nascimento: data_nascimento,
+            faixa: faixa,
+            grau_faixa: grau,
+            frequencia_atual: frequencia_atual
+        });
+
+        console.log("Aluno criado com sucesso");
+        console.log(response);
+
+        return response;
+
+    } catch (error) {
+        console.log("Erro ao criar aluno");
+        console.log(error);
+
+        return error;
+    }
+}
+
+/*export async function criarAluno(
     nome,
     email,
     faixa,
     telefone,
     grau,
     senha ){
-
     try{
         const user = await criarUser(
         nome,
@@ -33,19 +68,15 @@ export async function criarAluno(
     }catch(error){
         return error
     }       
-        //}catch(error){
-        //    return error
-        //}
-}
+}*/
 
-export async function listarAlunoCompleto(){
+export async function listarAlunosCompleto(){
     const usersResponse = await api.get("user");
     const alunosResponse = await api.get("aluno");
 
     const users = usersResponse.data;
     const alunos = alunosResponse.data;
-    console.log(users)
-    console.log(alunos) 
+    
 
     const resultado = alunos.map(aluno => {
         const user = users.find(user => user.id === aluno.usuarioId);
@@ -60,3 +91,32 @@ export async function listarAlunoCompleto(){
 
 }
 
+export async function BuscarAlunoCompletoPorUserId(userId){
+    try{
+        const userData = await buscarUser(userId);
+        console.log(userData)
+        const alunoData = await BuscaAlunoPorUserId(userId);
+        console.log(alunoData)
+        const alunoCompleto = {
+            ...userData,
+            ...alunoData
+        };
+
+        return alunoCompleto;
+    }catch(error){
+        return error;
+    }
+
+}
+
+export async function BuscaAlunoPorUserId(userId){
+    try {
+        const response = await api.get(`aluno/usuario/${userId}`);
+    
+    return response.data;
+    
+   }catch(error){
+    return error
+    console.log(error)
+   }
+}

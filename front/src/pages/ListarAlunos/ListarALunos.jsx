@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { listarAlunoCompleto } from "../../services/alunoService";
-
+import { listarAlunosCompleto } from "../../services/alunoService";
+import { useNavigate } from "react-router-dom";
 import {
   FaEye,
   FaTrash,
@@ -9,18 +9,32 @@ import {
 
 import "./ListarAlunos.css";
 
+
 const ListarAluno = () => {
 
+
+  const navigate = useNavigate()
   const [alunos, setAlunos] = useState([]);
+
+  function abrirPerfil(userId){
+    navigate("/perfilAluno", {
+      state: {
+          id: userId
+      }
+    })
+  }
+
 
   useEffect(() => {
 
     async function carregarAlunos() {
       try {
 
-        const response = await listarAlunoCompleto();
+        const response = await listarAlunosCompleto();
 
         setAlunos(response);
+        console.log("Alunos:")
+        console.log(response)
 
       } catch (error) {
         console.log("Erro ao carregar alunos:", error);
@@ -136,7 +150,7 @@ const ListarAluno = () => {
                   </td>
 
                   <td>
-                    <button className="perfil-btn">
+                    <button className="perfil-btn" onClick={()=> abrirPerfil(aluno.usuario.id)}>
                       <FaEye />
                       Ver Perfil
                     </button>

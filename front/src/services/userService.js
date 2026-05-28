@@ -8,8 +8,9 @@ export async function criarUser(nome, email, senha, telefone){
         email,
         telefone
     });
-    return response;
     console.log("Criar User bem sucedido!")
+    return response;
+    
 
     } catch (error){
         
@@ -18,7 +19,18 @@ export async function criarUser(nome, email, senha, telefone){
     }
 }
 
-/*const usuarioCriado =  await criarUser("Guilherme Leandro", "Guilherme@email.com", "Senha@123", "(11) 99999-9998")
 
-console.log(usuarioCriado);*/
+export async function buscarUser(id){
+   try {
+    const response = await api.get(`user/${id}`
+    );
+    
+    return response.data;
+    
+   }catch(error){
+    return error
+    console.log(error)
+   }
+}
+
 

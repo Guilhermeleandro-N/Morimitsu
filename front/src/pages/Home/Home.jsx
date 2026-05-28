@@ -1,6 +1,6 @@
 import React from 'react'
 import { criarUser } from '../../services/userService'
-import { listarAlunoCompleto } from '../../services/alunoService'
+import { listarAlunosCompleto } from '../../services/alunoService'
 import api from '../../api/axios'
 const Home = () => {
   async function teste() {
