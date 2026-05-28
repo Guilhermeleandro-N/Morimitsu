@@ -9,5 +9,6 @@ import { ProfessorService } from './professor.service.js';
   imports: [PrismaModule, AuthorizationModule],
   controllers: [ProfessorController],
   providers: [ProfessorService, ProfessorRepository],
+  exports: [ProfessorService],
 })
 export class ProfessorModule {}

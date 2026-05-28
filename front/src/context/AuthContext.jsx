@@ -40,14 +40,14 @@ export function AuthProvider({children}){
 
     async function logout(){ 
         try{
-            console.log("Rodou 1")
+            //console.log("Rodou 1")
             const refreshToken = localStorage.getItem("refreshToken");
-            console.log("Rodou 2")
+            //console.log("Rodou 2")
             const response =  await api.post("auth/logout", {
                 refreshToken
             })
-            console.log(response.data)
-            console.log(response); 
+            //console.log(response.data)
+            //console.log(response); 
         }catch (error){
             console.log(error.response)
         } finally{

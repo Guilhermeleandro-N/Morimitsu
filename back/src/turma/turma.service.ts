@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AlunoEntity } from '../aluno/entities/aluno.entity.js';
 import { ProfessorEntity } from '../professor/entities/professor.entity.js';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto.js';
@@ -46,7 +50,10 @@ export class TurmaService {
     await this.repository.adicionarAluno(turmaId, dto);
   }
 
-  async adicionarProfessor(turmaId: string, dto: AddProfessorTurmaDto): Promise<void> {
+  async adicionarProfessor(
+    turmaId: string,
+    dto: AddProfessorTurmaDto,
+  ): Promise<void> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
     await this.repository.adicionarProfessor(turmaId, dto);

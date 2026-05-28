@@ -1,5 +1,21 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Permissions } from '../authorization/decorators/permissions.decorator.js';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard.js';
 import { AlunoEntity } from '../aluno/entities/aluno.entity.js';
@@ -50,7 +66,10 @@ export class TurmaController {
   @Permissions('turma.update')
   @ApiOperation({ summary: 'Atualizar turma' })
   @ApiResponse({ status: 200, type: TurmaEntity })
-  async atualizar(@Param('id') id: string, @Body() dto: UpdateTurmaDto): Promise<TurmaEntity> {
+  async atualizar(
+    @Param('id') id: string,
+    @Body() dto: UpdateTurmaDto,
+  ): Promise<TurmaEntity> {
     return this.service.atualizar(id, dto);
   }
 
@@ -70,7 +89,10 @@ export class TurmaController {
   @Permissions('student.assign')
   @ApiOperation({ summary: 'Adicionar aluno à turma' })
   @ApiResponse({ status: 204 })
-  async adicionarAluno(@Param('id') id: string, @Body() dto: AddAlunoTurmaDto): Promise<void> {
+  async adicionarAluno(
+    @Param('id') id: string,
+    @Body() dto: AddAlunoTurmaDto,
+  ): Promise<void> {
     return this.service.adicionarAluno(id, dto);
   }
 
@@ -80,7 +102,10 @@ export class TurmaController {
   @Permissions('turma.update')
   @ApiOperation({ summary: 'Adicionar professor à turma' })
   @ApiResponse({ status: 204 })
-  async adicionarProfessor(@Param('id') id: string, @Body() dto: AddProfessorTurmaDto): Promise<void> {
+  async adicionarProfessor(
+    @Param('id') id: string,
+    @Body() dto: AddProfessorTurmaDto,
+  ): Promise<void> {
     return this.service.adicionarProfessor(id, dto);
   }
 

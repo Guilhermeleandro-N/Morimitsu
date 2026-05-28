@@ -1,9 +1,30 @@
 import React from 'react';
 import "./PerfilAluno.css"
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BuscarAlunoCompletoPorUserId } from '../../services/alunoService';
+
 const PerfilAluno = () => {
   // Simulação de dados recebidos de uma API
   const Navigate = useNavigate();
+  const location = useLocation();
+  const userId = location.state?.id;
+  const [alunoData, setAlunoData ]= useState("")
+  const [primeiraLetra, setPrimeiraLetra] = useState("")
+  useEffect(() => {
+    async function buscarAluno() {
+      try {
+        const response = await BuscarAlunoCompletoPorUserId(userId)
+        setAlunoData(response)
+        setPrimeiraLetra(response.nome.charAt(0))
+        console.log(alunoData);
+      } catch (error) {
+        console.log(error);
+      }
+  }
+  buscarAluno();
+  }, []
+  )
   const studentData = {
     nome: "Carlos de Souza",
     status: "Ativo",
@@ -26,63 +47,53 @@ const PerfilAluno = () => {
 
   return (
     <div className='main'>
-    <div className="container">
-         
-      <header className="page-header">
-        <div className="header-info">
-          <h1>Perfil do Aluno</h1>
-          <p>Visualize os dados presentes no perfil</p>
-        </div>
-        <button className="btn-edit" onClick={() => {Navigate("/editarAluno")}} >Editar Aluno</button>
-      </header>
+      <div className="container">
 
-      <main className="profile-grid">
-        {/* Coluna da Esquerda: Dados Pessoais */}
-        <aside className="sidebar-card">
-          <h2 className="card-title">Dados Pessoais</h2>
-          
-          <div className="avatar-container">
-            <div className="avatar-placeholder">
-              {studentData.nome.charAt(0)}
-            </div>
+        <header className="page-header">
+          <div className="header-info">
+            <h1>Perfil do Aluno</h1>
+            <p>Visualize os dados presentes no perfil</p>
           </div>
+          <button className="btn-edit" onClick={() => { Navigate("/editarAluno") }} >Editar Aluno</button>
+        </header>
 
-          <h3 className="student-name">{studentData.nome}</h3>
-          <span className={`status-badge ${studentData.status.toLowerCase()}`}>
-            {studentData.status}
-          </span>
+        <main className="profile-grid">
+          {/* Coluna da Esquerda: Dados Pessoais */}
+          <aside className="sidebar-card">
+            <h2 className="card-title">Dados Pessoais</h2>
 
-          <div className="personal-details">
-            <p><strong>E-mail:</strong> {studentData.email}</p>
-            <p><strong>Telefone:</strong> {studentData.telefone}</p>
-            <p><strong>Nascimento:</strong> {studentData.nascimento}</p>
-          </div>
-        </aside>
-
-        {/* Coluna da Direita: Indicadores e Tabela */}
-        <section className="content-card">
-          <h2 className="card-title">Principais Indicadores</h2>
-
-          <div className="indicators-row">
-            <div className="indicator-box">
-              <span>Presença</span>
-              <strong>{studentData.indicadores.presenca}</strong>
+            <div className="avatar-container">
+              <div className="avatar-placeholder">
+                {primeiraLetra}
+              </div>
             </div>
 
-            <div className="indicator-box highlight">
-              <span>Faixa</span>
-              <strong>{studentData.indicadores.faixa}</strong>
-              
+            <h3 className="student-name">{alunoData.nome}</h3>
+            <span className={`status-badge ${studentData.status.toLowerCase()}`}>
+              {alunoData.status}
+            </span>
+
+            <div className="personal-details">
+              <p><strong>E-mail:</strong> {alunoData.email}</p>
+              <p><strong>Telefone:</strong> {alunoData.telefone}</p>
+              <p><strong>Nascimento:</strong> {alunoData.data_nascimento}</p>
+              <p><strong>Faixa:</strong> {studentData.indicadores.faixa}</p>
+              <p><strong>Grau:</strong> {studentData.indicadores.graus}</p>
+            </div>
+            <button className="btn-graduate">Graduar Aluno</button>
+          </aside>
+
+          {/* Coluna da Direita: Indicadores e Tabela */}
+          <section className="content-card">
+            <div className="history-header">
+              <h3>Histórico Recente</h3>
+
+              <div className="presence-total">
+                <span>Presenças:</span>
+                <strong>{studentData.indicadores.presenca}</strong>
+              </div>
             </div>
 
-            <div className="indicator-box">
-              <span>Graus</span>
-              <strong>{studentData.indicadores.graus}</strong>
-            </div>
-          </div>
-
-          <div className="history-section">
-            <h3>Histórico Recente</h3>
             <table className="history-table">
               <thead>
                 <tr>
@@ -91,23 +102,33 @@ const PerfilAluno = () => {
                   <th>Turma</th>
                 </tr>
               </thead>
+
               <tbody>
                 {studentData.historico.map((item, index) => (
                   <tr key={index}>
-                    <td data-label="Data" >{item.data}</td>
-                    <td data-label="Frequência" >
-                      <span className={`presence-dot ${item.frequencia.toLowerCase()}`}></span>
-                      {item.frequencia}
+                    <td data-label="Data">{item.data}</td>
+
+                    <td data-label="Frequência">
+                      <div className="presence-status">
+                        <span>{item.frequencia}</span>
+
+                        <button
+                          className={`presence-button ${item.frequencia === "Presente"
+                              ? "present"
+                              : "absent"
+                            }`}
+                        ></button>
+                      </div>
                     </td>
-                    <td data-label="Turma" >{item.turma}</td>
+
+                    <td data-label="Turma">{item.turma}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </section>
-      </main>
-    </div>
+          </section>
+        </main>
+      </div>
     </div>
   );
 };

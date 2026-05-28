@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProfessorDto } from './dtos/create-professor.dto.js';
 import { UpdateProfessorDto } from './dtos/update-professor.dto.js';
 import { ProfessorEntity } from './entities/professor.entity.js';
@@ -12,8 +17,11 @@ export class ProfessorService {
     const usuarioExiste = await this.repository.usuarioExiste(dto.usuarioId);
     if (!usuarioExiste) throw new BadRequestException('Usuário não encontrado');
 
-    const professorJaExiste = await this.repository.professorJaExiste(dto.usuarioId);
-    if (professorJaExiste) throw new ConflictException('Usuário já é professor');
+    const professorJaExiste = await this.repository.professorJaExiste(
+      dto.usuarioId,
+    );
+    if (professorJaExiste)
+      throw new ConflictException('Usuário já é professor');
 
     return this.repository.criar(dto);
   }
@@ -34,7 +42,10 @@ export class ProfessorService {
     return professor;
   }
 
-  async atualizar(id: string, dto: UpdateProfessorDto): Promise<ProfessorEntity> {
+  async atualizar(
+    id: string,
+    dto: UpdateProfessorDto,
+  ): Promise<ProfessorEntity> {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Professor não encontrado');
     const atualizado = await this.repository.atualizar(id, dto);

@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class UpdateAlunoDto {
   @ApiPropertyOptional({ example: 'Azul' })
@@ -18,4 +24,9 @@ export class UpdateAlunoDto {
   @Min(0)
   @IsOptional()
   frequencia_atual?: number;
+
+  @ApiPropertyOptional({ example: '2000-01-01' })
+  @IsDateString()
+  @IsOptional()
+  data_nascimento?: string;
 }

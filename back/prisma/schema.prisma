@@ -65,10 +65,12 @@ model Aluno {
   frequencia_atual Int              @default(0)
   grau_faixa       Int              @default(0)
   faixa            String           @default("BRANCA")
+  data_nascimento  DateTime?
   usuarioId        String           @unique
   usuario          Usuario          @relation(fields: [usuarioId], references: [id])
   frequencias      FrequenciaAluno[]
   alunoTurmas      AlunoTurma[]
+  notificacoes     Notificacao[]
 }
 
 model Professor {
@@ -80,6 +82,7 @@ model Professor {
   frequenciasAlunoRegistradas FrequenciaAluno[]
   professorTurmas            ProfessorTurma[]
   frequenciasProfessor       FrequenciaProf[]
+  notificacoes               Notificacao[]
 }
 
 model Turma {
@@ -158,5 +161,19 @@ model FrequenciaProf {
   @@index([professor_id])
   @@index([turma_id])
   @@map("frequencia_prof")
+}
+
+model Notificacao {
+  id           String    @id @default(uuid())
+  professor_id String
+  aluno_id     String
+  mensagem     String
+  lida         Boolean   @default(false)
+  created_at   DateTime  @default(now())
+  professor    Professor @relation(fields: [professor_id], references: [id])
+  aluno        Aluno     @relation(fields: [aluno_id], references: [id])
+
+  @@index([professor_id])
+  @@map("notificacao")
 }
 

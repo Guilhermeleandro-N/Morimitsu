@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AlunoEntity {
   @ApiProperty()
@@ -12,6 +12,9 @@ export class AlunoEntity {
 
   @ApiProperty()
   faixa!: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  data_nascimento!: Date | null;
 
   @ApiProperty()
   usuarioId!: string;
