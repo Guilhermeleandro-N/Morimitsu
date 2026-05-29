@@ -88,3 +88,37 @@
   border-radius: 8px;
   cursor: pointer;
 }
+
+.full-width {
+  grid-column: span 2;
+}
+
+.week-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.week-buttons button {
+  border: 1px solid #ccc;
+  background-color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.week-buttons button:hover {
+  border-color: #c41e1e;
+}
+
+.active-day {
+  background-color: #c41e1e !important;
+  color: white;
+  border-color: #c41e1e !important;
+}
+
+.message {
+  margin-top: 20px;
+  font-weight: 600;
+}
