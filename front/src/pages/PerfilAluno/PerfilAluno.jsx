@@ -54,7 +54,7 @@ const PerfilAluno = () => {
             <h1>Perfil do Aluno</h1>
             <p>Visualize os dados presentes no perfil</p>
           </div>
-          <button className="btn-edit" onClick={() => { Navigate("/editarAluno") }} >Editar Aluno</button>
+          <button className="btn-edit" onClick={() => { Navigate("/editarAluno", {state: alunoData }) }} >Editar Aluno</button>
         </header>
 
         <main className="profile-grid">

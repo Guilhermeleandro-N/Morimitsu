@@ -2,22 +2,56 @@ import React from 'react'
 import { criarUser } from '../../services/userService'
 import { listarAlunosCompleto } from '../../services/alunoService'
 import api from '../../api/axios'
+import { atualizarAluno } from '../../services/alunoService'
+
+/*
+    usuarioId,
+    nome,
+    email,
+    senha,
+    telefone,
+    data_nascimento,
+    faixa,
+    grau,
+    frequencia_atual
+*/
+
+const user = {
+  "id": "031a0800-972f-4ce3-b1fd-6a223cd3fb43",
+  "nome": "Taciana Leandro ",
+  "email": "taciana@morimitsu.com",
+  "telefone": "88996343100",
+  "status": "ENABLED",
+  "roles": [
+    "aluno"
+  ],
+  "frequencia_atual": 45,
+  "grau_faixa": 1,
+  "faixa": "branca",
+  "data_nascimento": "2004-10-14T00:00:00.000Z",
+  "usuarioId": "17e51c15-e275-4cf0-ad3c-56325dd379f6"
+}
+let senha = "Admin@123456"
+
 const Home = () => {
   async function teste() {
-    /*const usuarioCriado =  await  criarUser("Edward60", "Guilherme60@email.com", "Senha@123", "(11) 99999-99100")
-    const faixa = "Branca"
-    const grau = 1
-    const response = await api.post("aluno", {
-                usuarioId: usuarioCriado.data.id,
-                faixa: faixa,
-                grau_faixa: grau 
-                });
-                console.log(response)
-    /*console.log(`Status: ${usuarioCriado.status}`); 
-    console.log("Data:\n"); 
-    console.log(usuarioCriado.data)
-    console.log(usuarioCriado.data.id)*/
-    listarAlunoCompleto()
+    try{
+    const response = await atualizarAluno(
+      user.usuarioId,
+      "Taciana Lima",
+      user.email,
+      senha,
+      user.telefone,
+      user.data_nascimento,
+      user.faixa,
+      user.grau_faixa,
+      user.frequencia_atual
+    )
+    console.log(response)
+    }catch(error){
+      console.log(error)
+    }
+    
   }
   
 

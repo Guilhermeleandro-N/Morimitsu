@@ -120,3 +120,42 @@ export async function BuscaAlunoPorUserId(userId){
     console.log(error)
    }
 }
+
+
+export async function atualizarAluno(
+    usuarioId,
+    nome,
+    email,
+    senha,
+    telefone,
+    data_nascimento,
+    faixa,
+    grau,
+    frequencia_atual
+){
+    try {
+
+        const response = await api.patch(`user/aluno/${usuarioId}`, {
+            nome: nome,
+            email: email,
+            senha: senha,
+            telefone: telefone,
+            data_nascimento: data_nascimento,
+            faixa: faixa,
+            grau_faixa: grau,
+            frequencia_atual: frequencia_atual
+        });
+
+        console.log("Aluno atualizado com sucesso");
+        console.log(response);
+
+        return response;
+
+    } catch(error){
+
+        console.log("Erro ao atualizar aluno");
+        console.log(error);
+
+        return error;
+    }
+}
