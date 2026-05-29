@@ -42,3 +42,27 @@ export async function criarTurma(
         return error.response;
     }
 }
+
+
+
+export async function listarTurmas() {
+
+    try {
+
+        const response = await api.get("turma");
+
+        console.log("Turmas encontradas:");
+        console.log(response.data);
+
+        return response.data;
+
+    } catch (error) {
+
+        console.log("Erro ao buscar turmas");
+        console.log(error);
+
+        return [];
+
+    }
+
+}
