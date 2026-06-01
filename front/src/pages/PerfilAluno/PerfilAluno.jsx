@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { BuscarAlunoCompletoPorUserId } from '../../services/alunoService';
 
 const PerfilAluno = () => {
-  // Simulação de dados recebidos de uma API
+ 
   const Navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.id;

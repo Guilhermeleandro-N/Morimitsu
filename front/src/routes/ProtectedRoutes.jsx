@@ -1,12 +1,18 @@
 import { Navigate } from "react-router-dom";
-
-function ProtectedRoute({children}){
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
+function ProtectedRoute({children, rolesPermitidas}){
     const token = localStorage.getItem("accessToken");
-    
-    if (!token){
+    const {user} = useContext(AuthContext)
+    if (!user){
         return <Navigate to="/login"/>
     }
-    return children;
+
+    if (user.roles.some(papel => rolesPermitidas.includes(papel))){
+        return children;
+    }
+    console.log("Não permitido")
+    return <Navigate to="/"/>
 }
 
 export default ProtectedRoute;

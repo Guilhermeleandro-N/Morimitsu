@@ -1,7 +1,6 @@
 import api from "../api/axios"
 import { criarUser, buscarUser } from "./userService"
 
-
 export async function criarAluno(
     nome,
     email,
@@ -159,3 +158,4 @@ export async function atualizarAluno(
         return error;
     }
 }
+
