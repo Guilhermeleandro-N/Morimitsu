@@ -3,7 +3,7 @@ import "./PerfilAluno.css"
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { BuscarAlunoCompletoPorUserId } from '../../services/alunoService';
-
+import RoleGuard from '../../routes/RoleGuard';
 const PerfilAluno = () => {
  
   const Navigate = useNavigate();
@@ -54,7 +54,10 @@ const PerfilAluno = () => {
             <h1>Perfil do Aluno</h1>
             <p>Visualize os dados presentes no perfil</p>
           </div>
+          
+          <RoleGuard allowedRoutes={["admin", "professor"]}>
           <button className="btn-edit" onClick={() => { Navigate("/editarAluno", {state: alunoData }) }} >Editar Aluno</button>
+          </RoleGuard>
         </header>
 
         <main className="profile-grid">
@@ -80,7 +83,9 @@ const PerfilAluno = () => {
               <p><strong>Faixa:</strong> {faixa || "--"}</p>
               <p><strong>Grau:</strong> {grau || "--"}</p>
             </div>
+            <RoleGuard allowedRoutes={["admin", "professor"]} >
             <button className="btn-graduate">Graduar Aluno</button>
+            </RoleGuard>
           </aside>
 
           {/* Coluna da Direita: Indicadores e Tabela */}

@@ -4,6 +4,7 @@ import logo from "../../assets/morimitsu.png";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import RoleGuard from "../../routes/RoleGuard";
 function Sidebar({isOpen, setIsOpen}) {
 
     const {user} = useContext(AuthContext)
@@ -38,17 +39,21 @@ function Sidebar({isOpen, setIsOpen}) {
                   </div>
             <nav>
                 <ul>
+                    <RoleGuard allowedRoutes={["admin", "professor"]} >
                     <li onClick={()=> {navigate("cadastrarAluno")}}  >
                         Cadastrar Aluno
                     </li>
-                    
+                    </RoleGuard>
                     
                     <li onClick={()=> {navigate("Turmas")}}>
                         Turmas
                     </li>
+                    
+                    <RoleGuard allowedRoutes={["admin", "professor"]} >
                     <li onClick={()=> {navigate("listarAluno")}}>
                         Lista de Alunos
                     </li>
+                    </RoleGuard>
                 </ul>
             </nav>
             <button className="logout-btn"  onClick= {handleLogout} >Sair</button>

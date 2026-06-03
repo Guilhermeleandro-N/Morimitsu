@@ -6,6 +6,8 @@ import CriarTurmaModal from "./CriarTurmaModal";
 
 import { listarTurmas } from "../../services/turmaService";
 
+import RoleGuard from "../../routes/RoleGuard";
+
 function VisualizarTurmas() {
 
   const [turmas, setTurmas] = useState([]);
@@ -75,14 +77,14 @@ function VisualizarTurmas() {
           <p>Visualize todas as turmas cadastradas</p>
 
         </div>
-
+        <RoleGuard allowedRoutes={["admin", "professor"]} >
         <button
           className="btn-criar"
           onClick={() => setModalOpen(true)}
         >
           Criar Turma
         </button>
-
+        </RoleGuard>
       </div>
 
       <div className="turmas-grid">
