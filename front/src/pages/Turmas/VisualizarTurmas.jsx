@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import "./VisualizarTurmas.css";
 
@@ -9,10 +9,13 @@ import { listarTurmas } from "../../services/turmaService";
 import RoleGuard from "../../routes/RoleGuard";
 
 function VisualizarTurmas() {
+  const [menuAberto, setMenuAberto] = useState(null);
 
   const [turmas, setTurmas] = useState([]);
 
   const [modalOpen, setModalOpen] = useState(false);
+
+  const menuRef = useRef(null);
 
   useEffect(() => {
 
@@ -27,6 +30,29 @@ function VisualizarTurmas() {
     buscarTurmas();
 
   }, []);
+
+  useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(event.target)
+    ) {
+      setMenuAberto(null);
+    }
+  };
+
+  document.addEventListener(
+    "mousedown",
+    handleClickOutside
+  );
+
+  return () => {
+    document.removeEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+  };
+}, []);
 
   function formatarHorario(data) {
 
@@ -78,12 +104,12 @@ function VisualizarTurmas() {
 
         </div>
         <RoleGuard allowedRoutes={["admin", "professor"]} >
-        <button
-          className="btn-criar"
-          onClick={() => setModalOpen(true)}
-        >
-          Criar Turma
-        </button>
+          <button
+            className="btn-criar"
+            onClick={() => setModalOpen(true)}
+          >
+            Criar Turma
+          </button>
         </RoleGuard>
       </div>
 
@@ -132,9 +158,59 @@ function VisualizarTurmas() {
 
             <div className="turma-footer">
 
-              <button className="menu-btn">
-                ⋮
-              </button>
+              <div className="menu-container" ref={menuRef}>
+                <button
+                  className="menu-btn"
+                  onClick={() =>
+                    setMenuAberto(
+                      menuAberto === turma.id ? null : turma.id
+                    )
+                  }
+                >
+                  ⋮
+                </button>
+
+                {menuAberto === turma.id && (
+                  <div className="dropdown-menu">
+                    <button
+                      onClick={() => {
+                        console.log("Editar", turma.id);
+                        setMenuAberto(null);
+                      }}
+                    >
+                      Editar Turma
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        console.log("Mover", turma.id);
+                        setMenuAberto(null);
+                      }}
+                    >
+                      Mover
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        console.log("Ocultar", turma.id);
+                        setMenuAberto(null);
+                      }}
+                    >
+                      Ocultar
+                    </button>
+
+                    <button
+                      className="danger"
+                      onClick={() => {
+                        console.log("Excluir", turma.id);
+                        setMenuAberto(null);
+                      }}
+                    >
+                      Excluir Turma
+                    </button>
+                  </div>
+                )}
+              </div>
 
             </div>
 
