@@ -2,7 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 
 import "./VisualizarTurmas.css";
 
-import CriarTurmaModal from "./CriarTurmaModal";
+import CriarTurmaModal from "../../components/CriarTurma/CriarTurmaModal.jsx";
+
+import EditarTurmaModal from "../../components/EditarTurma/EditarTurmaModal";
 
 import { listarTurmas } from "../../services/turmaService";
 
@@ -15,7 +17,9 @@ function VisualizarTurmas() {
 
   const [modalOpen, setModalOpen] = useState(false);
 
-  const menuRef = useRef(null);
+  const [editarModalOpen, setEditarModalOpen] = useState(false);
+
+  const [turmaSelecionada, setTurmaSelecionada] = useState(null);
 
   useEffect(() => {
 
@@ -30,29 +34,6 @@ function VisualizarTurmas() {
     buscarTurmas();
 
   }, []);
-
-  useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      menuRef.current &&
-      !menuRef.current.contains(event.target)
-    ) {
-      setMenuAberto(null);
-    }
-  };
-
-  document.addEventListener(
-    "mousedown",
-    handleClickOutside
-  );
-
-  return () => {
-    document.removeEventListener(
-      "mousedown",
-      handleClickOutside
-    );
-  };
-}, []);
 
   function formatarHorario(data) {
 
@@ -158,7 +139,7 @@ function VisualizarTurmas() {
 
             <div className="turma-footer">
 
-              <div className="menu-container" ref={menuRef}>
+              <div className="menu-container">
                 <button
                   className="menu-btn"
                   onClick={() =>
@@ -174,7 +155,8 @@ function VisualizarTurmas() {
                   <div className="dropdown-menu">
                     <button
                       onClick={() => {
-                        console.log("Editar", turma.id);
+                        setTurmaSelecionada(turma);
+                        setEditarModalOpen(true);
                         setMenuAberto(null);
                       }}
                     >
@@ -224,6 +206,22 @@ function VisualizarTurmas() {
         <CriarTurmaModal
           onClose={() => setModalOpen(false)}
           onCreate={criarNovaTurma}
+        />
+      )}
+
+      {editarModalOpen && turmaSelecionada && (
+        <EditarTurmaModal
+          turma={turmaSelecionada}
+          onClose={() => {
+            setEditarModalOpen(false);
+            setTurmaSelecionada(null);
+          }}
+          onSave={(dados) => {
+            console.log("Turma editada:", dados);
+
+            setEditarModalOpen(false);
+            setTurmaSelecionada(null);
+          }}
         />
       )}
 
