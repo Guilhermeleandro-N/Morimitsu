@@ -6,6 +6,7 @@ import logo from "../../assets/morimitsu.png";
 import "./Header.css"
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+
 const Header = ({isOpen, setIsOpen}) => {
   let nome;
   const {user} = useContext(AuthContext)
@@ -13,6 +14,16 @@ const Header = ({isOpen, setIsOpen}) => {
      nome = "Saulo";
   }else{
      nome = user.nome;
+  }
+console.log(user)
+  const navigate = useNavigate()
+  const abrirPerfilAluno = (userId) => {
+    console.log(userId)
+    navigate("/perfilAluno", {
+      state: {
+          id: userId
+      }
+    })
   }
 
 
@@ -27,7 +38,7 @@ const Header = ({isOpen, setIsOpen}) => {
                 <GiHamburgerMenu size={24} />
         </button>
       
-      <div className='nome-logo'>
+      <div className='nome-logo' onClick={() => {abrirPerfilAluno(user.userId)}} >
         <img src={logo} alt="logo" />
         <div className="nome-logo-text">
           <span className="titulo">Morimitsu</span>

@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 const api = axios.create({
     baseURL: "http://localhost:3000/api/"
 });
@@ -42,7 +42,7 @@ api.interceptors.response.use(
             return api(originalRequest);
 
         }
-
+        
         return Promise.reject(error);
 
     }
