@@ -16,13 +16,15 @@ const Login = () => {
         e.preventDefault()
         try{
             const response = await login(email, senha);
-            if (response){
+            console.log("----------------")
+            console.log("----------------")
+            if (response.status >= 200 && response.status < 300) {
                 navigate("/");
             }else{
-                setMessage("Nome ou senha inválidos.")
+                setMessage(response.message)
             }
         }catch(error){
-            setMessage("Erro ao conectar com o servidor.")
+            setMessage(error.message || "Erro ao conectar com o servidor.")
         }     
     }
         

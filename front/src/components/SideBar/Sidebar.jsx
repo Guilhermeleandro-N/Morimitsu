@@ -54,6 +54,10 @@ function Sidebar({isOpen, setIsOpen}) {
                         Lista de Alunos
                     </li>
                     </RoleGuard>
+
+                    <li onClick={()=> {navigate("teste")}}  >
+                        teste
+                    </li>
                 </ul>
             </nav>
             <button className="logout-btn"  onClick= {handleLogout} >Sair</button>

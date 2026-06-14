@@ -66,3 +66,47 @@ export async function listarTurmas() {
     }
 
 }
+
+/*export async function AtualizarTurma(id, nome, 
+            horario_inicio, 
+            horario_fim, 
+            data_especifica, 
+            segunda, 
+            terca, 
+            quarta, 
+            quinta, 
+            sexta, 
+            sabado, 
+            domingo){
+    try{
+        const response = await  api.patch(`turma/${id}`,{
+            nome, 
+            horario_inicio, 
+            horario_fim, 
+            data_especifica, 
+            segunda, 
+            terca, 
+            quarta, 
+            quinta, 
+            sexta, 
+            sabado, 
+            domingo
+        })
+        console.log("Turma atualizada")
+    }catch(error){
+        console.log(error)
+        return error;
+    }
+}*/
+
+export async function AtualizarTurma(id, dados) {
+    try {
+        const response = await api.patch(`turma/${id}`, dados);
+
+        console.log("Turma atualizada");
+        return response.data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
