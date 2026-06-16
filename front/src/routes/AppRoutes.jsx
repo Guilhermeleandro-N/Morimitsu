@@ -1,5 +1,5 @@
 import React from "react";
-import {Routes, Route, Navigate} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/login/Login";
 import Home from "../pages/Home/Home";
@@ -9,28 +9,30 @@ import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
 import PerfilAluno from "../pages/PerfilAluno/PerfilAluno";
 import ProtectedRoute from "./ProtectedRoutes";
 import ListarAluno from "../pages/ListarAlunos/ListarALunos";
-export default function AppRoutes(){
+import AlunosTurma from "../pages/AlunosTurma/AlunosTurma";
+export default function AppRoutes() {
     return (
         <Routes>
             <Route path="/login" element={<Login />} />
             <Route element={
                 <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}  >
-                    <MainLayout/>
+                    <MainLayout />
                 </ProtectedRoute>
             }>
-                <Route path="/" element={<ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}  ><VisualizarTurmas/></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}  ><VisualizarTurmas /></ProtectedRoute>} />
 
-                <Route path="/cadastrarAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]}><CadastrarAluno/></ProtectedRoute>}></Route>
+                <Route path="/cadastrarAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]}><CadastrarAluno /></ProtectedRoute>}></Route>
 
-                <Route path="/editarAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><EditarAluno/></ProtectedRoute>}></Route>
+                <Route path="/editarAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><EditarAluno /></ProtectedRoute>}></Route>
                 <Route path="/turmas" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><VisualizarTurmas /></ProtectedRoute>} />
 
-                <Route path="/perfilAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]} ><PerfilAluno/></ProtectedRoute>} ></Route>
+                <Route path="/perfilAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]} ><PerfilAluno /></ProtectedRoute>} ></Route>
 
-                <Route path="/teste" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><Home/></ProtectedRoute>} ></Route>
+                <Route path="/teste" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><Home /></ProtectedRoute>} ></Route>
 
-                <Route path="/listarAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><ListarAluno/></ProtectedRoute>} ></Route>
-            </Route>
+                <Route path="/listarAluno" element={<ProtectedRoute rolesPermitidas={["admin", "professor"]} ><ListarAluno /></ProtectedRoute>} ></Route>
+
+                <Route path="/alunosTurma" element={<AlunosTurma />}/ ></Route>
         </Routes>
     )
 }

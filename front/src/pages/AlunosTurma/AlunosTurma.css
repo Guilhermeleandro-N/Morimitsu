@@ -1,0 +1,13 @@
+@import "../ListarAlunos/ListarAlunos.css";
+
+.listar-header h2 {
+    font-size: 28px;
+}
+
+.listar-header p {
+    font-size: 15px;
+}
+
+.tabela-alunos tbody tr:hover {
+    background-color: #fafafa;
+}

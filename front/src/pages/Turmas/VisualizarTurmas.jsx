@@ -10,6 +10,8 @@ import { listarTurmas } from "../../services/turmaService";
 
 import RoleGuard from "../../routes/RoleGuard";
 
+import { useNavigate } from "react-router-dom";
+
 function VisualizarTurmas() {
   const [menuAberto, setMenuAberto] = useState(null);
 
@@ -20,6 +22,8 @@ function VisualizarTurmas() {
   const [editarModalOpen, setEditarModalOpen] = useState(false);
 
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -101,6 +105,14 @@ function VisualizarTurmas() {
           <div
             className="turma-card"
             key={turma.id}
+            onClick={() =>
+              navigate("/alunosTurma", {
+                state: {
+                  turmaId: turma.id,
+                  turmaNome: turma.nome,
+                },
+              })
+            }
           >
 
             <div className="turma-banner">
@@ -142,17 +154,19 @@ function VisualizarTurmas() {
               <div className="menu-container">
                 <button
                   className="menu-btn"
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.stopPropagation();
+
                     setMenuAberto(
                       menuAberto === turma.id ? null : turma.id
-                    )
-                  }
+                    );
+                  }}
                 >
                   ⋮
                 </button>
 
                 {menuAberto === turma.id && (
-                  <div className="dropdown-menu">
+                  <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => {
                         setTurmaSelecionada(turma);
