@@ -15,8 +15,6 @@ import { useNavigate } from "react-router-dom";
 function VisualizarTurmas() {
   const [menuAberto, setMenuAberto] = useState(null);
 
-  const [turmas, setTurmas] = useState([]);
-
   const [modalOpen, setModalOpen] = useState(false);
 
   const [editarModalOpen, setEditarModalOpen] = useState(false);
@@ -24,33 +22,25 @@ function VisualizarTurmas() {
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
 
   const navigate = useNavigate();
+  const [turmas, setTurmas] = useState([]);
+
+  const buscarTurmas = async () => {
+  const response = await listarTurmas();
+  setTurmas(response);
+};
+
 
   useEffect(() => {
-
-    async function buscarTurmas() {
-
-      const response = await listarTurmas();
-
-      setTurmas(response);
-
-    }
-
     buscarTurmas();
-
   }, []);
 
-  function formatarHorario(data) {
-
-    if (!data) return "--:--";
-
-    const date = new Date(data);
-
-    return date.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  }
+function formatarHorario(data) {
+  return new Date(data).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+}
 
   function obterDiasSemana(turma) {
 
@@ -223,22 +213,23 @@ function VisualizarTurmas() {
         />
       )}
 
-      {editarModalOpen && turmaSelecionada && (
-        <EditarTurmaModal
-          turma={turmaSelecionada}
-          onClose={() => {
-            setEditarModalOpen(false);
-            setTurmaSelecionada(null);
-          }}
-          onSave={(dados) => {
-            console.log("Turma editada:", dados);
+    {editarModalOpen && turmaSelecionada && (
+      <EditarTurmaModal
+        turma={turmaSelecionada}
+        onClose={() => {
+          setEditarModalOpen(false);
+          setTurmaSelecionada(null);
+        }}
+        onSave={async (dados) => {
+          console.log("Turma editada:", dados);
 
-            setEditarModalOpen(false);
-            setTurmaSelecionada(null);
-          }}
-        />
-      )}
+          await buscarTurmas();
 
+          setEditarModalOpen(false);
+          setTurmaSelecionada(null);
+        }}
+      />
+    )}
     </div>
   );
 }

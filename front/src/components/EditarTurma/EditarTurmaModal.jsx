@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./EditarTurmaModal.css";
+import  {AtualizarTurma}  from "../../services/turmaService";
 
 function EditarTurmaModal({ turma, onClose, onSave }) {
     console.log("TURMA RECEBIDA:", turma);
@@ -54,9 +55,27 @@ function EditarTurmaModal({ turma, onClose, onSave }) {
         }));
     }
 
-    function handleSubmit() {
-        onSave(formData);
-    }
+    async function handleSubmit() {
+    const payload = {
+        nome: formData.nome,
+        horario_inicio: `2024-01-01T${formData.horario_inicio}:00.000Z`,
+        horario_fim: `2024-01-01T${formData.horario_fim}:00.000Z`,
+        data_especifica: formData.data_especifica
+            ? `${formData.data_especifica}T00:00:00.000Z`
+            : null,
+        segunda: formData.segunda,
+        terca: formData.terca,
+        quarta: formData.quarta,
+        quinta: formData.quinta,
+        sexta: formData.sexta,
+        sabado: formData.sabado,
+        domingo: formData.domingo,
+    };
+
+    await AtualizarTurma(formData.id, payload);
+
+    await onSave(formData);
+}
 
     return (
         <div className="modal-overlay">

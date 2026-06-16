@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "NestJS Debug",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "preLaunchTask": "start-nestjs-dev",
+      "postDebugTask": "terminate-nestjs",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ],
+      "sourceMaps": true,
+      "console": "integratedTerminal"
+    }
+  ]
+}
+
