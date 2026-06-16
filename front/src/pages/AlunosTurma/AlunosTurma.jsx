@@ -4,7 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   FaEye,
   FaTrash,
-  FaArchive
+  FaArchive,
+  FaUserPlus,
+  FaClipboardCheck
 } from "react-icons/fa";
 
 import "./AlunosTurma.css";
@@ -72,7 +74,41 @@ function AlunosTurma() {
 
   return (
     <div className="listar-container">
+      <div className="page-header">
 
+        <div>
+
+          <h1>Lista de Alunos</h1>
+
+          <p>
+            Gerenciar alunos da turma {turmaNome}
+          </p>
+
+        </div>
+
+        <div className="header-actions">
+
+          <button
+            className="header-btn"
+            onClick={() =>
+              console.log("Adicionar aluno")
+            }
+          >
+            <FaUserPlus />
+          </button>
+
+          <button
+            className="header-btn"
+            onClick={() =>
+              console.log("Realizar frequência")
+            }
+          >
+            <FaClipboardCheck />
+          </button>
+
+        </div>
+
+      </div>
       <div className="listar-card">
 
         <div className="listar-header">
