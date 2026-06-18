@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -85,6 +86,30 @@ export class FrequenciaController {
     @Param('turmaId') turmaId: string,
   ): Promise<FrequenciaEntity[]> {
     return this.service.listarPorTurma(turmaId);
+  }
+
+  @Get('minhas-turmas')
+  @UseGuards(PermissionsGuard)
+  @Permissions('attendance.read')
+  @ApiOperation({
+    summary: 'Histórico de presenças de todas as turmas do professor logado',
+  })
+  @ApiResponse({ status: 200, type: [FrequenciaEntity] })
+  async listarPorMinhasTurmas(
+    @CurrentUser() usuario: JwtPayload,
+    @Query('turma_id') turmaId?: string,
+    @Query('aluno_id') alunoId?: string,
+    @Query('data_inicio') dataInicio?: string,
+    @Query('data_fim') dataFim?: string,
+    @Query('frequente') frequente?: string,
+  ): Promise<FrequenciaEntity[]> {
+    return this.service.listarPorMinhasTurmas(usuario.sub, {
+      turma_id: turmaId,
+      aluno_id: alunoId,
+      data_inicio: dataInicio ? new Date(dataInicio) : undefined,
+      data_fim: dataFim ? new Date(dataFim) : undefined,
+      frequente,
+    });
   }
 
   // FrequenciaProf (Treinos)

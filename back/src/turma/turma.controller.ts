@@ -23,6 +23,7 @@ import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
+import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaService } from './turma.service';
@@ -94,6 +95,20 @@ export class TurmaController {
     @Body() dto: AddAlunoTurmaDto,
   ): Promise<void> {
     return this.service.adicionarAluno(id, dto);
+  }
+
+  @Patch(':id/aluno/:alunoId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(PermissionsGuard)
+  @Permissions('student.assign')
+  @ApiOperation({ summary: 'Atualizar status ativo/inativo do aluno na turma' })
+  @ApiResponse({ status: 204 })
+  async atualizarAlunoNaTurma(
+    @Param('id') id: string,
+    @Param('alunoId') alunoId: string,
+    @Body() dto: UpdateAlunoTurmaDto,
+  ): Promise<void> {
+    return this.service.atualizarAlunoNaTurma(id, alunoId, dto);
   }
 
   @Post(':id/professor')

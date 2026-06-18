@@ -52,7 +52,9 @@ export class ProfessorRepository {
           grau: dto.grau ?? 0,
           usuarioId: dto.usuarioId,
         },
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       await this.prisma.userPerfil.upsert({
         where: {
@@ -85,7 +87,9 @@ export class ProfessorRepository {
   async listar(): Promise<ProfessorEntity[]> {
     try {
       const professores = await this.prisma.professor.findMany({
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       return professores.map((p) => this.toEntity(p));
     } catch {
@@ -99,7 +103,9 @@ export class ProfessorRepository {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { id },
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       if (!professor) return null;
       return this.toEntity(professor);
@@ -114,7 +120,9 @@ export class ProfessorRepository {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId },
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       if (!professor) return null;
       return this.toEntity(professor);
@@ -136,7 +144,9 @@ export class ProfessorRepository {
       const professor = await this.prisma.professor.update({
         where: { id },
         data,
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       return this.toEntity(professor);
     } catch (e) {

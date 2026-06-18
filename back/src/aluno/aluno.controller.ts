@@ -22,6 +22,7 @@ import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { AlunoService } from './aluno.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
+import { GraduarAlunoDto } from './dtos/graduar-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
 
@@ -107,6 +108,21 @@ export class AlunoController {
     @Body() dto: UpdateAlunoDto,
   ): Promise<AlunoEntity> {
     return this.service.atualizar(id, dto);
+  }
+
+  @Patch(':id/graduar')
+  @UseGuards(PermissionsGuard)
+  @Permissions('student.rank.update')
+  @ApiOperation({
+    summary:
+      'Graduar aluno manualmente ou automaticamente pela frequência acumulada',
+  })
+  @ApiResponse({ status: 200, type: AlunoEntity })
+  async graduar(
+    @Param('id') id: string,
+    @Body() dto: GraduarAlunoDto,
+  ): Promise<AlunoEntity> {
+    return this.service.graduar(id, dto);
   }
 
   @Delete(':id')

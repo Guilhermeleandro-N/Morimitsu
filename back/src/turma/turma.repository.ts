@@ -11,6 +11,7 @@ import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
+import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
 import { TurmaEntity } from './entities/turma.entity';
 
@@ -96,12 +97,13 @@ export class TurmaRepository {
 
   async adicionarAluno(turmaId: string, dto: AddAlunoTurmaDto): Promise<void> {
     try {
+      const frequente = dto.frequente ?? 'S';
       await this.prisma.alunoTurma.upsert({
         where: {
           aluno_id_turma_id: { aluno_id: dto.aluno_id, turma_id: turmaId },
         },
-        update: {},
-        create: { aluno_id: dto.aluno_id, turma_id: turmaId },
+        update: { frequente },
+        create: { aluno_id: dto.aluno_id, turma_id: turmaId, frequente },
       });
     } catch (e) {
       if (
@@ -111,6 +113,30 @@ export class TurmaRepository {
         throw new NotFoundException('Aluno ou turma não encontrado');
       throw new InternalServerErrorException(
         'Erro ao adicionar aluno à turma no banco de dados',
+      );
+    }
+  }
+
+  async atualizarAlunoNaTurma(
+    turmaId: string,
+    alunoId: string,
+    dto: UpdateAlunoTurmaDto,
+  ): Promise<void> {
+    try {
+      await this.prisma.alunoTurma.update({
+        where: {
+          aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId },
+        },
+        data: { frequente: dto.frequente },
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Vínculo aluno-turma não encontrado');
+      throw new InternalServerErrorException(
+        'Erro ao atualizar vínculo aluno-turma no banco de dados',
       );
     }
   }
@@ -155,6 +181,7 @@ export class TurmaRepository {
         entity.grau_faixa = v.aluno.grau_faixa;
         entity.faixa = v.aluno.faixa;
         entity.usuarioId = v.aluno.usuarioId;
+        entity.frequente = v.frequente;
         return entity;
       });
     } catch {

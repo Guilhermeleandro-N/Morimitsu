@@ -56,7 +56,9 @@ export class AlunoRepository {
             : null,
           usuarioId: dto.usuarioId,
         },
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       await this.prisma.userPerfil.upsert({
         where: {
@@ -87,7 +89,9 @@ export class AlunoRepository {
   async listar(): Promise<AlunoEntity[]> {
     try {
       const alunos = await this.prisma.aluno.findMany({
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       return alunos.map((a) => this.toEntity(a));
     } catch {
@@ -115,13 +119,19 @@ export class AlunoRepository {
         },
         include: {
           aluno: {
-            include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+            include: {
+              usuario: { select: { nome: true, email: true, telefone: true } },
+            },
           },
         },
         distinct: ['aluno_id'],
       });
 
-      return vinculos.map((v) => this.toEntity(v.aluno));
+      return vinculos.map((v) => {
+        const entity = this.toEntity(v.aluno);
+        entity.frequente = v.frequente;
+        return entity;
+      });
     } catch (e) {
       if (e instanceof NotFoundException) throw e;
       throw new InternalServerErrorException(
@@ -182,7 +192,9 @@ export class AlunoRepository {
     try {
       const aluno = await this.prisma.aluno.findUnique({
         where: { id },
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       if (!aluno) return null;
       return this.toEntity(aluno);
@@ -197,7 +209,9 @@ export class AlunoRepository {
     try {
       const aluno = await this.prisma.aluno.findUnique({
         where: { usuarioId },
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       if (!aluno) return null;
       return this.toEntity(aluno);
@@ -226,7 +240,9 @@ export class AlunoRepository {
       const aluno = await this.prisma.aluno.update({
         where: { id },
         data,
-        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
       });
       return this.toEntity(aluno);
     } catch (e) {

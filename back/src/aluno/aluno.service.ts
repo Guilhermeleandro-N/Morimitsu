@@ -36,7 +36,8 @@ export class AlunoService {
   async listarDaTurmaDoProfessor(
     professorUsuarioId: string,
   ): Promise<AlunoEntity[]> {
-    const entities = await this.repository.listarPorProfessorUsuarioId(professorUsuarioId);
+    const entities =
+      await this.repository.listarPorProfessorUsuarioId(professorUsuarioId);
     return Promise.all(entities.map((e) => this.enriquecer(e)));
   }
 
@@ -87,6 +88,67 @@ export class AlunoService {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Aluno não encontrado');
     await this.repository.deletar(id);
+  }
+
+  async graduar(
+    id: string,
+    dto?: { faixa?: string; grau_faixa?: number },
+  ): Promise<AlunoEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Aluno não encontrado');
+
+    if (dto?.faixa !== undefined || dto?.grau_faixa !== undefined) {
+      // Manual override
+      const updateDto = new UpdateAlunoDto();
+      if (dto.faixa !== undefined) updateDto.faixa = dto.faixa;
+      if (dto.grau_faixa !== undefined) updateDto.grau_faixa = dto.grau_faixa;
+      const entity = await this.repository.atualizar(id, updateDto);
+      if (!entity) throw new NotFoundException('Aluno não encontrado');
+      return this.enriquecer(entity);
+    }
+
+    // Auto-calculate: cada 30 de frequencia_atual sobe 1 grau, 4 graus troca de faixa
+    const grauAtual = existente.grau_faixa;
+    const faixaAtual = existente.faixa;
+    const totalGraus = Math.floor(existente.frequencia_atual / 30);
+
+    const FAIXAS = [
+      'BRANCA',
+      'CINZA',
+      'AMARELA',
+      'LARANJA',
+      'VERDE',
+      'AZUL',
+      'ROXA',
+      'MARROM',
+      'PRETA',
+    ];
+
+    let indiceFaixa = FAIXAS.indexOf(faixaAtual);
+    if (indiceFaixa === -1) indiceFaixa = 0;
+
+    let grausRestantes = totalGraus + grauAtual;
+
+    while (grausRestantes >= 4 && indiceFaixa < FAIXAS.length - 1) {
+      grausRestantes -= 4;
+      indiceFaixa++;
+    }
+
+    const novaFaixa = FAIXAS[indiceFaixa];
+    const novoGrau = grausRestantes;
+
+    if (novaFaixa === faixaAtual && novoGrau === grauAtual) {
+      throw new BadRequestException(
+        'Aluno ainda não possui frequência suficiente para graduar',
+      );
+    }
+
+    const updateDto = new UpdateAlunoDto();
+    updateDto.faixa = novaFaixa;
+    updateDto.grau_faixa = novoGrau;
+    const entity = await this.repository.atualizar(id, updateDto);
+    if (!entity) throw new NotFoundException('Aluno não encontrado');
+    return this.enriquecer(entity);
   }
 
   private async enriquecer(entity: AlunoEntity): Promise<AlunoEntity> {

@@ -8,6 +8,7 @@ import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
+import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaRepository } from './turma.repository';
@@ -48,6 +49,16 @@ export class TurmaService {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
     await this.repository.adicionarAluno(turmaId, dto);
+  }
+
+  async atualizarAlunoNaTurma(
+    turmaId: string,
+    alunoId: string,
+    dto: UpdateAlunoTurmaDto,
+  ): Promise<void> {
+    const turma = await this.repository.buscarPorId(turmaId);
+    if (!turma) throw new NotFoundException('Turma não encontrada');
+    await this.repository.atualizarAlunoNaTurma(turmaId, alunoId, dto);
   }
 
   async adicionarProfessor(

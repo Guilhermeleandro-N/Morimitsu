@@ -63,6 +63,19 @@ export class FrequenciaService {
     return this.repository.listarPorTurma(turmaId);
   }
 
+  async listarPorMinhasTurmas(
+    professorUsuarioId: string,
+    filtros?: {
+      turma_id?: string;
+      aluno_id?: string;
+      data_inicio?: Date;
+      data_fim?: Date;
+      frequente?: string;
+    },
+  ): Promise<FrequenciaEntity[]> {
+    return this.repository.listarPorMinhasTurmas(professorUsuarioId, filtros);
+  }
+
   async registrarTreino(
     dto: CreateFrequenciaProfDto,
   ): Promise<FrequenciaProfEntity> {

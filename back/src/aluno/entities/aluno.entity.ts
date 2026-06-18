@@ -34,9 +34,17 @@ export class AlunoEntity {
   @ApiPropertyOptional({ type: [FrequenciaHistoricoItem] })
   historico_frequencias?: FrequenciaHistoricoItem[];
 
-  @ApiPropertyOptional({ type: [String], description: 'Roles do usuário (ex: aluno, professor)' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Roles do usuário (ex: aluno, professor)',
+  })
   roles?: string[];
 
   @ApiPropertyOptional({ type: [String], description: 'Permissões do usuário' })
   permissoes?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Status do vínculo na turma (S=ativo, N=inativo)',
+  })
+  frequente?: string;
 }
