@@ -23,9 +23,6 @@ export async function criarAluno(
             frequencia_atual: frequencia_atual
         });
 
-        console.log("Aluno criado com sucesso");
-        console.log(response);
-
         return response;
 
     } catch (error) {
@@ -85,7 +82,7 @@ export async function listarAlunosCompleto(){
             usuario: user
         };
     });
-    console.log(resultado)
+    
     return resultado
 
 }
@@ -93,9 +90,9 @@ export async function listarAlunosCompleto(){
 export async function BuscarAlunoCompletoPorUserId(userId){
     try{
         const userData = await buscarUser(userId);
-        console.log(userData)
+        
         const alunoData = await BuscaAlunoPorUserId(userId);
-        console.log(alunoData)
+        
         const alunoCompleto = {
             ...userData,
             ...alunoData
@@ -144,9 +141,6 @@ export async function atualizarAluno(
             grau_faixa: grau,
             frequencia_atual: frequencia_atual
         });
-
-        console.log("Aluno atualizado com sucesso");
-        console.log(response);
 
         return response;
 

@@ -4,13 +4,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { BuscarAlunoCompletoPorUserId } from '../../services/alunoService';
 import RoleGuard from '../../routes/RoleGuard';
+import GraduarAlunoModal from "../../components/GraduarAluno/GraduarAlunoModal.jsx";
+
 const PerfilAluno = () => {
- 
+
   const Navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.id;
   const [alunoData, setAlunoData] = useState(null)
   const [primeiraLetra, setPrimeiraLetra] = useState("")
+  const [modalGraduacaoOpen, setModalGraduacaoOpen] = useState(false);
 
   function formatarDataBR(data) {
     if (!data) return "--"
@@ -54,9 +57,9 @@ const PerfilAluno = () => {
             <h1>Perfil do Aluno</h1>
             <p>Visualize os dados presentes no perfil</p>
           </div>
-          
+
           <RoleGuard allowedRoutes={["admin", "professor"]}>
-          <button className="btn-edit" onClick={() => { Navigate("/editarAluno", {state: alunoData }) }} >Editar Aluno</button>
+            <button className="btn-edit" onClick={() => { Navigate("/editarAluno", { state: alunoData }) }} >Editar Aluno</button>
           </RoleGuard>
         </header>
 
@@ -84,7 +87,12 @@ const PerfilAluno = () => {
               <p><strong>Grau:</strong> {grau || "--"}</p>
             </div>
             <RoleGuard allowedRoutes={["admin", "professor"]} >
-            <button className="btn-graduate">Graduar Aluno</button>
+              <button
+                className="btn-graduate"
+                onClick={() => setModalGraduacaoOpen(true)}
+              >
+                Graduar Aluno
+              </button>
             </RoleGuard>
           </aside>
 
@@ -119,8 +127,8 @@ const PerfilAluno = () => {
 
                         <button
                           className={`presence-button ${item.frequencia === "Presente"
-                              ? "present"
-                              : "absent"
+                            ? "present"
+                            : "absent"
                             }`}
                         ></button>
                       </div>
@@ -134,6 +142,15 @@ const PerfilAluno = () => {
           </section>
         </main>
       </div>
+      {modalGraduacaoOpen && (
+        <GraduarAlunoModal
+          onClose={() => setModalGraduacaoOpen(false)}
+          onSave={(dados) => {
+            console.log("Graduar aluno:", dados);
+            setModalGraduacaoOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

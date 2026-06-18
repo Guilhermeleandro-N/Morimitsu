@@ -2,70 +2,45 @@ import React, { useEffect, useState, useRef } from "react";
 
 import "./VisualizarTurmas.css";
 
-import CriarTurmaModal from "./CriarTurmaModal";
+import CriarTurmaModal from "../../components/CriarTurma/CriarTurmaModal.jsx";
+
+import EditarTurmaModal from "../../components/EditarTurma/EditarTurmaModal";
 
 import { listarTurmas } from "../../services/turmaService";
 
 import RoleGuard from "../../routes/RoleGuard";
 
+import { useNavigate } from "react-router-dom";
+
 function VisualizarTurmas() {
   const [menuAberto, setMenuAberto] = useState(null);
 
-  const [turmas, setTurmas] = useState([]);
-
   const [modalOpen, setModalOpen] = useState(false);
 
-  const menuRef = useRef(null);
+  const [editarModalOpen, setEditarModalOpen] = useState(false);
+
+  const [turmaSelecionada, setTurmaSelecionada] = useState(null);
+
+  const navigate = useNavigate();
+  const [turmas, setTurmas] = useState([]);
+
+  const buscarTurmas = async () => {
+  const response = await listarTurmas();
+  setTurmas(response);
+};
+
 
   useEffect(() => {
-
-    async function buscarTurmas() {
-
-      const response = await listarTurmas();
-
-      setTurmas(response);
-
-    }
-
     buscarTurmas();
-
   }, []);
 
-  useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      menuRef.current &&
-      !menuRef.current.contains(event.target)
-    ) {
-      setMenuAberto(null);
-    }
-  };
-
-  document.addEventListener(
-    "mousedown",
-    handleClickOutside
-  );
-
-  return () => {
-    document.removeEventListener(
-      "mousedown",
-      handleClickOutside
-    );
-  };
-}, []);
-
-  function formatarHorario(data) {
-
-    if (!data) return "--:--";
-
-    const date = new Date(data);
-
-    return date.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  }
+function formatarHorario(data) {
+  return new Date(data).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+}
 
   function obterDiasSemana(turma) {
 
@@ -120,6 +95,14 @@ function VisualizarTurmas() {
           <div
             className="turma-card"
             key={turma.id}
+            onClick={() =>
+              navigate("/alunosTurma", {
+                state: {
+                  turmaId: turma.id,
+                  turmaNome: turma.nome,
+                },
+              })
+            }
           >
 
             <div className="turma-banner">
@@ -158,23 +141,26 @@ function VisualizarTurmas() {
 
             <div className="turma-footer">
 
-              <div className="menu-container" ref={menuRef}>
+              <div className="menu-container">
                 <button
                   className="menu-btn"
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.stopPropagation();
+
                     setMenuAberto(
                       menuAberto === turma.id ? null : turma.id
-                    )
-                  }
+                    );
+                  }}
                 >
                   ⋮
                 </button>
 
                 {menuAberto === turma.id && (
-                  <div className="dropdown-menu">
+                  <div className="dropdown-menu" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => {
-                        console.log("Editar", turma.id);
+                        setTurmaSelecionada(turma);
+                        setEditarModalOpen(true);
                         setMenuAberto(null);
                       }}
                     >
@@ -227,6 +213,23 @@ function VisualizarTurmas() {
         />
       )}
 
+    {editarModalOpen && turmaSelecionada && (
+      <EditarTurmaModal
+        turma={turmaSelecionada}
+        onClose={() => {
+          setEditarModalOpen(false);
+          setTurmaSelecionada(null);
+        }}
+        onSave={async (dados) => {
+          console.log("Turma editada:", dados);
+
+          await buscarTurmas();
+
+          setEditarModalOpen(false);
+          setTurmaSelecionada(null);
+        }}
+      />
+    )}
     </div>
   );
 }
