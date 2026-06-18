@@ -110,3 +110,31 @@ export async function AtualizarTurma(id, dados) {
         throw error;
     }
 }
+
+
+
+export const listarAlunosDaTurma = async (id) => {
+    try {
+        const response = await api.get(`/turma/${id}/alunos`);
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao listar alunos da turma:", error);
+        throw error;
+    }
+};
+
+
+
+export const adicionarAlunoNaTurma = async (id, aluno_id, frequente = "S") => {
+    try {
+        const response = await api.post(`/turma/${id}/aluno`, {
+            aluno_id,
+            frequente
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao adicionar aluno à turma:", error);
+        throw error;
+    }
+};

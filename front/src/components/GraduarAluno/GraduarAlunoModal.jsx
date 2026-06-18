@@ -8,7 +8,7 @@ const GraduarAlunoModal = ({ onClose, onSave }) => {
   const handleSubmit = () => {
     onSave({
       faixa,
-      grau
+      grau_faixa: Number(grau)
     });
   };
 

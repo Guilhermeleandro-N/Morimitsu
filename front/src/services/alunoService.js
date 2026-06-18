@@ -102,7 +102,6 @@ export async function BuscarAlunoCompletoPorUserId(userId){
     }catch(error){
         return error;
     }
-
 }
 
 export async function BuscaAlunoPorUserId(userId){
@@ -153,3 +152,23 @@ export async function atualizarAluno(
     }
 }
 
+export const graduarAluno = async (
+  alunoId,
+  faixa,
+  grau_faixa
+) => {
+  try {
+    const response = await api.patch(
+      `/aluno/${alunoId}/graduar`,
+      {
+        faixa,
+        grau_faixa
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao graduar aluno:", error);
+    throw error;
+  }
+};

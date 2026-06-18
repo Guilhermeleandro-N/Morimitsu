@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { listarAlunosDaTurma } from "../../services/turmaService";
+import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 
 import {
   FaEye,
@@ -32,14 +34,31 @@ function AlunosTurma() {
   useEffect(() => {
 
     async function carregarAlunos() {
+      try {
 
-      /*
-      const response =
-        await listarAlunosPorTurma(turmaId);
+        const alunosTurma = await listarAlunosDaTurma(turmaId);
 
-      setAlunos(response);
-      */
+        const alunosCompletos = await Promise.all(
+          alunosTurma.map(async (aluno) => {
+            const alunoCompleto =
+              await BuscarAlunoCompletoPorUserId(
+                aluno.usuarioId
+              );
 
+            return {
+              ...aluno,
+              ...alunoCompleto
+            };
+          })
+        );
+
+        console.log("Alunos completos:", alunosCompletos);
+
+        setAlunos(alunosCompletos);
+
+      } catch (error) {
+        console.error("Erro ao carregar alunos:", error);
+      }
     }
 
     if (turmaId) {
@@ -74,6 +93,7 @@ function AlunosTurma() {
 
   return (
     <div className="listar-container">
+
       <div className="page-header">
 
         <div>
@@ -109,6 +129,7 @@ function AlunosTurma() {
         </div>
 
       </div>
+
       <div className="listar-card">
 
         <div className="listar-header">
@@ -128,7 +149,6 @@ function AlunosTurma() {
           <table className="tabela-alunos">
 
             <thead>
-
               <tr>
                 <th>Nome</th>
                 <th>Faixa</th>
@@ -139,7 +159,6 @@ function AlunosTurma() {
                 <th>Excluir</th>
                 <th>Ações</th>
               </tr>
-
             </thead>
 
             <tbody>
@@ -149,11 +168,13 @@ function AlunosTurma() {
                 <tr key={aluno.id}>
 
                   <td className="nome-aluno">
-                    {aluno.usuario.nome}
+                    {aluno.nome}
                   </td>
 
                   <td>
-                    <span className={getFaixaClass(aluno.faixa)}>
+                    <span
+                      className={getFaixaClass(aluno.faixa)}
+                    >
                       {aluno.faixa}
                     </span>
                   </td>
@@ -170,12 +191,12 @@ function AlunosTurma() {
 
                     <span
                       className={
-                        aluno.usuario.status === "ENABLED"
+                        aluno.frequente === "S"
                           ? "status ativo"
                           : "status inativo"
                       }
                     >
-                      {aluno.usuario.status === "ENABLED"
+                      {aluno.frequente === "S"
                         ? "Ativo"
                         : "Inativo"}
                     </span>
@@ -203,7 +224,7 @@ function AlunosTurma() {
                     <button
                       className="perfil-btn"
                       onClick={() =>
-                        abrirPerfil(aluno.usuario.id)
+                        abrirPerfil(aluno.usuarioId)
                       }
                     >
                       <FaEye />
@@ -215,6 +236,20 @@ function AlunosTurma() {
                 </tr>
 
               ))}
+
+              {alunos.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="8"
+                    style={{
+                      textAlign: "center",
+                      padding: "20px"
+                    }}
+                  >
+                    Nenhum aluno encontrado.
+                  </td>
+                </tr>
+              )}
 
             </tbody>
 
