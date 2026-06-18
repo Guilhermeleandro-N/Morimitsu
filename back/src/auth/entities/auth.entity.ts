@@ -6,6 +6,7 @@ export class AuthEntity {
   telefone!: string | null;
   status!: string;
   roles!: string[];
+  permissoes!: string[];
 
   isEnabled(): boolean {
     return this.status === 'ENABLED';

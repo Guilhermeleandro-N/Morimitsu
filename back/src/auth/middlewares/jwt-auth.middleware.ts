@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
-import { TokenBlacklistService } from '../token-blacklist.service.js';
+import { TokenBlacklistService } from '../token-blacklist.service';
 
 @Injectable()
 export class JwtAuthMiddleware implements NestMiddleware {

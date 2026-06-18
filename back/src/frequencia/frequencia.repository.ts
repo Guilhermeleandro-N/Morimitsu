@@ -5,13 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto.js';
-import { CreateFrequenciaDto } from './dtos/create-frequencia.dto.js';
-import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto.js';
-import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto.js';
-import { FrequenciaProfEntity } from './entities/frequencia-prof.entity.js';
-import { FrequenciaEntity } from './entities/frequencia.entity.js';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto';
+import { CreateFrequenciaDto } from './dtos/create-frequencia.dto';
+import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
+import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
+import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
+import { FrequenciaEntity } from './entities/frequencia.entity';
 
 export interface GraduacaoResultado {
   novoGrau: number;
@@ -76,7 +76,12 @@ export class FrequenciaRepository {
 
       await this.prisma.aluno.update({
         where: { id: dto.aluno_id },
-        data: { grau_faixa: novoGrau, faixa: novaFaixa },
+        data: {
+          grau_faixa: novoGrau,
+          faixa: novaFaixa,
+          // Reseta o ciclo ao graduar para nova faixa
+          ...(novoGrau === 0 && { frequencia_atual: 0 }),
+        },
       });
 
       // Notificar todos os professores da turma

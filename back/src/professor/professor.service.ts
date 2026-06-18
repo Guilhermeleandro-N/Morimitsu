@@ -4,14 +4,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateProfessorDto } from './dtos/create-professor.dto.js';
-import { UpdateProfessorDto } from './dtos/update-professor.dto.js';
-import { ProfessorEntity } from './entities/professor.entity.js';
-import { ProfessorRepository } from './professor.repository.js';
+import { AuthorizationService } from '../authorization/authorization.service';
+import { CreateProfessorDto } from './dtos/create-professor.dto';
+import { UpdateProfessorDto } from './dtos/update-professor.dto';
+import { ProfessorEntity } from './entities/professor.entity';
+import { ProfessorRepository } from './professor.repository';
 
 @Injectable()
 export class ProfessorService {
-  constructor(private readonly repository: ProfessorRepository) {}
+  constructor(
+    private readonly repository: ProfessorRepository,
+    private readonly authorizationService: AuthorizationService,
+  ) {}
 
   async criar(dto: CreateProfessorDto): Promise<ProfessorEntity> {
     const usuarioExiste = await this.repository.usuarioExiste(dto.usuarioId);
@@ -23,23 +27,25 @@ export class ProfessorService {
     if (professorJaExiste)
       throw new ConflictException('Usuário já é professor');
 
-    return this.repository.criar(dto);
+    const entity = await this.repository.criar(dto);
+    return this.enriquecer(entity);
   }
 
   async listar(): Promise<ProfessorEntity[]> {
-    return this.repository.listar();
+    const entities = await this.repository.listar();
+    return Promise.all(entities.map((e) => this.enriquecer(e)));
   }
 
   async buscarPorId(id: string): Promise<ProfessorEntity> {
-    const professor = await this.repository.buscarPorId(id);
-    if (!professor) throw new NotFoundException('Professor não encontrado');
-    return professor;
+    const entity = await this.repository.buscarPorId(id);
+    if (!entity) throw new NotFoundException('Professor não encontrado');
+    return this.enriquecer(entity);
   }
 
   async buscarPorUsuarioId(usuarioId: string): Promise<ProfessorEntity> {
-    const professor = await this.repository.buscarPorUsuarioId(usuarioId);
-    if (!professor) throw new NotFoundException('Professor não encontrado');
-    return professor;
+    const entity = await this.repository.buscarPorUsuarioId(usuarioId);
+    if (!entity) throw new NotFoundException('Professor não encontrado');
+    return this.enriquecer(entity);
   }
 
   async atualizar(
@@ -48,14 +54,22 @@ export class ProfessorService {
   ): Promise<ProfessorEntity> {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Professor não encontrado');
-    const atualizado = await this.repository.atualizar(id, dto);
-    if (!atualizado) throw new NotFoundException('Professor não encontrado');
-    return atualizado;
+    const entity = await this.repository.atualizar(id, dto);
+    if (!entity) throw new NotFoundException('Professor não encontrado');
+    return this.enriquecer(entity);
   }
 
   async deletar(id: string): Promise<void> {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Professor não encontrado');
     await this.repository.deletar(id);
+  }
+
+  private async enriquecer(entity: ProfessorEntity): Promise<ProfessorEntity> {
+    entity.roles = ['professor'];
+    entity.permissoes = await this.authorizationService.getUserPermissions(
+      entity.usuarioId,
+    );
+    return entity;
   }
 }

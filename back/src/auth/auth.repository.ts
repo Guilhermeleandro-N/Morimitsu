@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { AuthEntity } from './entities/auth.entity.js';
+import { PrismaService } from '../prisma/prisma.service';
+import { AuthEntity } from './entities/auth.entity';
 
 @Injectable()
 export class AuthRepository {
@@ -10,7 +10,19 @@ export class AuthRepository {
   async buscarPorEmail(email: string): Promise<AuthEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { email },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: {
+          include: {
+            perfil: {
+              include: {
+                perfilPermissions: { include: { permission: true } },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!usuario) return null;
@@ -20,7 +32,19 @@ export class AuthRepository {
   async buscarPorId(id: string): Promise<AuthEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: {
+          include: {
+            perfil: {
+              include: {
+                perfilPermissions: { include: { permission: true } },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!usuario) return null;
@@ -30,7 +54,19 @@ export class AuthRepository {
   async login(email: string, senha: string): Promise<AuthEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { email },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: {
+          include: {
+            perfil: {
+              include: {
+                perfilPermissions: { include: { permission: true } },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!usuario) return null;
@@ -50,12 +86,24 @@ export class AuthRepository {
     status: string;
     aluno: { id: string } | null;
     professor: { id: string } | null;
+    userPerfis: {
+      perfil: {
+        perfilPermissions: { permission: { codigo: string } }[];
+      };
+    }[];
   }): AuthEntity {
     const roles: string[] = [];
 
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
     if (roles.length === 0) roles.push('admin');
+
+    const permissoes = new Set<string>();
+    for (const up of usuario.userPerfis) {
+      for (const pp of up.perfil.perfilPermissions) {
+        permissoes.add(pp.permission.codigo);
+      }
+    }
 
     const auth = new AuthEntity();
     auth.id = usuario.id;
@@ -65,6 +113,7 @@ export class AuthRepository {
     auth.telefone = usuario.telefone;
     auth.status = usuario.status;
     auth.roles = roles;
+    auth.permissoes = Array.from(permissoes);
 
     return auth;
   }

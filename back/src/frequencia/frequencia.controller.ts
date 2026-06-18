@@ -15,17 +15,17 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-import type { JwtPayload } from '../auth/decorators/current-user.decorator.js';
-import { Permissions } from '../authorization/decorators/permissions.decorator.js';
-import { PermissionsGuard } from '../authorization/guards/permissions.guard.js';
-import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto.js';
-import { CreateFrequenciaDto } from './dtos/create-frequencia.dto.js';
-import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto.js';
-import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto.js';
-import { FrequenciaProfEntity } from './entities/frequencia-prof.entity.js';
-import { FrequenciaEntity } from './entities/frequencia.entity.js';
-import { FrequenciaService } from './frequencia.service.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/decorators/current-user.decorator';
+import { Permissions } from '../authorization/decorators/permissions.decorator';
+import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto';
+import { CreateFrequenciaDto } from './dtos/create-frequencia.dto';
+import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
+import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
+import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
+import { FrequenciaEntity } from './entities/frequencia.entity';
+import { FrequenciaService } from './frequencia.service';
 
 @ApiTags('Frequência')
 @ApiBearerAuth()

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserEntity {
   @ApiProperty()
@@ -18,4 +18,7 @@ export class UserEntity {
 
   @ApiProperty({ type: [String] })
   roles!: string[];
+
+  @ApiPropertyOptional({ type: [String], description: 'Permissões do usuário' })
+  permissoes?: string[];
 }

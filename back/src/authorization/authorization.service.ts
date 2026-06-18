@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthorizationRepository } from './authorization.repository.js';
+import { AuthorizationRepository } from './authorization.repository';
 
 @Injectable()
 export class AuthorizationService {

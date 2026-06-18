@@ -39,6 +39,7 @@ const ALUNO_PERMISSIONS = [
   { codigo: 'profile.read', descricao: 'Visualizar próprio perfil' },
   { codigo: 'attendance.read', descricao: 'Visualizar presença' },
   { codigo: 'training.read', descricao: 'Visualizar treino' },
+  // criar permissao de visualizar seus proprios dados de presenca e treino, sem acessar os dados dos outros alunos
 ];
 
 const ADMIN_ONLY_PERMISSIONS = [
@@ -55,7 +56,10 @@ const SCREEN_PROFESSOR_PERMISSIONS = [
   { codigo: 'screen.aluno.perfil', descricao: 'Tela de perfil do aluno' },
   { codigo: 'screen.turma.criar', descricao: 'Tela de criação de turma' },
   { codigo: 'screen.turma.listar', descricao: 'Tela de listagem de turmas' },
-  { codigo: 'screen.presenca', descricao: 'Tela de gerenciamento de presenças' },
+  {
+    codigo: 'screen.presenca',
+    descricao: 'Tela de gerenciamento de presenças',
+  },
   {
     codigo: 'screen.presenca.visualizar',
     descricao: 'Tela de visualização de presenças',
@@ -128,7 +132,10 @@ async function main() {
     });
   }
 
-  for (const perm of [...PROFESSOR_PERMISSIONS, ...SCREEN_PROFESSOR_PERMISSIONS]) {
+  for (const perm of [
+    ...PROFESSOR_PERMISSIONS,
+    ...SCREEN_PROFESSOR_PERMISSIONS,
+  ]) {
     const permissionId = permMap.get(perm.codigo);
     if (!permissionId) continue;
     await prisma.perfilPermission.upsert({

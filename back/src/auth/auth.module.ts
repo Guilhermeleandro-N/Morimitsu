@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { StringValue } from 'ms';
-import { AuthController } from './auth.controller.js';
-import { AuthRepository } from './auth.repository.js';
-import { AuthService } from './auth.service.js';
-import { TokenBlacklistService } from './token-blacklist.service.js';
+import { AuthController } from './auth.controller';
+import { AuthRepository } from './auth.repository';
+import { AuthService } from './auth.service';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Module({
   imports: [

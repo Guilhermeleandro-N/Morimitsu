@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { NotificacaoEntity } from './entities/notificacao.entity.js';
+import { PrismaService } from '../prisma/prisma.service';
+import { NotificacaoEntity } from './entities/notificacao.entity';
 
 @Injectable()
 export class NotificacaoRepository {

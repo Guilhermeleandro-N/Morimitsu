@@ -3,14 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AlunoEntity } from '../aluno/entities/aluno.entity.js';
-import { ProfessorEntity } from '../professor/entities/professor.entity.js';
-import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto.js';
-import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto.js';
-import { CreateTurmaDto } from './dtos/create-turma.dto.js';
-import { UpdateTurmaDto } from './dtos/update-turma.dto.js';
-import { TurmaEntity } from './entities/turma.entity.js';
-import { TurmaRepository } from './turma.repository.js';
+import { AlunoEntity } from '../aluno/entities/aluno.entity';
+import { ProfessorEntity } from '../professor/entities/professor.entity';
+import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
+import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
+import { CreateTurmaDto } from './dtos/create-turma.dto';
+import { UpdateTurmaDto } from './dtos/update-turma.dto';
+import { TurmaEntity } from './entities/turma.entity';
+import { TurmaRepository } from './turma.repository';
 
 @Injectable()
 export class TurmaService {

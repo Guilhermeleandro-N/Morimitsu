@@ -13,13 +13,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-import type { JwtPayload } from '../auth/decorators/current-user.decorator.js';
-import { Permissions } from '../authorization/decorators/permissions.decorator.js';
-import { PermissionsGuard } from '../authorization/guards/permissions.guard.js';
-import { NotificacaoCountEntity } from './entities/notificacao-count.entity.js';
-import { NotificacaoEntity } from './entities/notificacao.entity.js';
-import { NotificacaoService } from './notificacao.service.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/decorators/current-user.decorator';
+import { Permissions } from '../authorization/decorators/permissions.decorator';
+import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { NotificacaoCountEntity } from './entities/notificacao-count.entity';
+import { NotificacaoEntity } from './entities/notificacao.entity';
+import { NotificacaoService } from './notificacao.service';
 
 @ApiTags('Notificação')
 @ApiBearerAuth()

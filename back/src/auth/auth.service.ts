@@ -2,12 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
-import { AuthRepository } from './auth.repository.js';
-import { LoginRequestDto } from './dtos/login-request.dto.js';
-import { LoginResponseDto } from './dtos/login-response.dto.js';
-import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto.js';
-import { AuthEntity } from './entities/auth.entity.js';
-import { TokenBlacklistService } from './token-blacklist.service.js';
+import { AuthRepository } from './auth.repository';
+import { LoginRequestDto } from './dtos/login-request.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto';
+import { AuthEntity } from './entities/auth.entity';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()
 export class AuthService {
@@ -100,6 +100,7 @@ export class AuthService {
       nome: auth.nome,
       email: auth.email,
       roles: auth.roles,
+      permissoes: auth.permissoes,
       token,
       refreshToken,
     };

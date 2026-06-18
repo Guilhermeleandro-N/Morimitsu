@@ -12,11 +12,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service.js';
-import { LoginRequestDto } from './dtos/login-request.dto.js';
-import { LoginResponseDto } from './dtos/login-response.dto.js';
-import { LogoutRequestDto } from './dtos/logout-request.dto.js';
-import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto.js';
+import { AuthService } from './auth.service';
+import { LoginRequestDto } from './dtos/login-request.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
+import { LogoutRequestDto } from './dtos/logout-request.dto';
+import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto';
 
 @ApiTags('Auth')
 @Controller('auth')

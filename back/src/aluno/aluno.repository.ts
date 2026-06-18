@@ -5,10 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateAlunoDto } from './dtos/create-aluno.dto.js';
-import { UpdateAlunoDto } from './dtos/update-aluno.dto.js';
-import { AlunoEntity } from './entities/aluno.entity.js';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAlunoDto } from './dtos/create-aluno.dto';
+import { UpdateAlunoDto } from './dtos/update-aluno.dto';
+import { AlunoEntity } from './entities/aluno.entity';
 
 const PERFIL_ALUNO_ID = 'perfil-aluno';
 
@@ -56,6 +56,7 @@ export class AlunoRepository {
             : null,
           usuarioId: dto.usuarioId,
         },
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
       });
       await this.prisma.userPerfil.upsert({
         where: {
@@ -85,7 +86,9 @@ export class AlunoRepository {
 
   async listar(): Promise<AlunoEntity[]> {
     try {
-      const alunos = await this.prisma.aluno.findMany();
+      const alunos = await this.prisma.aluno.findMany({
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+      });
       return alunos.map((a) => this.toEntity(a));
     } catch {
       throw new InternalServerErrorException(
@@ -112,14 +115,7 @@ export class AlunoRepository {
         },
         include: {
           aluno: {
-            select: {
-              id: true,
-              frequencia_atual: true,
-              grau_faixa: true,
-              faixa: true,
-              data_nascimento: true,
-              usuarioId: true,
-            },
+            include: { usuario: { select: { nome: true, email: true, telefone: true } } },
           },
         },
         distinct: ['aluno_id'],
@@ -134,9 +130,60 @@ export class AlunoRepository {
     }
   }
 
+  async buscarPerfilCompleto(usuarioId: string): Promise<{
+    id: string;
+    usuarioId: string;
+    nome: string;
+    email: string;
+    telefone: string | null;
+    data_nascimento: Date | null;
+    faixa: string;
+    grau_faixa: number;
+    frequencia_atual: number;
+    historico: { data: Date; status_presenca: string; turma_nome: string }[];
+  } | null> {
+    try {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { usuarioId },
+        include: {
+          usuario: { select: { nome: true, email: true, telefone: true } },
+          frequencias: {
+            orderBy: { data: 'desc' },
+            include: { turma: { select: { nome: true } } },
+          },
+        },
+      });
+      if (!aluno) return null;
+
+      return {
+        id: aluno.id,
+        usuarioId: aluno.usuarioId,
+        nome: aluno.usuario.nome,
+        email: aluno.usuario.email,
+        telefone: aluno.usuario.telefone,
+        data_nascimento: aluno.data_nascimento,
+        faixa: aluno.faixa,
+        grau_faixa: aluno.grau_faixa,
+        frequencia_atual: aluno.frequencia_atual,
+        historico: aluno.frequencias.map((f) => ({
+          data: f.data,
+          status_presenca: f.status_presenca,
+          turma_nome: f.turma.nome,
+        })),
+      };
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar perfil do aluno no banco de dados',
+      );
+    }
+  }
+
   async buscarPorId(id: string): Promise<AlunoEntity | null> {
     try {
-      const aluno = await this.prisma.aluno.findUnique({ where: { id } });
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { id },
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+      });
       if (!aluno) return null;
       return this.toEntity(aluno);
     } catch {
@@ -150,6 +197,7 @@ export class AlunoRepository {
     try {
       const aluno = await this.prisma.aluno.findUnique({
         where: { usuarioId },
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
       });
       if (!aluno) return null;
       return this.toEntity(aluno);
@@ -175,7 +223,11 @@ export class AlunoRepository {
           ? new Date(dto.data_nascimento)
           : null;
 
-      const aluno = await this.prisma.aluno.update({ where: { id }, data });
+      const aluno = await this.prisma.aluno.update({
+        where: { id },
+        data,
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+      });
       return this.toEntity(aluno);
     } catch (e) {
       if (
@@ -211,6 +263,7 @@ export class AlunoRepository {
     faixa: string;
     data_nascimento: Date | null;
     usuarioId: string;
+    usuario?: { nome: string; email: string; telefone: string | null };
   }): AlunoEntity {
     const entity = new AlunoEntity();
     entity.id = aluno.id;
@@ -219,6 +272,11 @@ export class AlunoRepository {
     entity.faixa = aluno.faixa;
     entity.data_nascimento = aluno.data_nascimento;
     entity.usuarioId = aluno.usuarioId;
+    if (aluno.usuario) {
+      entity.nome = aluno.usuario.nome;
+      entity.email = aluno.usuario.email;
+      entity.telefone = aluno.usuario.telefone;
+    }
     return entity;
   }
 }

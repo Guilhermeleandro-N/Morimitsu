@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AuthorizationModule } from '../authorization/authorization.module.js';
-import { PrismaModule } from '../prisma/prisma.module.js';
-import { TurmaController } from './turma.controller.js';
-import { TurmaRepository } from './turma.repository.js';
-import { TurmaService } from './turma.service.js';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { TurmaController } from './turma.controller';
+import { TurmaRepository } from './turma.repository';
+import { TurmaService } from './turma.service';
 
 @Module({
   imports: [PrismaModule, AuthorizationModule],

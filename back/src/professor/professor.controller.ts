@@ -16,12 +16,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Permissions } from '../authorization/decorators/permissions.decorator.js';
-import { PermissionsGuard } from '../authorization/guards/permissions.guard.js';
-import { CreateProfessorDto } from './dtos/create-professor.dto.js';
-import { UpdateProfessorDto } from './dtos/update-professor.dto.js';
-import { ProfessorEntity } from './entities/professor.entity.js';
-import { ProfessorService } from './professor.service.js';
+import { Permissions } from '../authorization/decorators/permissions.decorator';
+import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { CreateProfessorDto } from './dtos/create-professor.dto';
+import { UpdateProfessorDto } from './dtos/update-professor.dto';
+import { ProfessorEntity } from './entities/professor.entity';
+import { ProfessorService } from './professor.service';
 
 @ApiTags('Professor')
 @ApiBearerAuth()

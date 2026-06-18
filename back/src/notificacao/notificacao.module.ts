@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AuthorizationModule } from '../authorization/authorization.module.js';
-import { PrismaModule } from '../prisma/prisma.module.js';
-import { NotificacaoController } from './notificacao.controller.js';
-import { NotificacaoRepository } from './notificacao.repository.js';
-import { NotificacaoService } from './notificacao.service.js';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { NotificacaoController } from './notificacao.controller';
+import { NotificacaoRepository } from './notificacao.repository';
+import { NotificacaoService } from './notificacao.service';
 
 @Module({
   imports: [PrismaModule, AuthorizationModule],

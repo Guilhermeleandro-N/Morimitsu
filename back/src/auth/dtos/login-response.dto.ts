@@ -13,6 +13,9 @@ export class LoginResponseDto {
   @ApiProperty({ type: [String] })
   roles!: string[];
 
+  @ApiProperty({ type: [String] })
+  permissoes!: string[];
+
   @ApiProperty()
   token!: string;
 

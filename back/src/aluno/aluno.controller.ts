@@ -16,14 +16,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
-import type { JwtPayload } from '../auth/decorators/current-user.decorator.js';
-import { Permissions } from '../authorization/decorators/permissions.decorator.js';
-import { PermissionsGuard } from '../authorization/guards/permissions.guard.js';
-import { AlunoService } from './aluno.service.js';
-import { CreateAlunoDto } from './dtos/create-aluno.dto.js';
-import { UpdateAlunoDto } from './dtos/update-aluno.dto.js';
-import { AlunoEntity } from './entities/aluno.entity.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/decorators/current-user.decorator';
+import { Permissions } from '../authorization/decorators/permissions.decorator';
+import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { AlunoService } from './aluno.service';
+import { CreateAlunoDto } from './dtos/create-aluno.dto';
+import { UpdateAlunoDto } from './dtos/update-aluno.dto';
+import { AlunoEntity } from './entities/aluno.entity';
 
 @ApiTags('Aluno')
 @ApiBearerAuth()
@@ -35,10 +35,24 @@ export class AlunoController {
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(PermissionsGuard)
   @Permissions('student.create')
-  @ApiOperation({ summary: 'Criar aluno' })
+  @ApiOperation({ summary: 'Criar aluno vinculado a um usuário existente' })
   @ApiResponse({ status: 201, type: AlunoEntity })
+  @ApiResponse({ status: 400, description: 'Usuário não encontrado' })
+  @ApiResponse({ status: 409, description: 'Usuário já é aluno' })
   async criar(@Body() dto: CreateAlunoDto): Promise<AlunoEntity> {
     return this.service.criar(dto);
+  }
+
+  @Get('meu-perfil')
+  @UseGuards(PermissionsGuard)
+  @Permissions('profile.read')
+  @ApiOperation({
+    summary:
+      'Ver meu perfil completo (aluno logado): dados pessoais, faixa, histórico de frequências',
+  })
+  @ApiResponse({ status: 200, type: AlunoEntity })
+  async meuPerfil(@CurrentUser() usuario: JwtPayload): Promise<AlunoEntity> {
+    return this.service.buscarMeuPerfil(usuario.sub);
   }
 
   @Get()

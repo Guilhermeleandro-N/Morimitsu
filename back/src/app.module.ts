@@ -5,16 +5,16 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AlunoModule } from './aluno/aluno.module.js';
-import { AuthModule } from './auth/auth.module.js';
-import { AuthorizationModule } from './authorization/authorization.module.js';
-import { FrequenciaModule } from './frequencia/frequencia.module.js';
-import { JwtAuthMiddleware } from './auth/middlewares/jwt-auth.middleware.js';
-import { NotificacaoModule } from './notificacao/notificacao.module.js';
-import { PrismaModule } from './prisma/prisma.module.js';
-import { ProfessorModule } from './professor/professor.module.js';
-import { TurmaModule } from './turma/turma.module.js';
-import { UserModule } from './user/user.module.js';
+import { AlunoModule } from './aluno/aluno.module';
+import { AuthModule } from './auth/auth.module';
+import { AuthorizationModule } from './authorization/authorization.module';
+import { FrequenciaModule } from './frequencia/frequencia.module';
+import { JwtAuthMiddleware } from './auth/middlewares/jwt-auth.middleware';
+import { NotificacaoModule } from './notificacao/notificacao.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ProfessorModule } from './professor/professor.module';
+import { TurmaModule } from './turma/turma.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

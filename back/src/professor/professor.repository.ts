@@ -5,10 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateProfessorDto } from './dtos/create-professor.dto.js';
-import { UpdateProfessorDto } from './dtos/update-professor.dto.js';
-import { ProfessorEntity } from './entities/professor.entity.js';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateProfessorDto } from './dtos/create-professor.dto';
+import { UpdateProfessorDto } from './dtos/update-professor.dto';
+import { ProfessorEntity } from './entities/professor.entity';
 
 const PERFIL_PROFESSOR_ID = 'perfil-professor';
 
@@ -52,6 +52,7 @@ export class ProfessorRepository {
           grau: dto.grau ?? 0,
           usuarioId: dto.usuarioId,
         },
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
       });
       await this.prisma.userPerfil.upsert({
         where: {
@@ -83,7 +84,9 @@ export class ProfessorRepository {
 
   async listar(): Promise<ProfessorEntity[]> {
     try {
-      const professores = await this.prisma.professor.findMany();
+      const professores = await this.prisma.professor.findMany({
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
+      });
       return professores.map((p) => this.toEntity(p));
     } catch {
       throw new InternalServerErrorException(
@@ -96,6 +99,7 @@ export class ProfessorRepository {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { id },
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
       });
       if (!professor) return null;
       return this.toEntity(professor);
@@ -110,6 +114,7 @@ export class ProfessorRepository {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId },
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
       });
       if (!professor) return null;
       return this.toEntity(professor);
@@ -131,6 +136,7 @@ export class ProfessorRepository {
       const professor = await this.prisma.professor.update({
         where: { id },
         data,
+        include: { usuario: { select: { nome: true, email: true, telefone: true } } },
       });
       return this.toEntity(professor);
     } catch (e) {
@@ -165,12 +171,18 @@ export class ProfessorRepository {
     faixa: string;
     grau: number;
     usuarioId: string;
+    usuario?: { nome: string; email: string; telefone: string | null };
   }): ProfessorEntity {
     const entity = new ProfessorEntity();
     entity.id = professor.id;
     entity.faixa = professor.faixa;
     entity.grau = professor.grau;
     entity.usuarioId = professor.usuarioId;
+    if (professor.usuario) {
+      entity.nome = professor.usuario.nome;
+      entity.email = professor.usuario.email;
+      entity.telefone = professor.usuario.telefone;
+    }
     return entity;
   }
 }

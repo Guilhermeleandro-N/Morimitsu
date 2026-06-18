@@ -3,13 +3,13 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto.js';
-import { CreateFrequenciaDto } from './dtos/create-frequencia.dto.js';
-import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto.js';
-import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto.js';
-import { FrequenciaProfEntity } from './entities/frequencia-prof.entity.js';
-import { FrequenciaEntity } from './entities/frequencia.entity.js';
-import { FrequenciaRepository } from './frequencia.repository.js';
+import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto';
+import { CreateFrequenciaDto } from './dtos/create-frequencia.dto';
+import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
+import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
+import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
+import { FrequenciaEntity } from './entities/frequencia.entity';
+import { FrequenciaRepository } from './frequencia.repository';
 
 @Injectable()
 export class FrequenciaService {
