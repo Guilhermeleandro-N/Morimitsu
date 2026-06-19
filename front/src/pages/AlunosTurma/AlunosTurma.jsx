@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 
 import "./AlunosTurma.css";
+import AdicionarAlunoTurmaModal from "../../components/AdicionarAlunoTurma/AdicionarAlunoTurmaModal";
 
 function AlunosTurma() {
 
@@ -22,6 +23,7 @@ function AlunosTurma() {
   const turmaNome = location.state?.turmaNome;
 
   const [alunos, setAlunos] = useState([]);
+  const [modalAdicionarOpen,setModalAdicionarOpen] = useState(false);
 
   function abrirPerfil(userId) {
     navigate("/perfilAluno", {
@@ -111,7 +113,7 @@ function AlunosTurma() {
           <button
             className="header-btn"
             onClick={() =>
-              console.log("Adicionar aluno")
+              setModalAdicionarOpen(true)
             }
           >
             <FaUserPlus />
@@ -258,7 +260,17 @@ function AlunosTurma() {
         </div>
 
       </div>
+      {modalAdicionarOpen && (
 
+        <AdicionarAlunoTurmaModal
+          turmaId={turmaId}
+          turmaNome={turmaNome}
+          onClose={() =>
+            setModalAdicionarOpen(false)
+          }
+        />
+
+      )}
     </div>
   );
 }

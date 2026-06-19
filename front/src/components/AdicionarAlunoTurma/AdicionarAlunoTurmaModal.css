@@ -1,0 +1,245 @@
+.modal-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0,0,0,.45);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.adicionar-modal {
+
+    width: 100%;
+    max-width: 760px;
+
+    background: white;
+
+    border-radius: 22px;
+
+    padding: 35px 40px;
+
+    box-shadow:
+        0 15px 35px rgba(0,0,0,.15);
+
+    animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-top {
+
+    margin-bottom: 35px;
+}
+
+.modal-top h2 {
+    margin-bottom: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #111;
+}
+
+.modal-top p {
+
+    color: #777;
+    margin-top: 4px;
+}
+
+.pergunta {
+
+    text-align: center;
+
+    font-size: 22px;
+    font-weight: 500;
+
+    margin-bottom: 25px;
+}
+
+.tipo-selector {
+
+    width: 340px;
+
+    margin: 0 auto 35px auto;
+
+    background: #ecd1d1;
+
+    border-radius: 999px;
+
+    padding: 4px;
+
+    display: flex;
+}
+
+.tipo-selector button {
+
+    flex: 1;
+
+    border: none;
+
+    background: transparent;
+
+    padding: 12px;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    font-weight: 600;
+
+    transition: .2s;
+}
+
+.tipo-selector button.active {
+
+    background: #c71d1d;
+
+    color: white;
+}
+
+.form-area {
+
+    width: 100%;
+    max-width: 500px;
+
+    margin: auto;
+}
+
+.form-area label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-weight: 500;
+}
+
+.busca-input {
+
+    width: 100%;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    border: 1px solid #dcdcdc;
+
+    font-size: 15px;
+}
+
+.lista-alunos {
+
+    margin-top: 10px;
+
+    max-height: 220px;
+
+    overflow-y: auto;
+
+    border: 1px solid #eee;
+
+    border-radius: 12px;
+}
+
+.aluno-item {
+
+    padding: 12px 16px;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.aluno-item:hover {
+
+    background: #f8f8f8;
+}
+
+.aluno-item.selecionado {
+
+    background: #ffe9e9;
+
+    color: #c71d1d;
+
+    font-weight: 600;
+}
+
+.modal-actions {
+
+    margin-top: 40px;
+
+    display: flex;
+    justify-content: center;
+
+    gap: 18px;
+}
+
+.btn-cancelar {
+
+    width: 160px;
+
+    border: none;
+
+    background: #d9d9d9;
+
+    color: white;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.btn-confirmar {
+
+    width: 160px;
+
+    border: none;
+
+    background: #c71d1d;
+
+    color: white;
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.info-novo-aluno {
+
+    text-align: center;
+
+    color: #555;
+
+    line-height: 1.6;
+}
+
+.modal-top p {
+
+    color: #555;
+
+    line-height: 1.6;
+}
