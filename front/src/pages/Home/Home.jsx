@@ -1,41 +1,33 @@
-import React from "react";
-import { graduarAluno } from "../../services/alunoService";
+import { useState, useEffect } from "react";
+import { listarAlunosCompleto } from "../../services/alunoService";
+function Home() {
+  const [alunos, setAlunos] = useState([]);
+  const [pesquisa, setPesquisa] = useState("");
 
-const ALUNO_ID = "af7ac881-8cd7-4259-aee7-25a1961c5ce4";
+  useEffect(() => {
+    listarAlunosCompleto().then((data) => setAlunos(data));
+  }, []);
 
-const Home = () => {
-  async function teste() {
-    try {
-      const response = await graduarAluno(
-        ALUNO_ID,
-        "AZUL",
-        2
-      );
-
-      console.log("✅ Aluno graduado com sucesso:");
-      console.log(response);
-
-    } catch (error) {
-      console.error(
-        "❌ Erro ao graduar aluno:",
-        error?.response?.data || error
-      );
-    }
-  }
+  const alunosFiltrados = alunos.filter((aluno) =>
+    aluno.nome.toLowerCase().includes(pesquisa.toLowerCase())
+  );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        marginTop: "50px",
-      }}
-    >
-      <button onClick={teste}>
-        Testar Graduação
-      </button>
+    <div>
+      <input
+        type="text"
+        placeholder="Pesquisar aluno..."
+        value={pesquisa}
+        onChange={(e) => setPesquisa(e.target.value)}
+      />
+
+      <ul>
+        {alunosFiltrados.map((aluno) => (
+          <li key={aluno.id}>{aluno.nome}</li>
+        ))}
+      </ul>
     </div>
   );
-};
+}
 
 export default Home;

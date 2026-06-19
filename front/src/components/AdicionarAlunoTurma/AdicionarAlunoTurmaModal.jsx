@@ -2,38 +2,42 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { listarAlunosCompleto } from "../../services/alunoService";
+import { adicionarAlunoNaTurma } from "../../services/turmaService";
 
 import "./AdicionarAlunoTurmaModal.css";
 
 function AdicionarAlunoTurmaModal({
   turmaId,
   turmaNome,
-  onClose
+  onClose,
+  onAlunoAdicionado
 }) {
 
   const navigate = useNavigate();
 
-  const [modo, setModo] =
-    useState("existente");
-
-  const [alunos, setAlunos] =
-    useState([]);
-
-  const [alunosSelecionados,
-    setAlunosSelecionados] =
-    useState([]);
-  const [busca, setBusca] =
-    useState("");
+  const [modo, setModo] = useState("existente");
+  const [alunos, setAlunos] = useState([]);
+  const [alunosSelecionados, setAlunosSelecionados] = useState([]);
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
 
     async function carregar() {
+      try {
 
-      const response =
-        await listarAlunosCompleto();
+        const response =
+          await listarAlunosCompleto();
 
-      setAlunos(response);
+        setAlunos(response);
 
+      } catch (error) {
+
+        console.error(
+          "Erro ao carregar alunos:",
+          error
+        );
+
+      }
     }
 
     carregar();
@@ -42,20 +46,48 @@ function AdicionarAlunoTurmaModal({
 
   async function adicionarAluno() {
 
-    if (!alunoSelecionado) return;
+    if (alunosSelecionados.length === 0) {
+
+      alert(
+        "Selecione pelo menos um aluno."
+      );
+
+      return;
+    }
 
     try {
 
-      // await vincularAlunoTurma(
-      //   alunoSelecionado,
-      //   turmaId
-      // );
+      await Promise.all(
+        alunosSelecionados.map(
+          (alunoId) =>
+            adicionarAlunoNaTurma(
+              turmaId,
+              alunoId,
+              "S"
+            )
+        )
+      );
 
-      onClose();
+      if (onAlunoAdicionado) {
+
+        await onAlunoAdicionado();
+
+      } else {
+
+        onClose();
+
+      }
 
     } catch (error) {
 
-      console.log(error);
+      console.error(
+        "Erro ao adicionar aluno à turma:",
+        error
+      );
+
+      alert(
+        "Erro ao adicionar aluno à turma."
+      );
 
     }
 
@@ -71,12 +103,15 @@ function AdicionarAlunoTurmaModal({
     });
 
   }
-  const alunosFiltrados = alunos.filter(
-    (aluno) =>
+
+  const alunosFiltrados =
+    alunos.filter((aluno) =>
       aluno.usuario.nome
         .toLowerCase()
-        .includes(busca.toLowerCase())
-  );
+        .includes(
+          busca.toLowerCase()
+        )
+    );
 
   function toggleAluno(id) {
 
@@ -86,7 +121,8 @@ function AdicionarAlunoTurmaModal({
 
       setAlunosSelecionados(
         alunosSelecionados.filter(
-          alunoId => alunoId !== id
+          (alunoId) =>
+            alunoId !== id
         )
       );
 
@@ -100,6 +136,7 @@ function AdicionarAlunoTurmaModal({
     }
 
   }
+
   return (
 
     <div className="modal-overlay">
@@ -108,10 +145,12 @@ function AdicionarAlunoTurmaModal({
 
         <div className="modal-top">
 
-          <h2>Adicionar Aluno</h2>
+          <h2>
+            Adicionar Aluno
+          </h2>
 
           <p>
-            Adicionar aluno a uma turma
+            Adicionar aluno à turma
           </p>
 
         </div>
@@ -162,40 +201,47 @@ function AdicionarAlunoTurmaModal({
               placeholder="Pesquisar aluno..."
               value={busca}
               onChange={(e) =>
-                setBusca(e.target.value)
+                setBusca(
+                  e.target.value
+                )
               }
             />
 
             <div className="lista-alunos">
 
-              {alunosFiltrados.map((aluno) => (
+              {alunosFiltrados.map(
+                (aluno) => (
 
-                <div
-                  key={aluno.id}
-                  className="aluno-item"
-                >
-
-                  <input
-                    type="checkbox"
-                    checked={
-                      alunosSelecionados.includes(
-                        aluno.id
-                      )
-                    }
-                    onChange={() =>
-                      toggleAluno(aluno.id)
-                    }
-                  />
-
-                  <label
-                    htmlFor={`aluno-${aluno.id}`}
+                  <div
+                    key={aluno.id}
+                    className="aluno-item"
                   >
-                    {aluno.usuario.nome}
-                  </label>
 
-                </div>
+                    <input
+                      type="checkbox"
+                      checked={
+                        alunosSelecionados.includes(
+                          aluno.id
+                        )
+                      }
+                      onChange={() =>
+                        toggleAluno(
+                          aluno.id
+                        )
+                      }
+                    />
 
-              ))}
+                    <label>
+                      {
+                        aluno.usuario
+                          .nome
+                      }
+                    </label>
+
+                  </div>
+
+                )
+              )}
 
             </div>
 
@@ -207,9 +253,9 @@ function AdicionarAlunoTurmaModal({
 
           <div className="novo-aluno-info">
 
-            O aluno será cadastrado e
-            vinculado automaticamente à
-            turma.
+            O aluno será cadastrado
+            e vinculado automaticamente
+            à turma.
 
           </div>
 

@@ -23,7 +23,8 @@ function AlunosTurma() {
   const turmaNome = location.state?.turmaNome;
 
   const [alunos, setAlunos] = useState([]);
-  const [modalAdicionarOpen,setModalAdicionarOpen] = useState(false);
+  const [modalAdicionarOpen, setModalAdicionarOpen] =
+    useState(false);
 
   function abrirPerfil(userId) {
     navigate("/perfilAluno", {
@@ -33,15 +34,16 @@ function AlunosTurma() {
     });
   }
 
-  useEffect(() => {
+  async function carregarAlunos() {
+    try {
 
-    async function carregarAlunos() {
-      try {
+      const alunosTurma =
+        await listarAlunosDaTurma(turmaId);
 
-        const alunosTurma = await listarAlunosDaTurma(turmaId);
-
-        const alunosCompletos = await Promise.all(
+      const alunosCompletos =
+        await Promise.all(
           alunosTurma.map(async (aluno) => {
+
             const alunoCompleto =
               await BuscarAlunoCompletoPorUserId(
                 aluno.usuarioId
@@ -51,17 +53,28 @@ function AlunosTurma() {
               ...aluno,
               ...alunoCompleto
             };
+
           })
         );
 
-        console.log("Alunos completos:", alunosCompletos);
+      console.log(
+        "Alunos completos:",
+        alunosCompletos
+      );
 
-        setAlunos(alunosCompletos);
+      setAlunos(alunosCompletos);
 
-      } catch (error) {
-        console.error("Erro ao carregar alunos:", error);
-      }
+    } catch (error) {
+
+      console.error(
+        "Erro ao carregar alunos:",
+        error
+      );
+
     }
+  }
+
+  useEffect(() => {
 
     if (turmaId) {
       carregarAlunos();
@@ -94,6 +107,7 @@ function AlunosTurma() {
   }
 
   return (
+
     <div className="listar-container">
 
       <div className="page-header">
@@ -122,7 +136,9 @@ function AlunosTurma() {
           <button
             className="header-btn"
             onClick={() =>
-              console.log("Realizar frequência")
+              console.log(
+                "Realizar frequência"
+              )
             }
           >
             <FaClipboardCheck />
@@ -136,9 +152,7 @@ function AlunosTurma() {
 
         <div className="listar-header">
 
-          <h2>
-            {turmaNome}
-          </h2>
+          <h2>{turmaNome}</h2>
 
           <p>
             Total de {alunos.length} alunos nesta turma
@@ -175,7 +189,9 @@ function AlunosTurma() {
 
                   <td>
                     <span
-                      className={getFaixaClass(aluno.faixa)}
+                      className={getFaixaClass(
+                        aluno.faixa
+                      )}
                     >
                       {aluno.faixa}
                     </span>
@@ -226,7 +242,9 @@ function AlunosTurma() {
                     <button
                       className="perfil-btn"
                       onClick={() =>
-                        abrirPerfil(aluno.usuarioId)
+                        abrirPerfil(
+                          aluno.usuarioId
+                        )
                       }
                     >
                       <FaEye />
@@ -240,7 +258,9 @@ function AlunosTurma() {
               ))}
 
               {alunos.length === 0 && (
+
                 <tr>
+
                   <td
                     colSpan="8"
                     style={{
@@ -250,7 +270,9 @@ function AlunosTurma() {
                   >
                     Nenhum aluno encontrado.
                   </td>
+
                 </tr>
+
               )}
 
             </tbody>
@@ -260,6 +282,7 @@ function AlunosTurma() {
         </div>
 
       </div>
+
       {modalAdicionarOpen && (
 
         <AdicionarAlunoTurmaModal
@@ -268,11 +291,21 @@ function AlunosTurma() {
           onClose={() =>
             setModalAdicionarOpen(false)
           }
+          onAlunoAdicionado={async () => {
+
+            await carregarAlunos();
+
+            setModalAdicionarOpen(false);
+
+          }}
         />
 
       )}
+
     </div>
+
   );
+
 }
 
 export default AlunosTurma;
