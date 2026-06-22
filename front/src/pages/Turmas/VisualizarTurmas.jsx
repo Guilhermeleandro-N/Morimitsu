@@ -100,6 +100,8 @@ function formatarHorario(data) {
                 state: {
                   turmaId: turma.id,
                   turmaNome: turma.nome,
+                  turmaHorarioInicio: turma.horario_inicio,
+                  turmaHorarioFim: turma.horario_fim
                 },
               })
             }

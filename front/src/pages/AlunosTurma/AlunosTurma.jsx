@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { listarAlunosDaTurma } from "../../services/turmaService";
 import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
+import FrequenciaModal from "../../components/RegistrarFrequencia/FrequenciaModal";
 
 import {
   FaEye,
@@ -21,10 +22,15 @@ function AlunosTurma() {
 
   const turmaId = location.state?.turmaId;
   const turmaNome = location.state?.turmaNome;
-
+  
+  const turmaHorarioInicio = location.state?.turmaHorarioInicio;
+  const turmaHorarioFim = location.state?.turmaHorarioFim;
   const [alunos, setAlunos] = useState([]);
   const [modalAdicionarOpen, setModalAdicionarOpen] =
     useState(false);
+
+  const [modalFrequenciaOpen, setModalFrequenciaOpen] =
+  useState(false);
 
   function abrirPerfil(userId) {
     navigate("/perfilAluno", {
@@ -133,16 +139,14 @@ function AlunosTurma() {
             <FaUserPlus />
           </button>
 
-          <button
-            className="header-btn"
-            onClick={() =>
-              console.log(
-                "Realizar frequência"
-              )
-            }
-          >
-            <FaClipboardCheck />
-          </button>
+        <button
+          className="header-btn"
+          onClick={() =>
+            setModalFrequenciaOpen(true)
+          }
+        >
+          <FaClipboardCheck />
+        </button>
 
         </div>
 
@@ -301,6 +305,24 @@ function AlunosTurma() {
         />
 
       )}
+
+      {modalFrequenciaOpen && (
+  <FrequenciaModal
+    alunos={alunos}
+    turmaId={turmaId}
+    onClose={() =>
+      setModalFrequenciaOpen(false)
+    }
+    onSalvar={(presentes) => {
+      console.log(
+        "Alunos presentes:",
+        presentes
+      );
+
+      setModalFrequenciaOpen(false);
+    }}
+  />
+)}
 
     </div>
 

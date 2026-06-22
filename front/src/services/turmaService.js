@@ -138,3 +138,28 @@ export const adicionarAlunoNaTurma = async (id, aluno_id, frequente = "S") => {
         throw error;
     }
 };
+
+
+
+export async function adicionarProfessorTurma(
+  turmaId,
+  professorId
+) {
+  try {
+    const response = await api.post(
+      `/turma/${turmaId}/professor`,
+      {
+        professor_id: professorId,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Erro ao adicionar professor à turma:",
+      error
+    );
+
+    throw error;
+  }
+}
