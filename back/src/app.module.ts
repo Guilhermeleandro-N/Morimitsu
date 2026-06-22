@@ -11,6 +11,7 @@ import { AuthorizationModule } from './authorization/authorization.module';
 import { FrequenciaModule } from './frequencia/frequencia.module';
 import { JwtAuthMiddleware } from './auth/middlewares/jwt-auth.middleware';
 import { NotificacaoModule } from './notificacao/notificacao.module';
+import { PerfilModule } from './perfil/perfil.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfessorModule } from './professor/professor.module';
 import { TurmaModule } from './turma/turma.module';
@@ -28,6 +29,7 @@ import { UserModule } from './user/user.module';
     TurmaModule,
     FrequenciaModule,
     NotificacaoModule,
+    PerfilModule,
   ],
   providers: [JwtAuthMiddleware],
 })

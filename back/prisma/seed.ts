@@ -33,6 +33,7 @@ const PROFESSOR_PERMISSIONS = [
   { codigo: 'training.read', descricao: 'Visualizar treino' },
   { codigo: 'student.profile.read', descricao: 'Visualizar perfil do aluno' },
   { codigo: 'notification.read', descricao: 'Visualizar notificações' },
+  { codigo: 'remove.student', descricao: 'Remover aluno da turma' },
 ];
 
 const ALUNO_PERMISSIONS = [

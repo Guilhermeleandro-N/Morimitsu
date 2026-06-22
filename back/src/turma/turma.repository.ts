@@ -233,6 +233,23 @@ export class TurmaRepository {
     }
   }
 
+  async removerAlunoDaTurma(turmaId: string, alunoId: string): Promise<void> {
+    try {
+      await this.prisma.alunoTurma.delete({
+        where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Vínculo aluno-turma não encontrado');
+      throw new InternalServerErrorException(
+        'Erro ao remover aluno da turma no banco de dados',
+      );
+    }
+  }
+
   async alunoExisteNaTurma(alunoId: string, turmaId: string): Promise<boolean> {
     try {
       const vinculo = await this.prisma.alunoTurma.findUnique({

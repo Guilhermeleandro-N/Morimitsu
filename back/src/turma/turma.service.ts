@@ -76,6 +76,12 @@ export class TurmaService {
     return this.repository.listarAlunosDaTurma(turmaId);
   }
 
+  async removerAlunoDaTurma(turmaId: string, alunoId: string): Promise<void> {
+    const turma = await this.repository.buscarPorId(turmaId);
+    if (!turma) throw new NotFoundException('Turma não encontrada');
+    await this.repository.removerAlunoDaTurma(turmaId, alunoId);
+  }
+
   async listarProfessores(turmaId: string): Promise<ProfessorEntity[]> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');

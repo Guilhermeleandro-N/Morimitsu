@@ -141,4 +141,18 @@ export class TurmaController {
   async listarProfessores(@Param('id') id: string): Promise<ProfessorEntity[]> {
     return this.service.listarProfessores(id);
   }
+
+  @Delete(':id/aluno/:alunoId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(PermissionsGuard)
+  @Permissions('remove.student')
+  @ApiOperation({ summary: 'Remover aluno da turma' })
+  @ApiResponse({ status: 204 })
+  @ApiResponse({ status: 404, description: 'Turma ou vínculo não encontrado' })
+  async removerAlunoDaTurma(
+    @Param('id') id: string,
+    @Param('alunoId') alunoId: string,
+  ): Promise<void> {
+    return this.service.removerAlunoDaTurma(id, alunoId);
+  }
 }
