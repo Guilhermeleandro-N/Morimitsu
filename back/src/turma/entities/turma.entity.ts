@@ -8,6 +8,9 @@ export class TurmaEntity {
   nome!: string;
 
   @ApiProperty()
+  ativo!: boolean;
+
+  @ApiProperty()
   horario_inicio!: Date;
 
   @ApiProperty()

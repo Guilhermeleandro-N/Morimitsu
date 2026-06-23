@@ -64,4 +64,9 @@ export class CreateTurmaDto {
   @IsBoolean()
   @IsOptional()
   domingo?: boolean;
+
+  @ApiPropertyOptional({ default: true })
+  @IsBoolean()
+  @IsOptional()
+  ativo?: boolean;
 }

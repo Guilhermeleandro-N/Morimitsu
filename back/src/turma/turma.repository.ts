@@ -168,10 +168,19 @@ export class TurmaRepository {
     }
   }
 
-  async listarAlunosDaTurma(turmaId: string): Promise<AlunoEntity[]> {
+  async listarAlunosDaTurma(
+    turmaId: string,
+    incluirArquivados = false,
+  ): Promise<AlunoEntity[]> {
     try {
+      const where: { turma_id: string; arquivado?: boolean } = {
+        turma_id: turmaId,
+      };
+      if (!incluirArquivados) {
+        where.arquivado = false;
+      }
       const vinculos = await this.prisma.alunoTurma.findMany({
-        where: { turma_id: turmaId },
+        where,
         include: { aluno: true },
       });
       return vinculos.map((v) => {
@@ -180,6 +189,7 @@ export class TurmaRepository {
         entity.frequencia_atual = v.aluno.frequencia_atual;
         entity.grau_faixa = v.aluno.grau_faixa;
         entity.faixa = v.aluno.faixa;
+        entity.data_nascimento = v.aluno.data_nascimento;
         entity.usuarioId = v.aluno.usuarioId;
         entity.frequente = v.frequente;
         return entity;
@@ -235,8 +245,9 @@ export class TurmaRepository {
 
   async removerAlunoDaTurma(turmaId: string, alunoId: string): Promise<void> {
     try {
-      await this.prisma.alunoTurma.delete({
+      await this.prisma.alunoTurma.update({
         where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
+        data: { arquivado: true, frequente: 'N' },
       });
     } catch (e) {
       if (
@@ -245,7 +256,7 @@ export class TurmaRepository {
       )
         throw new NotFoundException('Vínculo aluno-turma não encontrado');
       throw new InternalServerErrorException(
-        'Erro ao remover aluno da turma no banco de dados',
+        'Erro ao arquivar aluno da turma no banco de dados',
       );
     }
   }
@@ -263,9 +274,32 @@ export class TurmaRepository {
     }
   }
 
+  async atualizarStatus(
+    id: string,
+    ativo: boolean,
+  ): Promise<TurmaEntity | null> {
+    try {
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: { ativo },
+      });
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
+      throw new InternalServerErrorException(
+        'Erro ao atualizar status da turma no banco de dados',
+      );
+    }
+  }
+
   private toEntity(turma: {
     id: string;
     nome: string;
+    ativo: boolean;
     horario_inicio: Date;
     horario_fim: Date;
     data_especifica: Date | null;
@@ -280,6 +314,7 @@ export class TurmaRepository {
     const entity = new TurmaEntity();
     entity.id = turma.id;
     entity.nome = turma.nome;
+    entity.ativo = turma.ativo;
     entity.horario_inicio = turma.horario_inicio;
     entity.horario_fim = turma.horario_fim;
     entity.data_especifica = turma.data_especifica;

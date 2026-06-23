@@ -16,9 +16,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/decorators/current-user.decorator';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { CreateProfessorDto } from './dtos/create-professor.dto';
+import { PainelProfessorResponse } from './dtos/painel-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
 import { ProfessorEntity } from './entities/professor.entity';
 import { ProfessorService } from './professor.service';
@@ -47,6 +50,21 @@ export class ProfessorController {
   @ApiResponse({ status: 200, type: [ProfessorEntity] })
   async listar(): Promise<ProfessorEntity[]> {
     return this.service.listar();
+  }
+
+  @Get('painel')
+  @UseGuards(PermissionsGuard)
+  @Permissions('professor.read')
+  @ApiOperation({
+    summary:
+      'Painel do professor: alunos próximos da graduação e aniversariantes por turma',
+  })
+  @ApiResponse({ status: 200, type: PainelProfessorResponse })
+  async painel(
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<PainelProfessorResponse> {
+    const turmas = await this.service.painel(usuario.sub);
+    return { turmas };
   }
 
   @Get('usuario/:usuarioId')

@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -25,6 +26,7 @@ import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
 import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
+import { UpdateTurmaStatusDto } from './dtos/update-turma-status.dto';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaService } from './turma.service';
 
@@ -72,6 +74,19 @@ export class TurmaController {
     @Body() dto: UpdateTurmaDto,
   ): Promise<TurmaEntity> {
     return this.service.atualizar(id, dto);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Ativar ou desativar turma' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  @ApiResponse({ status: 404, description: 'Turma não encontrada' })
+  async atualizarStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateTurmaStatusDto,
+  ): Promise<TurmaEntity> {
+    return this.service.atualizarStatusTurma(id, dto.ativo);
   }
 
   @Delete(':id')
@@ -129,8 +144,11 @@ export class TurmaController {
   @Permissions('student.list.by_turma')
   @ApiOperation({ summary: 'Listar alunos de uma turma' })
   @ApiResponse({ status: 200, type: [AlunoEntity] })
-  async listarAlunos(@Param('id') id: string): Promise<AlunoEntity[]> {
-    return this.service.listarAlunos(id);
+  async listarAlunos(
+    @Param('id') id: string,
+    @Query('incluirArquivados') incluirArquivados?: string,
+  ): Promise<AlunoEntity[]> {
+    return this.service.listarAlunos(id, incluirArquivados === 'true');
   }
 
   @Get(':id/professores')
@@ -146,7 +164,7 @@ export class TurmaController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(PermissionsGuard)
   @Permissions('remove.student')
-  @ApiOperation({ summary: 'Remover aluno da turma' })
+  @ApiOperation({ summary: 'Arquivar aluno da turma (mantém histórico)' })
   @ApiResponse({ status: 204 })
   @ApiResponse({ status: 404, description: 'Turma ou vínculo não encontrado' })
   async removerAlunoDaTurma(

@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AlunoEntity } from '../aluno/entities/aluno.entity';
+import { PainelTurmaItem } from './dtos/painel-professor.dto';
 import { CreateProfessorDto } from './dtos/create-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
 import { ProfessorEntity } from './entities/professor.entity';
@@ -174,6 +176,89 @@ export class ProfessorRepository {
         'Erro ao deletar professor no banco de dados',
       );
     }
+  }
+
+  async buscarPainel(professorId: string): Promise<PainelTurmaItem[]> {
+    try {
+      const vinculos = await this.prisma.professorTurma.findMany({
+        where: { professor_id: professorId },
+        include: { turma: true },
+      });
+
+      const now = new Date();
+      const mesAtual = now.getMonth(); // 0-11
+      const mesSeguinte = (mesAtual + 1) % 12;
+
+      const itens: PainelTurmaItem[] = [];
+
+      for (const v of vinculos) {
+        const todosAlunos = await this.prisma.alunoTurma.findMany({
+          where: { turma_id: v.turma_id, arquivado: false },
+          include: {
+            aluno: {
+              include: {
+                usuario: {
+                  select: { nome: true, email: true, telefone: true },
+                },
+              },
+            },
+          },
+        });
+
+        const proximosGraduacao = todosAlunos
+          .filter((at) => at.aluno.frequencia_atual >= 25)
+          .map((at) => this.alunoTurmaToAlunoEntity(at));
+
+        const aniversariantes = todosAlunos
+          .filter((at) => {
+            const nasc = at.aluno.data_nascimento;
+            if (!nasc) return false;
+            const mesNasc = nasc.getMonth();
+            return mesNasc === mesAtual || mesNasc === mesSeguinte;
+          })
+          .map((at) => this.alunoTurmaToAlunoEntity(at));
+
+        itens.push({
+          turma_id: v.turma_id,
+          turma_nome: v.turma.nome,
+          proximos_graduacao: proximosGraduacao,
+          aniversariantes,
+          total_alunos_ativos: todosAlunos.length,
+        });
+      }
+
+      return itens;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar painel do professor no banco de dados',
+      );
+    }
+  }
+
+  private alunoTurmaToAlunoEntity(v: {
+    frequente: string;
+    aluno: {
+      id: string;
+      frequencia_atual: number;
+      grau_faixa: number;
+      faixa: string;
+      data_nascimento: Date | null;
+      usuarioId: string;
+      usuario: { nome: string; email: string; telefone: string | null };
+    };
+  }) {
+    const entity = new AlunoEntity();
+    entity.id = v.aluno.id;
+    entity.frequencia_atual = v.aluno.frequencia_atual;
+    entity.grau_faixa = v.aluno.grau_faixa;
+    entity.faixa = v.aluno.faixa;
+    entity.data_nascimento = v.aluno.data_nascimento;
+    entity.usuarioId = v.aluno.usuarioId;
+    entity.nome = v.aluno.usuario.nome;
+    entity.email = v.aluno.usuario.email;
+    entity.telefone = v.aluno.usuario.telefone;
+    entity.frequente = v.frequente;
+    return entity;
   }
 
   private toEntity(professor: {

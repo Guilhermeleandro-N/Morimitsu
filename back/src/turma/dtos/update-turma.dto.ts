@@ -60,4 +60,9 @@ export class UpdateTurmaDto {
   @IsBoolean()
   @IsOptional()
   domingo?: boolean;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  ativo?: boolean;
 }

@@ -91,6 +91,7 @@ model Turma {
   horario_inicio DateTime
   horario_fim    DateTime
   data_especifica DateTime?
+  ativo          Boolean          @default(true)
   segunda        Boolean          @default(false)
   terca          Boolean          @default(false)
   quarta         Boolean          @default(false)
@@ -129,6 +130,7 @@ model AlunoTurma {
   aluno_id   String
   turma_id   String
   frequente  String          @default("N")
+  arquivado  Boolean         @default(false)
   aluno      Aluno           @relation(fields: [aluno_id], references: [id])
   turma      Turma           @relation(fields: [turma_id], references: [id])
 

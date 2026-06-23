@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
@@ -70,16 +66,27 @@ export class TurmaService {
     await this.repository.adicionarProfessor(turmaId, dto);
   }
 
-  async listarAlunos(turmaId: string): Promise<AlunoEntity[]> {
+  async listarAlunos(
+    turmaId: string,
+    incluirArquivados = false,
+  ): Promise<AlunoEntity[]> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
-    return this.repository.listarAlunosDaTurma(turmaId);
+    return this.repository.listarAlunosDaTurma(turmaId, incluirArquivados);
   }
 
   async removerAlunoDaTurma(turmaId: string, alunoId: string): Promise<void> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
     await this.repository.removerAlunoDaTurma(turmaId, alunoId);
+  }
+
+  async atualizarStatusTurma(id: string, ativo: boolean): Promise<TurmaEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Turma não encontrada');
+    const atualizada = await this.repository.atualizarStatus(id, ativo);
+    if (!atualizada) throw new NotFoundException('Turma não encontrada');
+    return atualizada;
   }
 
   async listarProfessores(turmaId: string): Promise<ProfessorEntity[]> {

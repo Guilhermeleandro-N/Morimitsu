@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { CreateProfessorDto } from './dtos/create-professor.dto';
+import { PainelTurmaItem } from './dtos/painel-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
 import { ProfessorEntity } from './entities/professor.entity';
 import { ProfessorRepository } from './professor.repository';
@@ -63,6 +64,12 @@ export class ProfessorService {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Professor não encontrado');
     await this.repository.deletar(id);
+  }
+
+  async painel(usuarioId: string): Promise<PainelTurmaItem[]> {
+    const professor = await this.repository.buscarPorUsuarioId(usuarioId);
+    if (!professor) throw new NotFoundException('Professor não encontrado');
+    return this.repository.buscarPainel(professor.id);
   }
 
   private async enriquecer(entity: ProfessorEntity): Promise<ProfessorEntity> {
