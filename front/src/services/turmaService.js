@@ -163,3 +163,28 @@ export async function adicionarProfessorTurma(
     throw error;
   }
 }
+
+export async function listarProfessoresDaTurma(
+  turmaId
+) {
+
+  try {
+
+    const response = await api.get(
+      `/turma/${turmaId}/professores`
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao listar professores da turma:",
+      error
+    );
+
+    throw error;
+
+  }
+
+}
