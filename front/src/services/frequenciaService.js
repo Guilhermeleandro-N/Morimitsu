@@ -66,3 +66,26 @@ export async function registrarFrequenciaTurma(
   }
 
 }
+
+export async function listarFrequenciasAluno(
+  alunoId
+) {
+  try {
+
+    const response = await api.get(
+      `/frequencia/aluno/${alunoId}`
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao listar frequências do aluno:",
+      error
+    );
+
+    throw error;
+
+  }
+}

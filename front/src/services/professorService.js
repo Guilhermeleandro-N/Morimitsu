@@ -9,7 +9,7 @@ export async function criarProfessor(
   try {
 
     const response = await api.post(
-      "/professor",
+      "professor",
       {
         usuarioId,
         faixa,
@@ -35,7 +35,7 @@ export async function criarProfessor(
 export async function listarProfessores() {
   try {
 
-    const response = await api.get("/professor");
+    const response = await api.get("professor");
 
     return response.data;
 

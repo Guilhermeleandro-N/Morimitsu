@@ -1,49 +1,44 @@
-import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { buscarProfessorPorUsuarioId } from "../../services/professorService";
+import React, { useState } from "react";
+import { listarProfessoresDaTurma } from "../../services/turmaService";
 
-function Home() {
+function TesteListarProfessoresTurma() {
 
-  const { user } = useContext(AuthContext);
+  const [turmaId, setTurmaId] =
+    useState("");
 
-  const [professor, setProfessor] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [resultado, setResultado] =
+    useState(null);
 
-  async function buscarProfessorLogado() {
+  const [loading, setLoading] =
+    useState(false);
+
+  async function buscarProfessores() {
 
     try {
 
-      if (!user) {
-        alert("Nenhum usuário logado.");
-        return;
-      }
-
       setLoading(true);
 
-      console.log("Usuário logado:", user);
-      console.log("User ID:", user.userId);
-
       const response =
-        await buscarProfessorPorUsuarioId(
-          user.userId
+        await listarProfessoresDaTurma(
+          turmaId
         );
 
       console.log(
-        "Professor encontrado:",
+        "Professores da turma:",
         response
       );
 
-      setProfessor(response);
+      setResultado(response);
 
     } catch (error) {
 
       console.error(
-        "Erro:",
         error.response?.data || error
       );
 
-      alert(
-        "Erro ao buscar professor."
+      setResultado(
+        error.response?.data ||
+        error.message
       );
 
     } finally {
@@ -55,62 +50,80 @@ function Home() {
   }
 
   return (
-    <div style={{ padding: "30px" }}>
+
+    <div
+      style={{
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "30px",
+      }}
+    >
 
       <h1>
-        Buscar Professor do Usuário Logado
+        Teste - Professores da Turma
       </h1>
 
-      {user ? (
-        <>
-          <p>
-            <strong>Nome:</strong> {user.nome}
-          </p>
+      <input
+        type="text"
+        placeholder="Digite o ID da turma"
+        value={turmaId}
+        onChange={(e) =>
+          setTurmaId(
+            e.target.value
+          )
+        }
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "15px",
+          boxSizing: "border-box",
+        }}
+      />
 
-          <p>
-            <strong>Email:</strong> {user.email}
-          </p>
+      <button
+        onClick={
+          buscarProfessores
+        }
+      >
+        Buscar Professores
+      </button>
 
-          <p>
-            <strong>User ID:</strong> {user.userId}
-          </p>
+      <hr />
 
-          <button
-            onClick={buscarProfessorLogado}
-            disabled={loading}
-          >
-            {loading
-              ? "Buscando..."
-              : "Buscar Professor"}
-          </button>
-        </>
+      <h2>
+        Resultado
+      </h2>
+
+      {loading ? (
+
+        <p>
+          Carregando...
+        </p>
+
       ) : (
-        <p>Nenhum usuário logado.</p>
-      )}
 
-      {professor && (
-        <div style={{ marginTop: "20px" }}>
+        <pre
+          style={{
+            background: "#f5f5f5",
+            padding: "20px",
+            borderRadius: "8px",
+            overflowX: "auto",
+            minHeight: "250px",
+          }}
+        >
+          {JSON.stringify(
+            resultado,
+            null,
+            2
+          )}
+        </pre>
 
-          <h2>Professor Encontrado</h2>
-
-          <p>
-            <strong>ID do Professor:</strong>{" "}
-            {professor.id}
-          </p>
-
-          <pre>
-            {JSON.stringify(
-              professor,
-              null,
-              2
-            )}
-          </pre>
-
-        </div>
       )}
 
     </div>
+
   );
+
 }
 
-export default Home;
+export default TesteListarProfessoresTurma;

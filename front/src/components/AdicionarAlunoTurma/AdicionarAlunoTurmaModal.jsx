@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { listarAlunosCompleto } from "../../services/alunoService";
-import { adicionarAlunoNaTurma } from "../../services/turmaService";
+import { listarProfessores } from "../../services/professorService";
+
+import {
+  adicionarAlunoNaTurma,
+  adicionarProfessorTurma,
+} from "../../services/turmaService";
 
 import "./AdicionarAlunoTurmaModal.css";
 
@@ -10,53 +14,68 @@ function AdicionarAlunoTurmaModal({
   turmaId,
   turmaNome,
   onClose,
-  onAlunoAdicionado
+  onAlunoAdicionado,
 }) {
+  const [modo, setModo] =
+    useState("aluno");
 
-  const navigate = useNavigate();
+  const [alunos, setAlunos] =
+    useState([]);
 
-  const [modo, setModo] = useState("existente");
-  const [alunos, setAlunos] = useState([]);
-  const [alunosSelecionados, setAlunosSelecionados] = useState([]);
-  const [busca, setBusca] = useState("");
+  const [professores, setProfessores] =
+    useState([]);
+
+  const [alunosSelecionados,
+    setAlunosSelecionados] =
+    useState([]);
+
+  const [professoresSelecionados,
+    setProfessoresSelecionados] =
+    useState([]);
+
+  const [busca, setBusca] =
+    useState("");
+
+  const [buscaProfessor,
+    setBuscaProfessor] =
+    useState("");
 
   useEffect(() => {
-
     async function carregar() {
       try {
-
-        const response =
+        const alunosResponse =
           await listarAlunosCompleto();
 
-        setAlunos(response);
+        setAlunos(alunosResponse);
 
+        const professoresResponse =
+          await listarProfessores();
+
+        setProfessores(
+          professoresResponse
+        );
       } catch (error) {
-
         console.error(
-          "Erro ao carregar alunos:",
+          "Erro ao carregar dados:",
           error
         );
-
       }
     }
 
     carregar();
-
   }, []);
 
   async function adicionarAluno() {
-
-    if (alunosSelecionados.length === 0) {
-
+    if (
+      alunosSelecionados.length === 0
+    ) {
       alert(
         "Selecione pelo menos um aluno."
       );
-
       return;
     }
 
     try {
-
       await Promise.all(
         alunosSelecionados.map(
           (alunoId) =>
@@ -68,132 +87,180 @@ function AdicionarAlunoTurmaModal({
         )
       );
 
+      alert(
+        "Aluno(s) adicionado(s) com sucesso!"
+      );
+
       if (onAlunoAdicionado) {
-
         await onAlunoAdicionado();
-
       } else {
-
         onClose();
-
       }
-
     } catch (error) {
-
       console.error(
-        "Erro ao adicionar aluno à turma:",
+        "Erro ao adicionar aluno:",
         error
       );
 
       alert(
-        "Erro ao adicionar aluno à turma."
+        "Erro ao adicionar aluno."
       );
+    }
+  }
 
+  async function adicionarProfessor() {
+    if (
+      professoresSelecionados.length === 0
+    ) {
+      alert(
+        "Selecione pelo menos um professor."
+      );
+      return;
     }
 
-  }
-
-  function cadastrarNovoAluno() {
-
-    navigate("/cadastrarAluno", {
-      state: {
-        turmaId,
-        turmaNome
-      }
-    });
-
-  }
-
-  const alunosFiltrados =
-    alunos.filter((aluno) =>
-      aluno.usuario.nome
-        .toLowerCase()
-        .includes(
-          busca.toLowerCase()
+    try {
+      await Promise.all(
+        professoresSelecionados.map(
+          (professorId) =>
+            adicionarProfessorTurma(
+              turmaId,
+              professorId
+            )
         )
-    );
+      );
+
+      alert(
+        "Professor(es) adicionado(s) com sucesso!"
+      );
+
+      if (onAlunoAdicionado) {
+        await onAlunoAdicionado();
+      } else {
+        onClose();
+      }
+    } catch (error) {
+      console.error(
+        "Erro ao adicionar professor:",
+        error
+      );
+
+      alert(
+        "Erro ao adicionar professor."
+      );
+    }
+  }
 
   function toggleAluno(id) {
-
     if (
       alunosSelecionados.includes(id)
     ) {
-
       setAlunosSelecionados(
         alunosSelecionados.filter(
           (alunoId) =>
             alunoId !== id
         )
       );
-
     } else {
-
       setAlunosSelecionados([
         ...alunosSelecionados,
-        id
+        id,
       ]);
-
     }
-
   }
 
+  function toggleProfessor(id) {
+    if (
+      professoresSelecionados.includes(
+        id
+      )
+    ) {
+      setProfessoresSelecionados(
+        professoresSelecionados.filter(
+          (professorId) =>
+            professorId !== id
+        )
+      );
+    } else {
+      setProfessoresSelecionados([
+        ...professoresSelecionados,
+        id,
+      ]);
+    }
+  }
+
+  const alunosFiltrados =
+    alunos.filter((aluno) =>
+      aluno.usuario?.nome
+        ?.toLowerCase()
+        .includes(
+          busca.toLowerCase()
+        )
+    );
+
+  const professoresFiltrados =
+    professores.filter(
+      (professor) =>
+        professor.nome
+          ?.toLowerCase()
+          .includes(
+            buscaProfessor.toLowerCase()
+          )
+    );
+
   return (
-
     <div className="modal-overlay">
-
       <div className="modal-container">
 
         <div className="modal-top">
-
           <h2>
-            Adicionar Aluno
+            Gerenciar Participantes
           </h2>
 
           <p>
-            Adicionar aluno à turma
+            Turma: {turmaNome}
           </p>
-
         </div>
 
         <h3 className="pergunta">
-          Quem você quer adicionar?
+          O que deseja adicionar?
         </h3>
 
         <div className="tipo-selector">
 
           <button
             className={
-              modo === "existente"
+              modo === "aluno"
                 ? "active"
                 : ""
             }
             onClick={() =>
-              setModo("existente")
+              setModo("aluno")
             }
           >
-            Aluno Existente
+            Alunos
           </button>
 
           <button
             className={
-              modo === "novo"
+              modo === "professor"
                 ? "active"
                 : ""
             }
             onClick={() =>
-              setModo("novo")
+              setModo("professor")
             }
           >
-            Novo Aluno
+            Professores
           </button>
 
         </div>
 
-        {modo === "existente" && (
-
+        {modo === "aluno" && (
           <div className="form-area">
 
-            <label>Aluno</label>
+            <label>
+              Alunos
+            </label>
 
             <input
               className="busca-input"
@@ -211,7 +278,6 @@ function AdicionarAlunoTurmaModal({
 
               {alunosFiltrados.map(
                 (aluno) => (
-
                   <div
                     key={aluno.id}
                     className="aluno-item"
@@ -219,11 +285,9 @@ function AdicionarAlunoTurmaModal({
 
                     <input
                       type="checkbox"
-                      checked={
-                        alunosSelecionados.includes(
-                          aluno.id
-                        )
-                      }
+                      checked={alunosSelecionados.includes(
+                        aluno.id
+                      )}
                       onChange={() =>
                         toggleAluno(
                           aluno.id
@@ -234,31 +298,76 @@ function AdicionarAlunoTurmaModal({
                     <label>
                       {
                         aluno.usuario
-                          .nome
+                          ?.nome
                       }
                     </label>
 
                   </div>
-
                 )
               )}
 
             </div>
 
           </div>
-
         )}
 
-        {modo === "novo" && (
+        {modo === "professor" && (
+          <div className="form-area">
 
-          <div className="novo-aluno-info">
+            <label>
+              Professores
+            </label>
 
-            O aluno será cadastrado
-            e vinculado automaticamente
-            à turma.
+            <input
+              className="busca-input"
+              type="text"
+              placeholder="Pesquisar professor..."
+              value={
+                buscaProfessor
+              }
+              onChange={(e) =>
+                setBuscaProfessor(
+                  e.target.value
+                )
+              }
+            />
+
+            <div className="lista-alunos">
+
+              {professoresFiltrados.map(
+                (professor) => (
+                  <div
+                    key={
+                      professor.id
+                    }
+                    className="aluno-item"
+                  >
+
+                    <input
+                      type="checkbox"
+                      checked={professoresSelecionados.includes(
+                        professor.id
+                      )}
+                      onChange={() =>
+                        toggleProfessor(
+                          professor.id
+                        )
+                      }
+                    />
+
+                    <label>
+                      {
+                        professor.nome
+                      }
+                    </label>
+
+                  </div>
+                )
+              )}
+
+            </div>
 
           </div>
-
         )}
 
         <div className="modal-buttons">
@@ -270,36 +379,31 @@ function AdicionarAlunoTurmaModal({
             Sair
           </button>
 
-          {modo === "existente" ? (
-
-            <button
-              className="btn-salvar"
-              onClick={adicionarAluno}
-            >
-              Adicionar Aluno
-            </button>
-
-          ) : (
-
+          {modo === "aluno" ? (
             <button
               className="btn-salvar"
               onClick={
-                cadastrarNovoAluno
+                adicionarAluno
               }
             >
-              Cadastrar Aluno
+              Adicionar Aluno
             </button>
-
+          ) : (
+            <button
+              className="btn-salvar"
+              onClick={
+                adicionarProfessor
+              }
+            >
+              Adicionar Professor
+            </button>
           )}
 
         </div>
 
       </div>
-
     </div>
-
   );
-
 }
 
 export default AdicionarAlunoTurmaModal;
