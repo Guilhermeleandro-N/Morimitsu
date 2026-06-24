@@ -1,18 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateProfessorDto {
-  @ApiProperty()
+  @ApiProperty({
+    description: 'ID do usuário (obrigatório se alunoId não for informado)',
+  })
   @IsString()
-  @IsNotEmpty({ message: 'usuarioId é obrigatório' })
-  usuarioId!: string;
+  @IsOptional()
+  usuarioId?: string;
 
-  @ApiProperty({ example: 'Preta' })
+  @ApiProperty({
+    description:
+      'ID do aluno a ser promovido a professor. Se informado, usa os dados do aluno automaticamente.',
+  })
+  @IsUUID()
+  @IsOptional()
+  alunoId?: string;
+
+  @ApiProperty({ example: 'Preta', description: 'Faixa do professor' })
   @IsString()
   @IsOptional()
   faixa?: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, description: 'Grau do professor' })
   @IsInt()
   @Min(0)
   @IsOptional()

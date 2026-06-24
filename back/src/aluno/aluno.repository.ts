@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { formatarDataNascimento } from '../utils/date';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
@@ -146,7 +147,7 @@ export class AlunoRepository {
     nome: string;
     email: string;
     telefone: string | null;
-    data_nascimento: Date | null;
+    data_nascimento: string | null;
     faixa: string;
     grau_faixa: number;
     frequencia_atual: number;
@@ -171,7 +172,7 @@ export class AlunoRepository {
         nome: aluno.usuario.nome,
         email: aluno.usuario.email,
         telefone: aluno.usuario.telefone,
-        data_nascimento: aluno.data_nascimento,
+        data_nascimento: formatarDataNascimento(aluno.data_nascimento),
         faixa: aluno.faixa,
         grau_faixa: aluno.grau_faixa,
         frequencia_atual: aluno.frequencia_atual,
@@ -286,7 +287,7 @@ export class AlunoRepository {
     entity.frequencia_atual = aluno.frequencia_atual;
     entity.grau_faixa = aluno.grau_faixa;
     entity.faixa = aluno.faixa;
-    entity.data_nascimento = aluno.data_nascimento;
+    entity.data_nascimento = formatarDataNascimento(aluno.data_nascimento);
     entity.usuarioId = aluno.usuarioId;
     if (aluno.usuario) {
       entity.nome = aluno.usuario.nome;

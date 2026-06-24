@@ -7,6 +7,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
+import { formatarDataNascimento } from '../utils/date';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
@@ -189,7 +190,9 @@ export class TurmaRepository {
         entity.frequencia_atual = v.aluno.frequencia_atual;
         entity.grau_faixa = v.aluno.grau_faixa;
         entity.faixa = v.aluno.faixa;
-        entity.data_nascimento = v.aluno.data_nascimento;
+        entity.data_nascimento = formatarDataNascimento(
+          v.aluno.data_nascimento,
+        );
         entity.usuarioId = v.aluno.usuarioId;
         entity.frequente = v.frequente;
         return entity;

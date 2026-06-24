@@ -84,6 +84,7 @@ export class UserRepository {
     const roles: string[] = [];
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
+    if (usuario.email === 'admin@morimitsu.com') roles.push('admin');
     if (roles.length === 0) roles.push('user');
 
     const entity = new UserEntity();

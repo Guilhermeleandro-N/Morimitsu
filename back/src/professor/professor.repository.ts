@@ -7,8 +7,8 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
+import { formatarDataNascimento } from '../utils/date';
 import { PainelTurmaItem } from './dtos/painel-professor.dto';
-import { CreateProfessorDto } from './dtos/create-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
 import { ProfessorEntity } from './entities/professor.entity';
 
@@ -46,13 +46,17 @@ export class ProfessorRepository {
     }
   }
 
-  async criar(dto: CreateProfessorDto): Promise<ProfessorEntity> {
+  async criar(dados: {
+    usuarioId: string;
+    faixa?: string;
+    grau?: number;
+  }): Promise<ProfessorEntity> {
     try {
       const professor = await this.prisma.professor.create({
         data: {
-          faixa: dto.faixa ?? 'BRANCA',
-          grau: dto.grau ?? 0,
-          usuarioId: dto.usuarioId,
+          faixa: dados.faixa ?? 'BRANCA',
+          grau: dados.grau ?? 0,
+          usuarioId: dados.usuarioId,
         },
         include: {
           usuario: { select: { nome: true, email: true, telefone: true } },
@@ -61,12 +65,15 @@ export class ProfessorRepository {
       await this.prisma.userPerfil.upsert({
         where: {
           usuario_id_perfil_id: {
-            usuario_id: dto.usuarioId,
+            usuario_id: dados.usuarioId,
             perfil_id: PERFIL_PROFESSOR_ID,
           },
         },
         update: {},
-        create: { usuario_id: dto.usuarioId, perfil_id: PERFIL_PROFESSOR_ID },
+        create: {
+          usuario_id: dados.usuarioId,
+          perfil_id: PERFIL_PROFESSOR_ID,
+        },
       });
       return this.toEntity(professor);
     } catch (e) {
@@ -131,6 +138,65 @@ export class ProfessorRepository {
     } catch {
       throw new InternalServerErrorException(
         'Erro ao buscar professor no banco de dados',
+      );
+    }
+  }
+
+  async buscarAlunoPorId(alunoId: string): Promise<{
+    id: string;
+    faixa: string;
+    grau_faixa: number;
+    usuarioId: string;
+    usuario: { nome: string; email: string; telefone: string | null };
+  } | null> {
+    try {
+      return await this.prisma.aluno.findUnique({
+        where: { id: alunoId },
+        select: {
+          id: true,
+          faixa: true,
+          grau_faixa: true,
+          usuarioId: true,
+          usuario: { select: { nome: true, email: true, telefone: true } },
+        },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar aluno no banco de dados',
+      );
+    }
+  }
+
+  async buscarAlunoPorUsuarioId(usuarioId: string): Promise<{
+    id: string;
+    faixa: string;
+    grau_faixa: number;
+  } | null> {
+    try {
+      return await this.prisma.aluno.findUnique({
+        where: { usuarioId },
+        select: { id: true, faixa: true, grau_faixa: true },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar aluno vinculado no banco de dados',
+      );
+    }
+  }
+
+  async atualizarAlunoFaixaGrau(
+    alunoId: string,
+    faixa: string,
+    grau_faixa: number,
+  ): Promise<void> {
+    try {
+      await this.prisma.aluno.update({
+        where: { id: alunoId },
+        data: { faixa, grau_faixa },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao sincronizar dados do aluno',
       );
     }
   }
@@ -252,7 +318,7 @@ export class ProfessorRepository {
     entity.frequencia_atual = v.aluno.frequencia_atual;
     entity.grau_faixa = v.aluno.grau_faixa;
     entity.faixa = v.aluno.faixa;
-    entity.data_nascimento = v.aluno.data_nascimento;
+    entity.data_nascimento = formatarDataNascimento(v.aluno.data_nascimento);
     entity.usuarioId = v.aluno.usuarioId;
     entity.nome = v.aluno.usuario.nome;
     entity.email = v.aluno.usuario.email;

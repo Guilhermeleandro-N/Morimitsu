@@ -96,7 +96,8 @@ export class AuthRepository {
 
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
-    if (roles.length === 0) roles.push('admin');
+    if (usuario.email === 'admin@morimitsu.com') roles.push('admin');
+    if (roles.length === 0) roles.push('user');
 
     const permissoes = new Set<string>();
     for (const up of usuario.userPerfis) {

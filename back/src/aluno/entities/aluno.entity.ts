@@ -22,8 +22,8 @@ export class AlunoEntity {
   @ApiProperty()
   faixa!: string;
 
-  @ApiPropertyOptional({ type: String, nullable: true })
-  data_nascimento!: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true, example: '20/02/2005' })
+  data_nascimento!: string | null;
 
   @ApiProperty()
   usuarioId!: string;
