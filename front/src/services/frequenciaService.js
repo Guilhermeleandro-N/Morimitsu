@@ -89,3 +89,26 @@ export async function listarFrequenciasAluno(
 
   }
 }
+
+export async function listarFrequenciasTurma(
+  turmaId
+) {
+  try {
+
+    const response = await api.get(
+      `/frequencia/turma/${turmaId}`
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao listar frequências da turma:",
+      error
+    );
+
+    throw error;
+
+  }
+}
