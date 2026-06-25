@@ -1,11 +1,13 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import authService from "../services/authService";
+import API_BASE_URL from "../config/api";
+
 const api = axios.create({
-    baseURL: "http://localhost:3000/api/"
+    baseURL: `${API_BASE_URL}/`
 });
 
 api.interceptors.request.use((config)=>{
-    const token = localStorage.getItem("accessToken");
+    const token = authService.getAccessToken();
     if (token){
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -24,18 +26,7 @@ api.interceptors.response.use(
         ){
             originalRequest._retry = true;
 
-            const refreshToken = localStorage.getItem("refreshToken");
-
-            const response = await axios.post("http://localhost:3000/api/auth/refresh-token", {
-                refreshToken
-            });
-
-            const newToken = response.data.token;
-
-            localStorage.setItem(
-                "accessToken",
-                newToken
-            );
+            const newToken = await authService.refreshAccessToken();
 
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
