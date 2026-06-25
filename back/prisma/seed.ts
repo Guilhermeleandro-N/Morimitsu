@@ -41,7 +41,7 @@ const ALUNO_PERMISSIONS = [
   { codigo: 'profile.read', descricao: 'Visualizar próprio perfil' },
   { codigo: 'attendance.read', descricao: 'Visualizar presença' },
   { codigo: 'training.read', descricao: 'Visualizar treino' },
-  // criar permissao de visualizar seus proprios dados de presenca e treino, sem acessar os dados dos outros alunos
+  { codigo: 'student.list.by_turma', descricao: 'Listar turmas em que o aluno participa' },
 ];
 
 const ADMIN_ONLY_PERMISSIONS = [
