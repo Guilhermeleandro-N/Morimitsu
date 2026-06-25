@@ -25,6 +25,7 @@ import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { GraduarAlunoDto } from './dtos/graduar-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
+import { AlunoTurmaEntity } from './entities/aluno-turma.entity';
 
 @ApiTags('Aluno')
 @ApiBearerAuth()
@@ -69,13 +70,13 @@ export class AlunoController {
   @UseGuards(PermissionsGuard)
   @Permissions('student.list.by_turma')
   @ApiOperation({
-    summary: 'Listar alunos das turmas do professor logado (ativos e inativos)',
+    summary: 'Listar turmas em que o aluno logado participa',
   })
-  @ApiResponse({ status: 200, type: [AlunoEntity] })
-  async listarDaMinhaTurma(
+  @ApiResponse({ status: 200, type: [AlunoTurmaEntity] })
+  async listarMinhasTurmas(
     @CurrentUser() usuario: JwtPayload,
-  ): Promise<AlunoEntity[]> {
-    return this.service.listarDaTurmaDoProfessor(usuario.sub);
+  ): Promise<AlunoTurmaEntity[]> {
+    return this.service.listarMinhasTurmas(usuario.sub);
   }
 
   @Get('usuario/:usuarioId')

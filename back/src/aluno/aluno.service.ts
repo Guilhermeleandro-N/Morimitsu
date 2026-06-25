@@ -9,6 +9,7 @@ import { AuthorizationService } from '../authorization/authorization.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
+import { AlunoTurmaEntity } from './entities/aluno-turma.entity';
 
 @Injectable()
 export class AlunoService {
@@ -33,12 +34,8 @@ export class AlunoService {
     return Promise.all(entities.map((e) => this.enriquecer(e)));
   }
 
-  async listarDaTurmaDoProfessor(
-    professorUsuarioId: string,
-  ): Promise<AlunoEntity[]> {
-    const entities =
-      await this.repository.listarPorProfessorUsuarioId(professorUsuarioId);
-    return Promise.all(entities.map((e) => this.enriquecer(e)));
+  async listarMinhasTurmas(usuarioId: string): Promise<AlunoTurmaEntity[]> {
+    return this.repository.listarTurmasPorAlunoUsuarioId(usuarioId);
   }
 
   async buscarPorId(id: string): Promise<AlunoEntity> {

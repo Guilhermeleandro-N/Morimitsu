@@ -10,6 +10,7 @@ import { formatarDataNascimento } from '../utils/date';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
+import { AlunoTurmaEntity } from './entities/aluno-turma.entity';
 
 const PERFIL_ALUNO_ID = 'perfil-aluno';
 
@@ -137,6 +138,32 @@ export class AlunoRepository {
       if (e instanceof NotFoundException) throw e;
       throw new InternalServerErrorException(
         'Erro ao listar alunos da turma no banco de dados',
+      );
+    }
+  }
+
+  async listarTurmasPorAlunoUsuarioId(
+    usuarioId: string,
+  ): Promise<AlunoTurmaEntity[]> {
+    try {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (!aluno) return [];
+
+      const vinculos = await this.prisma.alunoTurma.findMany({
+        where: { aluno_id: aluno.id, arquivado: false },
+        include: { turma: true },
+      });
+
+      return vinculos.map((v) => ({
+        ...v.turma,
+        frequente: v.frequente,
+      }));
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao listar turmas do aluno no banco de dados',
       );
     }
   }
