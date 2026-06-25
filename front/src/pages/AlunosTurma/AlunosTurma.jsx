@@ -9,7 +9,8 @@ import {
   FaTrash,
   FaArchive,
   FaUserPlus,
-  FaClipboardCheck
+  FaClipboardCheck,
+  FaHistory
 } from "react-icons/fa";
 
 import "./AlunosTurma.css";
@@ -146,6 +147,21 @@ function AlunosTurma() {
           }
         >
           <FaClipboardCheck />
+        </button>
+
+        <button
+          className="header-btn"
+          onClick={() =>
+            navigate("/historicoTreinos", {
+              state: {
+                turmaId,
+                turmaNome,
+              },
+            })
+          }
+          title="Histórico de Treinos"
+        >
+          <FaHistory />
         </button>
 
         </div>
