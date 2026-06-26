@@ -13,6 +13,7 @@ import AlunosTurma from "../pages/AlunosTurma/AlunosTurma";
 import HistoricoTreinos from "../pages/HistoricoTreinos/HistoricoTreinos";
 import CadastrarUsuario from "../pages/CadastrarUsuario/CadastrarUsuario";
 import ListarProfessores from "../pages/ListarProfessores/ListarProfessores";
+import ConcederPermissoes from "../pages/ConcederPermissoes/ConcederPermissoes";
 
 export default function AppRoutes() {
   return (
@@ -110,6 +111,12 @@ export default function AppRoutes() {
           }
         />
       </Route>
+      <Route
+        path="/concederPermissoes"
+        element={
+          <ConcederPermissoes />
+        }
+      />
     </Routes>
   );
 }
