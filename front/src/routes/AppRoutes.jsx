@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/login/Login";
 import Home from "../pages/Home/Home";
@@ -11,10 +11,13 @@ import ProtectedRoute from "./ProtectedRoutes";
 import ListarAluno from "../pages/ListarAlunos/ListarALunos";
 import AlunosTurma from "../pages/AlunosTurma/AlunosTurma";
 import HistoricoTreinos from "../pages/HistoricoTreinos/HistoricoTreinos";
+import ListarProfessores from "../pages/ListarProfessores/ListarProfessores";
+
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+
       <Route
         element={
           <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
@@ -38,7 +41,7 @@ export default function AppRoutes() {
               <CadastrarAluno />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route
           path="/editarAluno"
@@ -47,7 +50,8 @@ export default function AppRoutes() {
               <EditarAluno />
             </ProtectedRoute>
           }
-        ></Route>
+        />
+
         <Route
           path="/turmas"
           element={
@@ -64,7 +68,7 @@ export default function AppRoutes() {
               <PerfilAluno />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route
           path="/teste"
@@ -73,7 +77,7 @@ export default function AppRoutes() {
               <Home />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route
           path="/listarAluno"
@@ -82,14 +86,24 @@ export default function AppRoutes() {
               <ListarAluno />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route path="/alunosTurma" element={<AlunosTurma />} />
+
         <Route
           path="/historicoTreinos"
           element={
             <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
               <HistoricoTreinos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/listarProfessores"
+          element={
+            <ProtectedRoute rolesPermitidas={["admin"]}>
+              <ListarProfessores />
             </ProtectedRoute>
           }
         />

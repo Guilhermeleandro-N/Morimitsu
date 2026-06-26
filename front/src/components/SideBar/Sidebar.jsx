@@ -58,6 +58,13 @@ function Sidebar({isOpen, setIsOpen}) {
                     <li onClick={()=> {navigate("teste")}}  >
                         teste
                     </li>
+
+                                        <RoleGuard allowedRoutes={["admin"]} >
+                    <li onClick={()=> {navigate("/listarProfessores")}}  >
+                        Lista de professores
+                    </li>
+                    </RoleGuard>
+
                 </ul>
             </nav>
             <button className="logout-btn"  onClick= {handleLogout} >Sair</button>

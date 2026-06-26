@@ -57,7 +57,7 @@ export async function buscarProfessorPorUsuarioId(
   try {
 
     const response = await api.get(
-      `/professor/usuario/${usuarioId}`
+      `professor/usuario/${usuarioId}`
     );
 
     return response.data;
