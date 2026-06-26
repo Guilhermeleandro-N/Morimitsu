@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/login/Login";
 import Home from "../pages/Home/Home";
-import CadastrarAluno from "../pages/CadastrarAluno/CadastrarAluno";
+import Cadastros from "../pages/Cadastros/Cadastros";
 import EditarAluno from "../pages/EditarAluno/EditarAluno";
 import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
 import PerfilAluno from "../pages/PerfilAluno/PerfilAluno";
@@ -11,12 +11,14 @@ import ProtectedRoute from "./ProtectedRoutes";
 import ListarAluno from "../pages/ListarAlunos/ListarALunos";
 import AlunosTurma from "../pages/AlunosTurma/AlunosTurma";
 import HistoricoTreinos from "../pages/HistoricoTreinos/HistoricoTreinos";
+import CadastrarUsuario from "../pages/CadastrarUsuario/CadastrarUsuario";
 import ListarProfessores from "../pages/ListarProfessores/ListarProfessores";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/cadastrarUsuario" element={<CadastrarUsuario />} />
 
       <Route
         element={
@@ -35,10 +37,10 @@ export default function AppRoutes() {
         />
 
         <Route
-          path="/cadastrarAluno"
+          path="/cadastros"
           element={
             <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <CadastrarAluno />
+              <Cadastros />
             </ProtectedRoute>
           }
         />

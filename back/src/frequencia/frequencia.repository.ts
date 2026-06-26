@@ -12,27 +12,13 @@ import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
 import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
 import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
 import { FrequenciaEntity } from './entities/frequencia.entity';
+import { PROGRESSAO_FAIXAS, FREQUENCIAS_POR_GRAU, GRAUS_POR_FAIXA } from '../common/faixas.constants';
 
 export interface GraduacaoResultado {
   novoGrau: number;
   novaFaixa: string;
   graduou: boolean;
 }
-
-const PROGRESSAO_FAIXAS = [
-  'BRANCA',
-  'CINZA',
-  'AMARELA',
-  'LARANJA',
-  'VERDE',
-  'AZUL',
-  'ROXA',
-  'MARROM',
-  'PRETA',
-];
-
-const FREQUENCIAS_POR_GRAU = 30;
-const GRAUS_POR_FAIXA = 4;
 
 @Injectable()
 export class FrequenciaRepository {
