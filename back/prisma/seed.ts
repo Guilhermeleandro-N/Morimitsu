@@ -34,6 +34,7 @@ const PROFESSOR_PERMISSIONS = [
   { codigo: 'student.profile.read', descricao: 'Visualizar perfil do aluno' },
   { codigo: 'notification.read', descricao: 'Visualizar notificações' },
   { codigo: 'remove.student', descricao: 'Remover aluno da turma' },
+  { codigo: 'professor.read', descricao: 'Visualizar professor' },
 ];
 
 const ALUNO_PERMISSIONS = [
@@ -46,7 +47,6 @@ const ALUNO_PERMISSIONS = [
 const ADMIN_ONLY_PERMISSIONS = [
   { codigo: 'turma.create', descricao: 'Criar turma' },
   { codigo: 'professor.create', descricao: 'Criar professor' },
-  { codigo: 'professor.read', descricao: 'Visualizar professor' },
   { codigo: 'professor.update', descricao: 'Atualizar professor' },
 ];
 

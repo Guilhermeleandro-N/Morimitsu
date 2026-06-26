@@ -78,6 +78,57 @@ export class FrequenciaRepository {
     }
   }
 
+  async relatorioTreino(
+    professorId: string,
+    turmaId: string,
+    alunosPresentes: string[],
+  ): Promise<{ treino: FrequenciaProfEntity; frequencias: FrequenciaEntity[] }> {
+    const agora = new Date();
+    const inicio = new Date(agora.getTime() - 2 * 60 * 60 * 1000);
+
+    const treino = await this.prisma.frequenciaProf.create({
+      data: {
+        professor_id: professorId,
+        turma_id: turmaId,
+        data: agora,
+        status_aula: 'REALIZADA',
+      },
+    });
+
+    const frequencias: FrequenciaEntity[] = [];
+
+    for (const alunoId of alunosPresentes) {
+      const freq = await this.prisma.frequenciaAluno.create({
+        data: {
+          aluno_id: alunoId,
+          professor_id: professorId,
+          turma_id: turmaId,
+          data: agora,
+          horario_inicio: inicio,
+          horario_fim: agora,
+          status_presenca: 'PRESENTE',
+        },
+      });
+
+      const aluno = await this.prisma.aluno.update({
+        where: { id: alunoId },
+        data: { frequencia_atual: { increment: 1 } },
+      });
+
+      await this.verificarGraduacao(
+        alunoId,
+        turmaId,
+        aluno.frequencia_atual,
+        aluno.faixa,
+        aluno.grau_faixa,
+      );
+
+      frequencias.push(this.toEntity(freq));
+    }
+
+    return { treino: this.toEntityProf(treino), frequencias };
+  }
+
   async atualizar(
     id: string,
     dto: UpdateFrequenciaDto,
@@ -309,6 +360,21 @@ export class FrequenciaRepository {
     } catch {
       throw new InternalServerErrorException(
         'Erro ao verificar vínculo professor-turma no banco de dados',
+      );
+    }
+  }
+
+  async buscarProfessorPorUsuarioId(
+    usuarioId: string,
+  ): Promise<{ id: string } | null> {
+    try {
+      return this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar professor pelo usuário',
       );
     }
   }
