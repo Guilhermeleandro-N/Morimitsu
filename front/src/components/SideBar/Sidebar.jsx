@@ -71,6 +71,16 @@ function Sidebar({ isOpen, setIsOpen }) {
           >
             teste
           </li>
+
+          <RoleGuard allowedRoutes={["admin"]}>
+            <li
+              onClick={() => {
+                navigate("/listarProfessores");
+              }}
+            >
+              Lista de professores
+            </li>
+          </RoleGuard>
         </ul>
       </nav>
       <button className="logout-btn" onClick={handleLogout}>

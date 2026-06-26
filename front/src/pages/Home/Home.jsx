@@ -1,129 +1,109 @@
 import React, { useState } from "react";
-import { listarProfessoresDaTurma } from "../../services/turmaService";
+import { listarFrequenciasAluno } from "../../services/frequenciaService";
 
-function TesteListarProfessoresTurma() {
+function Home() {
+  const [alunoId, setAlunoId] = useState("");
+  const [frequencias, setFrequencias] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [turmaId, setTurmaId] =
-    useState("");
-
-  const [resultado, setResultado] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  async function buscarProfessores() {
-
-    try {
-
-      setLoading(true);
-
-      const response =
-        await listarProfessoresDaTurma(
-          turmaId
-        );
-
-      console.log(
-        "Professores da turma:",
-        response
-      );
-
-      setResultado(response);
-
-    } catch (error) {
-
-      console.error(
-        error.response?.data || error
-      );
-
-      setResultado(
-        error.response?.data ||
-        error.message
-      );
-
-    } finally {
-
-      setLoading(false);
-
+  async function buscarFrequencias() {
+    if (!alunoId.trim()) {
+      alert("Informe o ID do aluno.");
+      return;
     }
 
+    try {
+      setLoading(true);
+
+      const response = await listarFrequenciasAluno(alunoId);
+
+      setFrequencias(response);
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao buscar frequências.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        padding: "30px",
-      }}
-    >
-
-      <h1>
-        Teste - Professores da Turma
-      </h1>
+    <div style={{ padding: "30px" }}>
+      <h2>Teste - Listar Frequências do Aluno</h2>
 
       <input
         type="text"
-        placeholder="Digite o ID da turma"
-        value={turmaId}
-        onChange={(e) =>
-          setTurmaId(
-            e.target.value
-          )
-        }
+        placeholder="ID do aluno"
+        value={alunoId}
+        onChange={(e) => setAlunoId(e.target.value)}
         style={{
-          width: "100%",
+          width: "600px",
           padding: "10px",
-          marginBottom: "15px",
-          boxSizing: "border-box",
+          marginRight: "10px"
         }}
       />
 
-      <button
-        onClick={
-          buscarProfessores
-        }
-      >
-        Buscar Professores
+      <button onClick={buscarFrequencias}>
+        Buscar Frequências
       </button>
 
-      <hr />
+      {loading && <p>Carregando...</p>}
 
-      <h2>
-        Resultado
-      </h2>
-
-      {loading ? (
-
-        <p>
-          Carregando...
-        </p>
-
-      ) : (
-
-        <pre
+      {!loading && frequencias.length > 0 && (
+        <table
+          border="1"
+          cellPadding="8"
           style={{
-            background: "#f5f5f5",
-            padding: "20px",
-            borderRadius: "8px",
-            overflowX: "auto",
-            minHeight: "250px",
+            marginTop: "20px",
+            borderCollapse: "collapse",
+            width: "100%"
           }}
         >
-          {JSON.stringify(
-            resultado,
-            null,
-            2
-          )}
-        </pre>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Início</th>
+              <th>Fim</th>
+              <th>Status</th>
+              <th>Professor</th>
+              <th>Turma</th>
+            </tr>
+          </thead>
 
+          <tbody>
+            {frequencias.map((freq) => (
+              <tr key={freq.id}>
+                <td>
+                  {new Date(freq.data).toLocaleDateString()}
+                </td>
+
+                <td>
+                  {new Date(freq.horario_inicio).toLocaleTimeString()}
+                </td>
+
+                <td>
+                  {new Date(freq.horario_fim).toLocaleTimeString()}
+                </td>
+
+                <td>{freq.status_presenca}</td>
+
+                <td>{freq.professor_id}</td>
+
+                <td>{freq.turma_id}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
+      {!loading && frequencias.length === 0 && (
+        <p style={{ marginTop: "20px" }}>
+          Nenhuma frequência encontrada.
+        </p>
+      )}
     </div>
-
   );
-
 }
 
-export default TesteListarProfessoresTurma;
+export default Home;
