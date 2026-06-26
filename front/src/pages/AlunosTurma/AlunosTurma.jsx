@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { listarAlunosDaTurma } from "../../services/turmaService";
+import { listarAlunosDaTurma, removerAlunoDaTurma } from "../../services/turmaService";
 import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import FrequenciaModal from "../../components/RegistrarFrequencia/FrequenciaModal";
 
@@ -15,6 +15,7 @@ import {
 
 import "./AlunosTurma.css";
 import AdicionarAlunoTurmaModal from "../../components/AdicionarAlunoTurma/AdicionarAlunoTurmaModal";
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 
 function AlunosTurma() {
 
@@ -32,6 +33,10 @@ function AlunosTurma() {
 
   const [modalFrequenciaOpen, setModalFrequenciaOpen] =
   useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] =
+    useState(false);
+  const [selectedAlunoParaRemover, setSelectedAlunoParaRemover] =
+    useState(null);
 
   function abrirPerfil(userId) {
     navigate("/perfilAluno", {
@@ -79,6 +84,42 @@ function AlunosTurma() {
       );
 
     }
+  }
+
+  function abrirConfirmacaoRemocao(aluno) {
+    setSelectedAlunoParaRemover(aluno);
+    setConfirmModalOpen(true);
+  }
+
+  async function handleRemoverAluno() {
+    if (!selectedAlunoParaRemover) {
+      return;
+    }
+
+    try {
+      await removerAlunoDaTurma(
+        turmaId,
+        selectedAlunoParaRemover.id,
+      );
+      setAlunos((prevAlunos) =>
+        prevAlunos.filter(
+          (aluno) => aluno.id !== selectedAlunoParaRemover.id,
+        ),
+      );
+    } catch (error) {
+      console.error(
+        "Erro ao remover aluno da turma:",
+        error,
+      );
+    } finally {
+      setConfirmModalOpen(false);
+      setSelectedAlunoParaRemover(null);
+    }
+  }
+
+  function fecharConfirmacao() {
+    setConfirmModalOpen(false);
+    setSelectedAlunoParaRemover(null);
   }
 
   useEffect(() => {
@@ -191,7 +232,6 @@ function AlunosTurma() {
                 <th>Grau</th>
                 <th>Frequência</th>
                 <th>Status</th>
-                <th>Arquivar</th>
                 <th>Excluir</th>
                 <th>Ações</th>
               </tr>
@@ -243,15 +283,12 @@ function AlunosTurma() {
 
                   <td>
 
-                    <button className="icon-btn">
-                      <FaArchive />
-                    </button>
-
-                  </td>
-
-                  <td>
-
-                    <button className="icon-btn delete">
+                    <button
+                      className="icon-btn delete"
+                      onClick={() =>
+                        abrirConfirmacaoRemocao(aluno)
+                      }
+                    >
                       <FaTrash />
                     </button>
 
@@ -282,7 +319,7 @@ function AlunosTurma() {
                 <tr>
 
                   <td
-                    colSpan="8"
+                    colSpan="7"
                     style={{
                       textAlign: "center",
                       padding: "20px"
@@ -339,6 +376,17 @@ function AlunosTurma() {
     }}
   />
 )}
+
+      {confirmModalOpen && selectedAlunoParaRemover && (
+        <ConfirmModal
+          title="Confirmar exclusão"
+          message={`Deseja realmente remover ${selectedAlunoParaRemover.nome} desta turma?`}
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          onConfirm={handleRemoverAluno}
+          onCancel={fecharConfirmacao}
+        />
+      )}
 
     </div>
 

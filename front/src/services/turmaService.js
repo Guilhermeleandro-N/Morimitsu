@@ -139,7 +139,14 @@ export const adicionarAlunoNaTurma = async (id, aluno_id, frequente = "S") => {
     }
 };
 
-
+export const removerAlunoDaTurma = async (turmaId, alunoId) => {
+  try {
+    await api.delete(`/turma/${turmaId}/aluno/${alunoId}`);
+  } catch (error) {
+    console.error("Erro ao remover aluno da turma:", error);
+    throw error;
+  }
+};
 
 export async function adicionarProfessorTurma(
   turmaId,
