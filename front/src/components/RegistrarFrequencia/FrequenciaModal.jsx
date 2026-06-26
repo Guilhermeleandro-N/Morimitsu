@@ -1,6 +1,21 @@
-import React, { useState } from "react";
+import React, {
+  useState,
+  useContext
+} from "react";
+
 import "./FrequenciaModal.css";
-import { registrarFrequencia } from "../../services/frequenciaService";
+
+import {
+  registrarFrequencia
+} from "../../services/frequenciaService";
+
+import {
+  buscarProfessorPorUsuarioId
+} from "../../services/professorService";
+
+import {
+  AuthContext
+} from "../../context/AuthContext";
 
 const FrequenciaModal = ({
   alunos,
@@ -9,10 +24,13 @@ const FrequenciaModal = ({
   onSalvar,
 }) => {
 
+  const { user } =
+    useContext(AuthContext);
+
   const [presentes, setPresentes] =
     useState([]);
 
-  const togglePresenca = (alunoId) => {
+  function togglePresenca(alunoId) {
 
     setPresentes((prev) =>
       prev.includes(alunoId)
@@ -22,11 +40,21 @@ const FrequenciaModal = ({
         : [...prev, alunoId]
     );
 
-  };
+  }
 
-  const handleSalvar = async () => {
+  async function handleSalvar() {
 
     try {
+
+      if (!user) {
+        alert("Usuário não está logado.");
+        return;
+      }
+      console.log(user);
+      const professor =
+        await buscarProfessorPorUsuarioId(
+          user.userId
+        );
 
       const agora = new Date();
 
@@ -40,21 +68,25 @@ const FrequenciaModal = ({
         presentes.map((alunoId) =>
 
           registrarFrequencia({
+
             aluno_id: alunoId,
 
             professor_id:
-              "1eba4e87-d72a-4a94-b81a-a1b8b27f8330",
+              professor.id,
 
             turma_id: turmaId,
 
             data: agora,
 
-            horario_inicio: inicio,
+            horario_inicio:
+              inicio,
 
-            horario_fim: agora,
+            horario_fim:
+              agora,
 
             status_presenca:
               "PRESENTE",
+
           })
 
         )
@@ -75,8 +107,7 @@ const FrequenciaModal = ({
 
       console.error(
         "Erro ao registrar frequência:",
-        error.response?.data ||
-          error
+        error.response?.data || error
       );
 
       alert(
@@ -85,7 +116,7 @@ const FrequenciaModal = ({
 
     }
 
-  };
+  }
 
   return (
 
@@ -98,8 +129,7 @@ const FrequenciaModal = ({
         </h2>
 
         <p>
-          Selecione os alunos
-          presentes na aula.
+          Selecione os alunos presentes na aula.
         </p>
 
         <div className="lista-alunos">
