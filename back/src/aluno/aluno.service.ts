@@ -9,6 +9,7 @@ import { AuthorizationService } from '../authorization/authorization.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
+import { PROGRESSAO_FAIXAS } from '../common/faixas.constants';
 
 @Injectable()
 export class AlunoService {
@@ -112,29 +113,17 @@ export class AlunoService {
     const faixaAtual = existente.faixa;
     const totalGraus = Math.floor(existente.frequencia_atual / 30);
 
-    const FAIXAS = [
-      'BRANCA',
-      'CINZA',
-      'AMARELA',
-      'LARANJA',
-      'VERDE',
-      'AZUL',
-      'ROXA',
-      'MARROM',
-      'PRETA',
-    ];
-
-    let indiceFaixa = FAIXAS.indexOf(faixaAtual);
+    let indiceFaixa = PROGRESSAO_FAIXAS.indexOf(faixaAtual);
     if (indiceFaixa === -1) indiceFaixa = 0;
 
     let grausRestantes = totalGraus + grauAtual;
 
-    while (grausRestantes >= 4 && indiceFaixa < FAIXAS.length - 1) {
+    while (grausRestantes >= 4 && indiceFaixa < PROGRESSAO_FAIXAS.length - 1) {
       grausRestantes -= 4;
       indiceFaixa++;
     }
 
-    const novaFaixa = FAIXAS[indiceFaixa];
+    const novaFaixa = PROGRESSAO_FAIXAS[indiceFaixa];
     const novoGrau = grausRestantes;
 
     if (novaFaixa === faixaAtual && novoGrau === grauAtual) {

@@ -11,18 +11,7 @@ import {
   UsuarioPerfilEntity,
 } from './entities/perfil.entity';
 import { PerfilRepository } from './perfil.repository';
-
-const PROGRESSAO_FAIXAS = [
-  'BRANCA',
-  'CINZA',
-  'AMARELA',
-  'LARANJA',
-  'VERDE',
-  'AZUL',
-  'ROXA',
-  'MARROM',
-  'PRETA',
-];
+import { PROGRESSAO_FAIXAS } from '../common/faixas.constants';
 
 const INDICE_ROXA = PROGRESSAO_FAIXAS.indexOf('ROXA'); // 6
 
