@@ -6,6 +6,12 @@ import {
   BuscarAlunoCompletoPorUserId,
   graduarAluno
 } from '../../services/alunoService';
+
+import { listarTurmas } from "../../services/turmaService";
+
+import {
+  listarFrequenciasAluno
+} from "../../services/frequenciaService";
 import RoleGuard from '../../routes/RoleGuard';
 import GraduarAlunoModal from "../../components/GraduarAluno/GraduarAlunoModal.jsx";
 
@@ -18,6 +24,41 @@ const PerfilAluno = () => {
   const [alunoData, setAlunoData] = useState(null);
   const [primeiraLetra, setPrimeiraLetra] = useState("");
   const [modalGraduacaoOpen, setModalGraduacaoOpen] = useState(false);
+  const [historico, setHistorico] = useState([]);
+  const [nomesTurmas, setNomesTurmas] = useState({});
+
+  async function buscarFrequencias(alunoId) {
+
+    try {
+
+      const [
+        frequencias,
+        turmas
+      ] = await Promise.all([
+        listarFrequenciasAluno(alunoId),
+        listarTurmas()
+      ]);
+
+      const mapaTurmas = {};
+
+      turmas.forEach((turma) => {
+        mapaTurmas[turma.id] = turma.nome;
+      });
+
+      setNomesTurmas(mapaTurmas);
+
+      setHistorico(frequencias);
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao buscar frequências:",
+        error
+      );
+
+    }
+
+  }
 
   function formatarDataBR(data) {
     if (!data) return "--";
@@ -31,21 +72,29 @@ const PerfilAluno = () => {
 
     return data;
   }
-
   async function buscarAluno() {
+
     if (!userId) return;
 
     try {
-      const response = await BuscarAlunoCompletoPorUserId(userId);
+
+      const response =
+        await BuscarAlunoCompletoPorUserId(userId);
 
       setAlunoData(response);
-      setPrimeiraLetra(response?.nome?.charAt(0) ?? "");
 
-      console.log(response);
+      setPrimeiraLetra(
+        response?.nome?.charAt(0) ?? ""
+      );
+
+      await buscarFrequencias(response.id);
 
     } catch (error) {
+
       console.error(error);
+
     }
+
   }
 
   async function handleGraduarAluno(dados) {
@@ -82,8 +131,7 @@ const PerfilAluno = () => {
   const grau = dadosAluno.grau_faixa ?? "";
   const presencas = dadosAluno.frequencia_atual ?? 0;
 
-  const historico =
-    dadosAluno.historico_frequencias ?? [];
+
 
   return (
     <div className='main'>
@@ -194,63 +242,90 @@ const PerfilAluno = () => {
 
             <table className="history-table">
 
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Frequência</th>
-                  <th>Turma</th>
-                </tr>
-              </thead>
+      <thead>
+
+        <tr >
+
+          <th>Data</th>
+          <th>Presença</th>
+          
+          <th>Início</th>
+          <th>Fim</th>
+          <th>Turma</th>
+
+        </tr>
+
+      </thead>
 
               <tbody>
 
-                {historico.length > 0 ? (
-                  historico.map((item, index) => (
-                    <tr key={index}>
+  {historico.length > 0 ? (
 
-                      <td data-label="Data">
-                        {formatarDataBR(item.data)}
-                      </td>
+    historico.map((item) => (
 
-                      <td data-label="Frequência">
-                        <div className="presence-status">
+  <tr key={item.id}>
 
-                          <span>
-                            {item.status_presenca}
-                          </span>
+    <td>
+      {formatarDataBR(item.data)}
+    </td>
 
-                          <button
-                            className={`presence-button ${
-                              item.status_presenca === "PRESENTE"
-                                ? "present"
-                                : "absent"
-                            }`}
-                          ></button>
+    <td>
+      <div className="presence-status">
+        <span>{item.status_presenca}</span>
 
-                        </div>
-                      </td>
+        <button
+          className={`presence-button ${
+            item.status_presenca === "PRESENTE"
+              ? "present"
+              : "absent"
+          }`}
+        />
+      </div>
+    </td>
 
-                      <td data-label="Turma">
-                        {item.turma_nome}
-                      </td>
+    <td>
+      {new Date(item.horario_inicio)
+        .toLocaleTimeString("pt-BR")}
+    </td>
 
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="3"
-                      style={{
-                        textAlign: "center",
-                        padding: "20px"
-                      }}
-                    >
-                      Nenhum histórico encontrado.
-                    </td>
-                  </tr>
-                )}
+    <td>
+      {new Date(item.horario_fim)
+        .toLocaleTimeString("pt-BR")}
+    </td>
 
-              </tbody>
+    <td>
+      {nomesTurmas[item.turma_id] || "--"}
+    </td>
+
+  </tr>
+
+))
+
+  ) : (
+
+    <tr>
+
+      <td
+        colSpan="6"
+        style={{
+          textAlign: "center",
+          padding: "20px"
+        }}
+      >
+        Nenhum histórico encontrado.
+      </td>
+
+
+        <td>
+
+</td>
+    </tr>
+
+
+
+  )}
+
+</tbody>
 
             </table>
 
