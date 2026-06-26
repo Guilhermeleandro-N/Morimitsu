@@ -22,6 +22,7 @@ import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { CreateFrequenciaProfDto } from './dtos/create-frequencia-prof.dto';
 import { CreateFrequenciaDto } from './dtos/create-frequencia.dto';
+import { RelatorioTreinoDto } from './dtos/relatorio-treino.dto';
 import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
 import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
 import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
@@ -146,5 +147,21 @@ export class FrequenciaController {
     @Param('professorId') professorId: string,
   ): Promise<FrequenciaProfEntity[]> {
     return this.service.listarTreinosPorProfessor(professorId);
+  }
+
+  @Post('turma/relatorio')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(PermissionsGuard)
+  @Permissions('attendance.create')
+  @ApiOperation({
+    summary:
+      'Fechar treino: registra o treino do professor e a frequência de todos os alunos de uma vez',
+  })
+  @ApiResponse({ status: 201, description: 'Treino fechado com sucesso' })
+  async relatorioTreino(
+    @CurrentUser() usuario: JwtPayload,
+    @Body() dto: RelatorioTreinoDto,
+  ) {
+    return this.service.relatorioTreino(usuario.sub, dto);
   }
 }
