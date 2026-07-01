@@ -1,0 +1,354 @@
+/* ============================
+   RESET
+============================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ============================
+   PÁGINA
+============================ */
+
+.main {
+
+  width: 100%;
+  min-height: 100vh;
+  background: #eceaea;
+  padding: 0px 50px;
+}
+
+.container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding-top: 0px
+}
+
+/* ============================
+   HEADER
+============================ */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.header-info h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.header-info p {
+  color: #777;
+  font-size: 1rem;
+}
+
+.btn-edit {
+  background: #c1272d;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.btn-edit:hover {
+  opacity: .9;
+}
+
+/* ============================
+   GRID
+============================ */
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+/* ============================
+   CARDS
+============================ */
+
+.sidebar-card,
+.content-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 3px 14px rgba(0,0,0,.08);
+  padding: 32px;
+}
+
+.sidebar-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.content-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 620px;
+}
+
+/* ============================
+   SIDEBAR
+============================ */
+
+.card-title {
+  color: #c1272d;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.avatar-placeholder {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: #f8d7d7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  color: #555;
+}
+
+.student-name {
+  text-align: center;
+  font-size: 2rem;
+  line-height: 1.25;
+  color: #222;
+  margin-bottom: 18px;
+}
+
+.status-badge {
+  margin: 0 auto 28px;
+  padding: 7px 18px;
+  border-radius: 30px;
+  font-size: .9rem;
+  font-weight: bold;
+  color: white;
+}
+
+.status-badge.enabled,
+.status-badge.ativo {
+  background: #0a992d;
+}
+
+.personal-details {
+  margin-top: auto;
+  border-top: 1px solid #ededed;
+  padding-top: 22px;
+}
+
+.personal-details p {
+  margin-bottom: 14px;
+  color: #777;
+  font-size: 16px;
+}
+
+.personal-details strong {
+  color: #333;
+}
+
+/* ============================
+   HISTÓRICO
+============================ */
+
+.history-header {
+  margin-bottom: 25px;
+}
+
+.history-header h3 {
+  font-size: 1.6rem;
+  color: #222;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table thead {
+  background: #fafafa;
+}
+
+.history-table th {
+  text-align: left;
+  padding: 14px;
+  color: #888;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+}
+
+.history-table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid #f2f2f2;
+  color: #555;
+}
+
+.history-table tbody {
+  display: block;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.history-table thead,
+.history-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* ============================
+   MENSAGEM SEM HISTÓRICO
+============================ */
+
+.content-card > div:last-child {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #999;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* ============================
+   BOTÕES
+============================ */
+
+.btn-graduate {
+  margin-top: 25px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #c1272d;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-graduate:hover {
+  opacity: .9;
+}
+
+/* ============================
+   RESPONSIVIDADE
+============================ */
+
+@media (max-width: 1100px) {
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-card {
+    max-width: 500px;
+    width: 100%;
+    margin: auto;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .main {
+    padding: 25px 18px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-edit {
+    width: 100%;
+  }
+
+  .card-title {
+    font-size: 1.8rem;
+  }
+
+  .student-name {
+    font-size: 1.6rem;
+  }
+
+  .avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    font-size: 54px;
+  }
+
+  .history-header h3 {
+    font-size: 1.3rem;
+  }
+
+}
+
+/* ============================
+   TABELA MOBILE
+============================ */
+
+@media (max-width: 600px) {
+
+  .history-table thead {
+    display: none;
+  }
+
+  .history-table,
+  .history-table tbody,
+  .history-table tr,
+  .history-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .history-table tbody {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .history-table tr {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    padding: 12px;
+  }
+
+  .history-table td {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 10px 0;
+  }
+
+  .history-table td::before {
+    content: attr(data-label);
+    color: #999;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+}

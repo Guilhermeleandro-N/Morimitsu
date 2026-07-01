@@ -5,10 +5,18 @@ import authService from "../services/authService";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  /*useEffect(() => {
-        console.log("User atualizado:", user);
-    }, [user]);*/
+  const [user, setUser] = useState(() => {
+    const usuarioSalvo = localStorage.getItem("user");
+    return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
+  });
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
 
   async function login(email, senha) {
     try {
@@ -32,6 +40,7 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       const refreshToken = authService.getRefreshToken();
+
       await api.post("auth/logout", {
         refreshToken,
       });

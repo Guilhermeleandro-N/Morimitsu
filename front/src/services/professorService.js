@@ -1,5 +1,5 @@
 import api from "../api/axios";
-
+import {buscarUser} from "./userService.js";
 
 export async function criarProfessor(
   usuarioId,
@@ -74,5 +74,33 @@ export async function buscarProfessorPorUsuarioId(
   }
 }
 
+export async function buscarProfessorEUsuario(
+  usuarioId
+) {
+  try {
 
+    const usuario =
+      await buscarUser(usuarioId);
+
+    const professor =
+      await api.get(
+        `professor/usuario/${usuario.id}`
+      );
+
+    return {
+      usuario,
+      professor: professor.data,
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao buscar dados do professor:",
+      error
+    );
+
+    throw error;
+
+  }
+}
 

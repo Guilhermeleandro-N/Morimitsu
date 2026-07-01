@@ -3,17 +3,32 @@ import React, {
   useState
 } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import {
   listarProfessores
 } from "../../services/professorService";
 
 import {
-  FaChalkboardTeacher
+  FaEye
 } from "react-icons/fa";
 
 import "./ListarProfessores.css";
 
 function ListarProfessores() {
+  
+const navigate = useNavigate();
+
+function abrirPerfil(userId) {
+
+  navigate("/perfilProfessor", {
+    state: {
+      id: userId
+    }
+  });
+
+}
+
 
   const [professores,
     setProfessores] =
@@ -92,7 +107,7 @@ function ListarProfessores() {
                 <th>Email</th>
                 <th>Faixa</th>
                 <th>Grau</th>
-                <th>Função</th>
+                <th>Ações</th>
 
               </tr>
 
@@ -125,16 +140,15 @@ function ListarProfessores() {
 
                     <td>
 
-                      <span
+                      <button
                         className="perfil-btn"
-                        style={{
-                          cursor:
-                            "default"
-                        }}
+                        onClick={() =>
+                          abrirPerfil(professor.usuarioId)
+                        }
                       >
-                        <FaChalkboardTeacher />
-                        Professor
-                      </span>
+                        <FaEye />
+                        Ver Perfil
+                      </button>
 
                     </td>
 

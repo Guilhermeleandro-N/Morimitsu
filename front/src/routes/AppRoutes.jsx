@@ -14,7 +14,7 @@ import HistoricoTreinos from "../pages/HistoricoTreinos/HistoricoTreinos";
 import CadastrarUsuario from "../pages/CadastrarUsuario/CadastrarUsuario";
 import ListarProfessores from "../pages/ListarProfessores/ListarProfessores";
 import ConcederPermissoes from "../pages/ConcederPermissoes/ConcederPermissoes";
-
+import PerfilProfessor from "../pages/PerfilProfessor/PerfilProfessor";
 export default function AppRoutes() {
   return (
     <Routes>
@@ -27,90 +27,102 @@ export default function AppRoutes() {
             <MainLayout />
           </ProtectedRoute>
         }
-      >
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
-              <VisualizarTurmas />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
+                <VisualizarTurmas />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/cadastros"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <Cadastros />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/cadastros"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <Cadastros />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/editarAluno"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <EditarAluno />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/editarAluno"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <EditarAluno />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/turmas"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <VisualizarTurmas />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/turmas"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <VisualizarTurmas />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/perfilAluno"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
-              <PerfilAluno />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/perfilAluno"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
+                <PerfilAluno />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/teste"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/teste"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/listarAluno"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <ListarAluno />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/listarAluno"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <ListarAluno />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="/alunosTurma" element={<AlunosTurma />} />
+          <Route path="/alunosTurma" element={<AlunosTurma />} />
 
-        <Route
-          path="/historicoTreinos"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <HistoricoTreinos />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/historicoTreinos"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <HistoricoTreinos />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/listarProfessores"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin"]}>
-              <ListarProfessores />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/listarProfessores"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin"]}>
+                <ListarProfessores />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/perfilProfessor"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <PerfilProfessor />
+              </ProtectedRoute>
+            }
+          />
+
       </Route>
+
+
+      
       <Route
         path="/concederPermissoes"
         element={
