@@ -11,6 +11,7 @@ import {
   UsuarioPerfilEntity,
 } from './entities/perfil.entity';
 import { PerfilRepository } from './perfil.repository';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { PROGRESSAO_FAIXAS } from '../common/faixas.constants';
 
 const INDICE_ROXA = PROGRESSAO_FAIXAS.indexOf('ROXA'); // 6
@@ -52,13 +53,22 @@ export class PerfilService {
     return catalogo;
   }
 
-  async listarPerfis(): Promise<PerfilResumoEntity[]> {
-    const perfis = await this.repository.buscarPerfis();
-    return perfis.map((p) => ({
+  async listarPerfis(
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<PerfilResumoEntity>> {
+    const { data, total } = await this.repository.buscarPerfis(skip, take);
+    const perfis = data.map((p) => ({
       id: p.id,
       nome: p.nome,
       total_permissoes: p._count.perfilPermissions,
     }));
+    return new PaginatedResult(
+      perfis,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async buscarPerfil(id: string): Promise<PerfilCompletoEntity> {
@@ -114,13 +124,27 @@ export class PerfilService {
     return this.buscarPerfil(perfilId);
   }
 
-  async listarPerfisUsuario(usuarioId: string): Promise<UsuarioPerfilEntity[]> {
-    const perfis = await this.repository.buscarPerfisDoUsuario(usuarioId);
-    return perfis.map((p) => ({
+  async listarPerfisUsuario(
+    usuarioId: string,
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<UsuarioPerfilEntity>> {
+    const { data, total } = await this.repository.buscarPerfisDoUsuario(
+      usuarioId,
+      skip,
+      take,
+    );
+    const perfis = data.map((p) => ({
       usuario_id: usuarioId,
       perfil_id: p.perfil_id,
       perfil_nome: p.perfil.nome,
     }));
+    return new PaginatedResult(
+      perfis,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async atribuirPerfil(

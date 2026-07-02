@@ -13,19 +13,27 @@ export class NotificacaoRepository {
 
   async listarPorProfessor(
     professorUsuarioId: string,
-  ): Promise<NotificacaoEntity[]> {
+    skip: number,
+    take: number,
+  ): Promise<{ data: NotificacaoEntity[]; total: number }> {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId: professorUsuarioId },
         select: { id: true },
       });
-      if (!professor) return [];
+      if (!professor) return { data: [], total: 0 };
 
-      const notificacoes = await this.prisma.notificacao.findMany({
-        where: { professor_id: professor.id },
-        orderBy: { created_at: 'desc' },
-      });
-      return notificacoes.map((n) => this.toEntity(n));
+      const where = { professor_id: professor.id };
+      const [notificacoes, total] = await Promise.all([
+        this.prisma.notificacao.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { created_at: 'desc' },
+        }),
+        this.prisma.notificacao.count({ where }),
+      ]);
+      return { data: notificacoes.map((n) => this.toEntity(n)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar notificações no banco de dados',

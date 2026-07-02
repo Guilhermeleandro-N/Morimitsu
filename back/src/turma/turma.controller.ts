@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -25,6 +26,8 @@ import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
 import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaService } from './turma.service';
 
@@ -49,8 +52,16 @@ export class TurmaController {
   @Permissions('turma.read')
   @ApiOperation({ summary: 'Listar todas as turmas' })
   @ApiResponse({ status: 200, type: [TurmaEntity] })
-  async listar(): Promise<TurmaEntity[]> {
-    return this.service.listar();
+  async listar(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<TurmaEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listar(
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
   }
 
   @Get(':id')
@@ -129,8 +140,18 @@ export class TurmaController {
   @Permissions('student.list.by_turma')
   @ApiOperation({ summary: 'Listar alunos de uma turma' })
   @ApiResponse({ status: 200, type: [AlunoEntity] })
-  async listarAlunos(@Param('id') id: string): Promise<AlunoEntity[]> {
-    return this.service.listarAlunos(id);
+  async listarAlunos(
+    @Param('id') id: string,
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listarAlunos(
+      id,
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
   }
 
   @Get(':id/professores')
@@ -138,8 +159,18 @@ export class TurmaController {
   @Permissions('turma.read')
   @ApiOperation({ summary: 'Listar professores de uma turma' })
   @ApiResponse({ status: 200, type: [ProfessorEntity] })
-  async listarProfessores(@Param('id') id: string): Promise<ProfessorEntity[]> {
-    return this.service.listarProfessores(id);
+  async listarProfessores(
+    @Param('id') id: string,
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<ProfessorEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listarProfessores(
+      id,
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
   }
 
   @Delete(':id/aluno/:alunoId')

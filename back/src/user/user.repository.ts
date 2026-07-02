@@ -17,6 +17,9 @@ export class UserRepository {
         email: dto.email,
         senha: senhaHash,
         telefone: dto.telefone,
+        data_nascimento: dto.data_nascimento
+          ? new Date(dto.data_nascimento)
+          : null,
       },
       include: { aluno: true, professor: true },
     });
@@ -41,11 +44,21 @@ export class UserRepository {
     return this.toEntity(usuario);
   }
 
-  async listar(): Promise<UserEntity[]> {
-    const usuarios = await this.prisma.usuario.findMany({
-      include: { aluno: true, professor: true },
-    });
-    return usuarios.map((u) => this.toEntity(u));
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: UserEntity[]; total: number }> {
+    const where = {};
+    const [usuarios, total] = await Promise.all([
+      this.prisma.usuario.findMany({
+        where,
+        skip,
+        take,
+        include: { aluno: true, professor: true },
+      }),
+      this.prisma.usuario.count({ where }),
+    ]);
+    return { data: usuarios.map((u) => this.toEntity(u)), total };
   }
 
   async atualizar(id: string, dto: UpdateUserDto): Promise<UserEntity | null> {
@@ -55,6 +68,10 @@ export class UserRepository {
     if (dto.telefone !== undefined) data.telefone = dto.telefone;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.senha !== undefined) data.senha = await argon2.hash(dto.senha);
+    if (dto.data_nascimento !== undefined)
+      data.data_nascimento = dto.data_nascimento
+        ? new Date(dto.data_nascimento)
+        : null;
 
     const usuario = await this.prisma.usuario.update({
       where: { id },
@@ -77,6 +94,7 @@ export class UserRepository {
     nome: string;
     email: string;
     telefone: string | null;
+    data_nascimento: Date | null;
     status: string;
     aluno: { id: string } | null;
     professor: { id: string } | null;
@@ -91,6 +109,7 @@ export class UserRepository {
     entity.nome = usuario.nome;
     entity.email = usuario.email;
     entity.telefone = usuario.telefone;
+    entity.data_nascimento = usuario.data_nascimento;
     entity.status = usuario.status;
     entity.roles = roles;
     return entity;

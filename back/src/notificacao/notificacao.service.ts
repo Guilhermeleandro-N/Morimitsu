@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NotificacaoEntity } from './entities/notificacao.entity';
 import { NotificacaoRepository } from './notificacao.repository';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 
 @Injectable()
 export class NotificacaoService {
@@ -8,8 +9,15 @@ export class NotificacaoService {
 
   async listarPorProfessor(
     professorUsuarioId: string,
-  ): Promise<NotificacaoEntity[]> {
-    return this.repository.listarPorProfessor(professorUsuarioId);
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<NotificacaoEntity>> {
+    const { data, total } = await this.repository.listarPorProfessor(
+      professorUsuarioId,
+      skip,
+      take,
+    );
+    return new PaginatedResult(data, total, Math.floor(skip / take) + 1, take);
   }
 
   async marcarComoLida(

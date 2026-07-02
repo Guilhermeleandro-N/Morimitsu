@@ -12,7 +12,11 @@ import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
 import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
 import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
 import { FrequenciaEntity } from './entities/frequencia.entity';
-import { PROGRESSAO_FAIXAS, FREQUENCIAS_POR_GRAU, GRAUS_POR_FAIXA } from '../common/faixas.constants';
+import {
+  PROGRESSAO_FAIXAS,
+  FREQUENCIAS_POR_GRAU,
+  GRAUS_POR_FAIXA,
+} from '../common/faixas.constants';
 
 export interface GraduacaoResultado {
   novoGrau: number;
@@ -68,7 +72,10 @@ export class FrequenciaRepository {
     professorId: string,
     turmaId: string,
     alunosPresentes: string[],
-  ): Promise<{ treino: FrequenciaProfEntity; frequencias: FrequenciaEntity[] }> {
+  ): Promise<{
+    treino: FrequenciaProfEntity;
+    frequencias: FrequenciaEntity[];
+  }> {
     const agora = new Date();
     const inicio = new Date(agora.getTime() - 2 * 60 * 60 * 1000);
 
@@ -238,13 +245,23 @@ export class FrequenciaRepository {
     return { novoGrau, novaFaixa, graduou: true };
   }
 
-  async listarPorAluno(alunoId: string): Promise<FrequenciaEntity[]> {
+  async listarPorAluno(
+    alunoId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaEntity[]; total: number }> {
     try {
-      const frequencias = await this.prisma.frequenciaAluno.findMany({
-        where: { aluno_id: alunoId },
-        orderBy: { data: 'desc' },
-      });
-      return frequencias.map((f) => this.toEntity(f));
+      const where = { aluno_id: alunoId };
+      const [frequencias, total] = await Promise.all([
+        this.prisma.frequenciaAluno.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaAluno.count({ where }),
+      ]);
+      return { data: frequencias.map((f) => this.toEntity(f)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar frequências no banco de dados',
@@ -252,13 +269,23 @@ export class FrequenciaRepository {
     }
   }
 
-  async listarPorTurma(turmaId: string): Promise<FrequenciaEntity[]> {
+  async listarPorTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaEntity[]; total: number }> {
     try {
-      const frequencias = await this.prisma.frequenciaAluno.findMany({
-        where: { turma_id: turmaId },
-        orderBy: { data: 'desc' },
-      });
-      return frequencias.map((f) => this.toEntity(f));
+      const where = { turma_id: turmaId };
+      const [frequencias, total] = await Promise.all([
+        this.prisma.frequenciaAluno.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaAluno.count({ where }),
+      ]);
+      return { data: frequencias.map((f) => this.toEntity(f)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar frequências da turma no banco de dados',
@@ -275,13 +302,15 @@ export class FrequenciaRepository {
       data_fim?: Date;
       frequente?: string;
     },
-  ): Promise<FrequenciaEntity[]> {
+    skip = 0,
+    take = 10,
+  ): Promise<{ data: FrequenciaEntity[]; total: number }> {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId: professorUsuarioId },
         select: { id: true },
       });
-      if (!professor) return [];
+      if (!professor) return { data: [], total: 0 };
 
       const turmasDoProfessor = await this.prisma.professorTurma.findMany({
         where: { professor_id: professor.id },
@@ -289,7 +318,7 @@ export class FrequenciaRepository {
       });
       const turmaIds = turmasDoProfessor.map((t) => t.turma_id);
 
-      if (turmaIds.length === 0) return [];
+      if (turmaIds.length === 0) return { data: [], total: 0 };
 
       const where: Prisma.FrequenciaAlunoWhereInput = {
         turma_id: filtros?.turma_id ? filtros.turma_id : { in: turmaIds },
@@ -316,12 +345,17 @@ export class FrequenciaRepository {
         };
       }
 
-      const frequencias = await this.prisma.frequenciaAluno.findMany({
-        where,
-        orderBy: { data: 'desc' },
-      });
+      const [frequencias, total] = await Promise.all([
+        this.prisma.frequenciaAluno.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaAluno.count({ where }),
+      ]);
 
-      return frequencias.map((f) => this.toEntity(f));
+      return { data: frequencias.map((f) => this.toEntity(f)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar frequências das turmas do professor',
@@ -361,6 +395,20 @@ export class FrequenciaRepository {
     } catch {
       throw new InternalServerErrorException(
         'Erro ao buscar professor pelo usuário',
+      );
+    }
+  }
+
+  async alunoEstaAtivoNaTurma(alunoId: string, turmaId: string): Promise<boolean> {
+    try {
+      const vinculo = await this.prisma.alunoTurma.findUnique({
+        where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
+        select: { frequente: true },
+      });
+      return vinculo?.frequente === 'S';
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao verificar status do aluno na turma',
       );
     }
   }
@@ -459,13 +507,21 @@ export class FrequenciaRepository {
 
   async listarTreinosPorProfessor(
     professorId: string,
-  ): Promise<FrequenciaProfEntity[]> {
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaProfEntity[]; total: number }> {
     try {
-      const treinos = await this.prisma.frequenciaProf.findMany({
-        where: { professor_id: professorId },
-        orderBy: { data: 'desc' },
-      });
-      return treinos.map((t) => this.toEntityProf(t));
+      const where = { professor_id: professorId };
+      const [treinos, total] = await Promise.all([
+        this.prisma.frequenciaProf.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaProf.count({ where }),
+      ]);
+      return { data: treinos.map((t) => this.toEntityProf(t)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar treinos no banco de dados',

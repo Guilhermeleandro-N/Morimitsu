@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,6 +18,8 @@ import {
 } from '@nestjs/swagger';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { AtribuirPerfilDto, BulkTogglePermissoesDto } from './dtos/perfil.dto';
 import {
   CatalogoPermissoesEntity,
@@ -46,8 +49,12 @@ export class PerfilController {
   @Permissions('turma.read')
   @ApiOperation({ summary: 'Listar todos os perfis' })
   @ApiResponse({ status: 200, type: [PerfilResumoEntity] })
-  async listarPerfis(): Promise<PerfilResumoEntity[]> {
-    return this.service.listarPerfis();
+  async listarPerfis(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<PerfilResumoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listarPerfis((page - 1) * limit, limit);
   }
 
   @Get(':id')
@@ -80,8 +87,15 @@ export class PerfilController {
   @ApiResponse({ status: 200, type: [UsuarioPerfilEntity] })
   async listarPerfisUsuario(
     @Param('usuarioId') usuarioId: string,
-  ): Promise<UsuarioPerfilEntity[]> {
-    return this.service.listarPerfisUsuario(usuarioId);
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<UsuarioPerfilEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listarPerfisUsuario(
+      usuarioId,
+      (page - 1) * limit,
+      limit,
+    );
   }
 
   @Post('usuario/:usuarioId')

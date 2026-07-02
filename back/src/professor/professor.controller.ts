@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,8 @@ import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { CreateProfessorDto } from './dtos/create-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { ProfessorEntity } from './entities/professor.entity';
 import { ProfessorService } from './professor.service';
 
@@ -45,8 +48,12 @@ export class ProfessorController {
   @Permissions('professor.read')
   @ApiOperation({ summary: 'Listar todos os professores' })
   @ApiResponse({ status: 200, type: [ProfessorEntity] })
-  async listar(): Promise<ProfessorEntity[]> {
-    return this.service.listar();
+  async listar(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<ProfessorEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listar((page - 1) * limit, limit);
   }
 
   @Get('usuario/:usuarioId')

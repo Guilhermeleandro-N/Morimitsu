@@ -9,6 +9,7 @@ import { AuthorizationService } from '../authorization/authorization.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { PROGRESSAO_FAIXAS } from '../common/faixas.constants';
 
 @Injectable()
@@ -29,17 +30,37 @@ export class AlunoService {
     return this.enriquecer(entity);
   }
 
-  async listar(): Promise<AlunoEntity[]> {
-    const entities = await this.repository.listar();
-    return Promise.all(entities.map((e) => this.enriquecer(e)));
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const { data, total } = await this.repository.listar(skip, take);
+    const enriquecidos = await Promise.all(data.map((e) => this.enriquecer(e)));
+    return new PaginatedResult(
+      enriquecidos,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async listarDaTurmaDoProfessor(
     professorUsuarioId: string,
-  ): Promise<AlunoEntity[]> {
-    const entities =
-      await this.repository.listarPorProfessorUsuarioId(professorUsuarioId);
-    return Promise.all(entities.map((e) => this.enriquecer(e)));
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const { data, total } = await this.repository.listarPorProfessorUsuarioId(
+      professorUsuarioId,
+      skip,
+      take,
+    );
+    const enriquecidos = await Promise.all(data.map((e) => this.enriquecer(e)));
+    return new PaginatedResult(
+      enriquecidos,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async buscarPorId(id: string): Promise<AlunoEntity> {
@@ -68,7 +89,6 @@ export class AlunoService {
     entity.nome = perfil.nome;
     entity.email = perfil.email;
     entity.telefone = perfil.telefone;
-    entity.data_nascimento = perfil.data_nascimento;
     entity.faixa = perfil.faixa;
     entity.grau_faixa = perfil.grau_faixa;
     entity.frequencia_atual = perfil.frequencia_atual;

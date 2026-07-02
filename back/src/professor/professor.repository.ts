@@ -84,14 +84,24 @@ export class ProfessorRepository {
     }
   }
 
-  async listar(): Promise<ProfessorEntity[]> {
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: ProfessorEntity[]; total: number }> {
     try {
-      const professores = await this.prisma.professor.findMany({
-        include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
-        },
-      });
-      return professores.map((p) => this.toEntity(p));
+      const where = {};
+      const [professores, total] = await Promise.all([
+        this.prisma.professor.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            usuario: { select: { nome: true, email: true, telefone: true } },
+          },
+        }),
+        this.prisma.professor.count({ where }),
+      ]);
+      return { data: professores.map((p) => this.toEntity(p)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar professores no banco de dados',

@@ -21,8 +21,11 @@ export class TurmaService {
     return this.repository.criar(dto);
   }
 
-  async listar(): Promise<TurmaEntity[]> {
-    return this.repository.listar();
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
+    return this.repository.listar(skip, take);
   }
 
   async buscarPorId(id: string): Promise<TurmaEntity> {
@@ -70,10 +73,14 @@ export class TurmaService {
     await this.repository.adicionarProfessor(turmaId, dto);
   }
 
-  async listarAlunos(turmaId: string): Promise<AlunoEntity[]> {
+  async listarAlunos(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: AlunoEntity[]; total: number }> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
-    return this.repository.listarAlunosDaTurma(turmaId);
+    return this.repository.listarAlunosDaTurma(turmaId, skip, take);
   }
 
   async removerAlunoDaTurma(turmaId: string, alunoId: string): Promise<void> {
@@ -82,9 +89,13 @@ export class TurmaService {
     await this.repository.removerAlunoDaTurma(turmaId, alunoId);
   }
 
-  async listarProfessores(turmaId: string): Promise<ProfessorEntity[]> {
+  async listarProfessores(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: ProfessorEntity[]; total: number }> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
-    return this.repository.listarProfessoresDaTurma(turmaId);
+    return this.repository.listarProfessoresDaTurma(turmaId, skip, take);
   }
 }

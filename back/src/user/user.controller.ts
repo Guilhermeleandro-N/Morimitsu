@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,6 +18,8 @@ import {
 } from '@nestjs/swagger';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
 
@@ -37,8 +40,12 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar todos os usuários' })
   @ApiResponse({ status: 200, type: [UserEntity] })
-  async listar(): Promise<UserEntity[]> {
-    return this.service.listar();
+  async listar(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<UserEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listar((page - 1) * limit, limit);
   }
 
   @Get(':id')

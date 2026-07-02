@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AuthorizationService } from '../authorization/authorization.service';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { CreateProfessorDto } from './dtos/create-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
 import { ProfessorEntity } from './entities/professor.entity';
@@ -31,9 +32,18 @@ export class ProfessorService {
     return this.enriquecer(entity);
   }
 
-  async listar(): Promise<ProfessorEntity[]> {
-    const entities = await this.repository.listar();
-    return Promise.all(entities.map((e) => this.enriquecer(e)));
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<ProfessorEntity>> {
+    const { data, total } = await this.repository.listar(skip, take);
+    const enriquecidos = await Promise.all(data.map((e) => this.enriquecer(e)));
+    return new PaginatedResult(
+      enriquecidos,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async buscarPorId(id: string): Promise<ProfessorEntity> {

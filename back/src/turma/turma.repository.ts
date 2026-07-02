@@ -35,10 +35,17 @@ export class TurmaRepository {
     }
   }
 
-  async listar(): Promise<TurmaEntity[]> {
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
-      const turmas = await this.prisma.turma.findMany();
-      return turmas.map((t) => this.toEntity(t));
+      const where = {};
+      const [turmas, total] = await Promise.all([
+        this.prisma.turma.findMany({ where, skip, take }),
+        this.prisma.turma.count({ where }),
+      ]);
+      return { data: turmas.map((t) => this.toEntity(t)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar turmas no banco de dados',
@@ -168,22 +175,35 @@ export class TurmaRepository {
     }
   }
 
-  async listarAlunosDaTurma(turmaId: string): Promise<AlunoEntity[]> {
+  async listarAlunosDaTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: AlunoEntity[]; total: number }> {
     try {
-      const vinculos = await this.prisma.alunoTurma.findMany({
-        where: { turma_id: turmaId },
-        include: { aluno: true },
-      });
-      return vinculos.map((v) => {
-        const entity = new AlunoEntity();
-        entity.id = v.aluno.id;
-        entity.frequencia_atual = v.aluno.frequencia_atual;
-        entity.grau_faixa = v.aluno.grau_faixa;
-        entity.faixa = v.aluno.faixa;
-        entity.usuarioId = v.aluno.usuarioId;
-        entity.frequente = v.frequente;
-        return entity;
-      });
+      const where = { turma_id: turmaId };
+      const [vinculos, total] = await Promise.all([
+        this.prisma.alunoTurma.findMany({
+          where,
+          skip,
+          take,
+          include: { aluno: true },
+        }),
+        this.prisma.alunoTurma.count({ where }),
+      ]);
+      return {
+        data: vinculos.map((v) => {
+          const entity = new AlunoEntity();
+          entity.id = v.aluno.id;
+          entity.frequencia_atual = v.aluno.frequencia_atual;
+          entity.grau_faixa = v.aluno.grau_faixa;
+          entity.faixa = v.aluno.faixa;
+          entity.usuarioId = v.aluno.usuarioId;
+          entity.frequente = v.frequente;
+          return entity;
+        }),
+        total,
+      };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar alunos da turma no banco de dados',
@@ -191,20 +211,33 @@ export class TurmaRepository {
     }
   }
 
-  async listarProfessoresDaTurma(turmaId: string): Promise<ProfessorEntity[]> {
+  async listarProfessoresDaTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: ProfessorEntity[]; total: number }> {
     try {
-      const vinculos = await this.prisma.professorTurma.findMany({
-        where: { turma_id: turmaId },
-        include: { professor: true },
-      });
-      return vinculos.map((v) => {
-        const entity = new ProfessorEntity();
-        entity.id = v.professor.id;
-        entity.faixa = v.professor.faixa;
-        entity.grau = v.professor.grau;
-        entity.usuarioId = v.professor.usuarioId;
-        return entity;
-      });
+      const where = { turma_id: turmaId };
+      const [vinculos, total] = await Promise.all([
+        this.prisma.professorTurma.findMany({
+          where,
+          skip,
+          take,
+          include: { professor: true },
+        }),
+        this.prisma.professorTurma.count({ where }),
+      ]);
+      return {
+        data: vinculos.map((v) => {
+          const entity = new ProfessorEntity();
+          entity.id = v.professor.id;
+          entity.faixa = v.professor.faixa;
+          entity.grau = v.professor.grau;
+          entity.usuarioId = v.professor.usuarioId;
+          return entity;
+        }),
+        total,
+      };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar professores da turma no banco de dados',

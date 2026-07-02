@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,6 +18,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/decorators/current-user.decorator';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { NotificacaoCountEntity } from './entities/notificacao-count.entity';
 import { NotificacaoEntity } from './entities/notificacao.entity';
 import { NotificacaoService } from './notificacao.service';
@@ -34,8 +37,15 @@ export class NotificacaoController {
   @ApiResponse({ status: 200, type: [NotificacaoEntity] })
   async listar(
     @CurrentUser() usuario: JwtPayload,
-  ): Promise<NotificacaoEntity[]> {
-    return this.service.listarPorProfessor(usuario.sub);
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<NotificacaoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listarPorProfessor(
+      usuario.sub,
+      (page - 1) * limit,
+      limit,
+    );
   }
 
   @Get('nao-lidas/count')
