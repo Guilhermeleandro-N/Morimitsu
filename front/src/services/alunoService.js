@@ -14,8 +14,8 @@ export async function criarAlunoExistente(usuarioId, faixa, grau_faixa, frequenc
 export async function listarAlunosCompleto() {
   const usersResponse = await api.get("user");
   const alunosResponse = await api.get("aluno");
-  const users = usersResponse.data;
-  const alunos = alunosResponse.data;
+  const users = usersResponse.data?.data ?? usersResponse.data;
+  const alunos = alunosResponse.data?.data ?? alunosResponse.data;
   return alunos.map(aluno => ({ ...aluno, usuario: users.find(user => user.id === aluno.usuarioId) }));
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { listarAlunosDaTurma, removerAlunoDaTurma } from "../../services/turmaService";
+import { listarAlunosDaTurma, removerAlunoDaTurma, atualizarStatusAlunoNaTurma } from "../../services/turmaService";
 import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import FrequenciaModal from "../../components/RegistrarFrequencia/FrequenciaModal";
 
@@ -83,6 +83,20 @@ function AlunosTurma() {
         error
       );
 
+    }
+  }
+
+  async function handleToggleStatus(aluno) {
+    const novoStatus = aluno.frequente === "S" ? "N" : "S";
+    try {
+      await atualizarStatusAlunoNaTurma(turmaId, aluno.id, novoStatus);
+      setAlunos((prev) =>
+        prev.map((a) =>
+          a.id === aluno.id ? { ...a, frequente: novoStatus } : a
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao alternar status do aluno:", error);
     }
   }
 
@@ -232,6 +246,7 @@ function AlunosTurma() {
                 <th>Grau</th>
                 <th>Frequência</th>
                 <th>Status</th>
+                <th>Arquivar</th>
                 <th>Excluir</th>
                 <th>Ações</th>
               </tr>
@@ -282,6 +297,18 @@ function AlunosTurma() {
                   </td>
 
                   <td>
+                    <button
+                      className="icon-btn"
+                      onClick={() => handleToggleStatus(aluno)}
+                      title={aluno.frequente === "S" ? "Inativar aluno" : "Ativar aluno"}
+                    >
+                      <FaArchive
+                        style={{ color: aluno.frequente === "S" ? "#f59e0b" : "#6b7280" }}
+                      />
+                    </button>
+                  </td>
+
+                  <td>
 
                     <button
                       className="icon-btn delete"
@@ -319,7 +346,7 @@ function AlunosTurma() {
                 <tr>
 
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     style={{
                       textAlign: "center",
                       padding: "20px"

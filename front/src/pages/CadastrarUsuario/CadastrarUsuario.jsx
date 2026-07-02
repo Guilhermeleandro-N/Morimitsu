@@ -17,6 +17,14 @@ function CadastrarUsuario() {
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  function showMessage(msg, type) {
+    setMessage(msg);
+    setMessageType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  }
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,7 +32,7 @@ function CadastrarUsuario() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setMessage("");
+    setShowToast(false);
 
     try {
       const response = await criarUser(
@@ -35,8 +43,7 @@ function CadastrarUsuario() {
       );
 
       if (response && response.id) {
-        setMessage("Usuário cadastrado com sucesso!");
-        setMessageType("success");
+        showMessage("✔ Usuário cadastrado com sucesso!", "success");
         setForm({
           nome: "",
           email: "",
@@ -44,16 +51,15 @@ function CadastrarUsuario() {
           senha: "",
           data_nascimento: "",
         });
-        setTimeout(() => navigate("/login"), 2000);
+        setTimeout(() => navigate("/login"), 2500);
       } else {
-        setMessage(
-          response?.message || "Erro ao cadastrar usuário. Tente novamente."
-        );
-        setMessageType("error");
+        showMessage("✖ Erro ao cadastrar usuário. Tente novamente.", "error");
       }
     } catch (error) {
-      setMessage("Erro ao conectar com o servidor.");
-      setMessageType("error");
+      const msg =
+        error?.response?.data?.message ||
+        "✖ Erro ao conectar com o servidor.";
+      showMessage(msg, "error");
     }
   }
 
@@ -150,8 +156,13 @@ function CadastrarUsuario() {
             </button>
           </div>
 
-          {message && (
-            <p className={`message ${messageType}`}>{message}</p>
+          {showToast && (
+            <div className={`toast ${messageType}`}>
+              <span className="toast-icon">
+                {messageType === "success" ? "✔" : "✖"}
+              </span>
+              {message}
+            </div>
           )}
         </form>
       </div>

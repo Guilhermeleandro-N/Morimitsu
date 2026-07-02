@@ -101,12 +101,12 @@ const ListarAluno = () => {
 
             <tbody>
 
-              {alunos.map((aluno) => (
+              {alunos.filter(a => a.usuario).map((aluno) => (
 
                 <tr key={aluno.id}>
 
                   <td className="nome-aluno">
-                    {aluno.usuario.nome}
+                    {aluno.usuario?.nome ?? "—"}
                   </td>
 
                   <td>
@@ -126,12 +126,12 @@ const ListarAluno = () => {
                   <td>
                     <span
                       className={
-                        aluno.usuario.status === "ENABLED"
+                        aluno.usuario?.status === "ENABLED"
                           ? "status ativo"
                           : "status inativo"
                       }
                     >
-                      {aluno.usuario.status === "ENABLED"
+                      {aluno.usuario?.status === "ENABLED"
                         ? "Ativo"
                         : "Inativo"}
                     </span>
@@ -150,7 +150,7 @@ const ListarAluno = () => {
                   </td>
 
                   <td>
-                    <button className="perfil-btn" onClick={()=> abrirPerfil(aluno.usuario.id)}>
+                    <button className="perfil-btn" onClick={()=> abrirPerfil(aluno.usuario?.id)}>
                       <FaEye />
                       Ver Perfil
                     </button>

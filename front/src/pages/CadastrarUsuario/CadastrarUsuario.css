@@ -1,75 +1,92 @@
 .register {
   display: flex;
   justify-content: center;
-  padding: 40px 20px;
-  background-color: #f9f9f9;
+  align-items: center;
+  background-color: #f0f0f5;
   min-height: 100vh;
 }
 
 .register__container {
   background: white;
-  padding: 40px;
+  padding: 40px 70px 50px 70px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   width: 100%;
-  max-width: 700px;
+  max-width: 1400px;
+  min-height: 70vh;
 }
 
 .register__header {
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: flex-start;
+  margin-top: 30px;
   margin-bottom: 30px;
+  padding-left: 0;
 }
 
-.register__icons img { width: 60px; height: 80px; }
-.register__title { font-size: 1.5rem; color: #1a1a1a; margin: 0; }
-.register__subtitle { color: #777; margin: 0; }
+.register__icons {
+  display: none;
+}
+.register__title {
+  font-size: 26px;
+  color: #1a1a1a;
+  font-weight: 700;
+  margin: 0;
+}
 
 .register__form {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
-.form__group--full { grid-column: span 2; }
+.form__group--full {
+  grid-column: span 2;
+}
 
 .form__group label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
   color: #333;
+  font-size: 14px;
 }
 
 .form__group input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  background: #fdfdfd;
+  background: #fafafa;
   font-size: 14px;
+  height: 56px;
+  box-sizing: border-box;
 }
 
 .form__group input:focus {
   outline: none;
   border-color: #d32f2f;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
 }
 
 .form__group input:disabled {
-  background: #f5f5f5;
-  color: #888;
+  background: #f0f0f0;
+  color: #999;
   cursor: not-allowed;
 }
 
 .form__actions {
   grid-column: span 2;
   display: flex;
-  gap: 15px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.btn-primary, .btn-secondary {
-  padding: 12px 24px;
+.btn-primary,
+.btn-secondary {
+  margin-top: 8px;
+  padding: 12px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -78,49 +95,100 @@
   text-align: center;
   transition: background 0.3s;
   font-size: 14px;
+  height: 56px;
 }
 
 .btn-primary {
   background-color: #d32f2f;
   color: white;
 }
-
 .btn-primary:hover {
   background-color: #b71c1c;
 }
-
 .btn-secondary {
-  background-color: #e0e0e0;
+  background-color: #e8e8e8;
   color: #555;
 }
-
 .btn-secondary:hover {
-  background-color: #d0d0d0;
+  background-color: #d5d5d5;
 }
 
 .message {
   grid-column: span 2;
   text-align: center;
-  padding: 12px;
+  padding: 12px 16px;
   border-radius: 8px;
-  margin-top: 16px;
   font-weight: 500;
+  font-size: 13px;
 }
 
 .message.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background-color: #f5f5f5;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
 }
 
 .message.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: #f5f5f5;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
 }
 
-@media (max-width: 600px) {
-  .register__form { grid-template-columns: 1fr; }
-  .form__group--full, .form__actions, .message { grid-column: span 1; }
-  .form__actions { flex-direction: column-reverse; }
+.toast {
+  position: absolute;
+  top: 17%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 13px;
+  z-index: 10;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  white-space: nowrap;
+  max-width: 80%;
+  animation:
+    slideDown 0.3s ease-out,
+    fadeOut 0.4s ease-in 2.6s forwards;
+}
+
+.toast.success {
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.toast.error {
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.toast-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0);
+  }
 }

@@ -6,10 +6,10 @@ import { useState } from "react";
 export default function MainLayout(){
     const [isOpen, setIsOpen] = useState(false)
     return(
-    <div>
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <Header isOpen={isOpen} setIsOpen={setIsOpen} />
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
-        <main>
+        <main style={{ flex: 1, overflow: "hidden" }}>
                 <Outlet />
         </main>
     </div>

@@ -26,7 +26,7 @@ function VisualizarTurmas() {
 
   const buscarTurmas = async () => {
   const response = await listarTurmas();
-  setTurmas(response);
+  setTurmas(Array.isArray(response) ? response : []);
 };
 
 

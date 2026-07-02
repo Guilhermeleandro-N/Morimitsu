@@ -37,7 +37,7 @@ export async function listarProfessores() {
 
     const response = await api.get("professor");
 
-    return response.data;
+    return response.data?.data ?? response.data;
 
   } catch (error) {
 

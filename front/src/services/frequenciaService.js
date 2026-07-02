@@ -38,7 +38,7 @@ export async function registrarFrequenciaTurma(usuarioId, turmaId, alunosPresent
 export async function listarFrequenciasAluno(alunoId) {
   try {
     const response = await api.get(`/frequencia/aluno/${alunoId}`);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error("Erro ao listar frequências do aluno:", error);
     throw error;
@@ -48,7 +48,7 @@ export async function listarFrequenciasAluno(alunoId) {
 export async function listarFrequenciasTurma(turmaId) {
   try {
     const response = await api.get(`/frequencia/turma/${turmaId}`);
-    return response.data;
+    return response.data?.data ?? response.data;
   } catch (error) {
     console.error("Erro ao listar frequências da turma:", error);
     throw error;

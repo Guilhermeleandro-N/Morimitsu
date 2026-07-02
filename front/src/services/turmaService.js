@@ -54,7 +54,7 @@ export async function listarTurmas() {
         console.log("Turmas encontradas:");
         console.log(response.data);
 
-        return response.data;
+        return response.data?.data ?? response.data;
 
     } catch (error) {
 
@@ -116,7 +116,7 @@ export async function AtualizarTurma(id, dados) {
 export const listarAlunosDaTurma = async (id) => {
     try {
         const response = await api.get(`/turma/${id}/alunos`);
-        return response.data;
+        return response.data?.data ?? response.data;
     } catch (error) {
         console.error("Erro ao listar alunos da turma:", error);
         throw error;
@@ -171,6 +171,16 @@ export async function adicionarProfessorTurma(
   }
 }
 
+export async function atualizarStatusAlunoNaTurma(turmaId, alunoId, frequente) {
+  try {
+    const response = await api.patch(`/turma/${turmaId}/aluno/${alunoId}`, { frequente });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar status do aluno na turma:", error);
+    throw error;
+  }
+}
+
 export async function listarProfessoresDaTurma(
   turmaId
 ) {
@@ -181,7 +191,7 @@ export async function listarProfessoresDaTurma(
       `/turma/${turmaId}/professores`
     );
 
-    return response.data;
+    return response.data?.data ?? response.data;
 
   } catch (error) {
 

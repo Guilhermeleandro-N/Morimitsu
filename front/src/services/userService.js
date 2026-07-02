@@ -9,12 +9,11 @@ export async function criarUser(nome, email, senha, telefone){
         telefone
     });
     console.log("Criar User bem sucedido!")
-    return response;
+    return response.data;
     
 
     } catch (error){
-        
-        return error;
+        throw error;
         
     }
 }
