@@ -10,7 +10,8 @@ import {
 import { listarTurmas } from "../../services/turmaService";
 
 import {
-  listarFrequenciasAluno
+  listarFrequenciasAluno,
+  editarFrequencia
 } from "../../services/frequenciaService";
 import RoleGuard from '../../routes/RoleGuard';
 import GraduarAlunoModal from "../../components/GraduarAluno/GraduarAlunoModal.jsx";
@@ -26,6 +27,53 @@ const PerfilAluno = () => {
   const [modalGraduacaoOpen, setModalGraduacaoOpen] = useState(false);
   const [historico, setHistorico] = useState([]);
   const [nomesTurmas, setNomesTurmas] = useState({});
+
+  async function togglePresenca(item) {
+
+    const novoStatus =
+      item.status_presenca === "PRESENTE"
+        ? "AUSENTE"
+        : "PRESENTE";
+
+    // Atualiza a interface imediatamente
+    setHistorico((historicoAtual) =>
+      historicoAtual.map((freq) =>
+        freq.id === item.id
+          ? {
+              ...freq,
+              status_presenca: novoStatus,
+            }
+          : freq
+      )
+    );
+
+    try {
+
+      await editarFrequencia(item.id, {
+        status_presenca: novoStatus,
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      // Volta ao valor anterior caso dê erro
+      setHistorico((historicoAtual) =>
+        historicoAtual.map((freq) =>
+          freq.id === item.id
+            ? {
+                ...freq,
+                status_presenca: item.status_presenca,
+              }
+            : freq
+        )
+      );
+
+      alert("Erro ao atualizar frequência.");
+
+    }
+
+  }
 
   async function buscarFrequencias(alunoId) {
 
@@ -269,19 +317,25 @@ const PerfilAluno = () => {
       {formatarDataBR(item.data)}
     </td>
 
-    <td>
-      <div className="presence-status">
-        <span>{item.status_presenca}</span>
+  <td>
+    <div className="presence-status">
 
-        <button
-          className={`presence-button ${
-            item.status_presenca === "PRESENTE"
-              ? "present"
-              : "absent"
-          }`}
-        />
-      </div>
-    </td>
+      <span>
+        {item.status_presenca}
+      </span>
+
+      <button
+        className={`presence-button ${
+          item.status_presenca === "PRESENTE"
+            ? "present"
+            : "absent"
+        }`}
+        onClick={() => togglePresenca(item)}
+        title="Alterar presença"
+      />
+
+    </div>
+  </td>
 
     <td>
       {new Date(item.horario_inicio)

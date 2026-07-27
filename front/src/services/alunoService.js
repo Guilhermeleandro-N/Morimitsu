@@ -1,9 +1,9 @@
 import api from "../api/axios"
 import { buscarUser } from "./userService"
 
-export async function criarAlunoExistente(usuarioId, faixa, grau_faixa, frequencia_atual, data_nascimento) {
+export async function criarAlunoExistente(usuarioId, faixa, grau_faixa, frequencia_atual) {
   try {
-    const response = await api.post("aluno", { usuarioId, faixa, grau_faixa, frequencia_atual, data_nascimento });
+    const response = await api.post("aluno", { usuarioId, faixa, grau_faixa, frequencia_atual });
     return response;
   } catch (error) {
     console.error("Erro ao criar aluno para usuário existente:", error);

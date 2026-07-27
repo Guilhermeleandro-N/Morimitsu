@@ -185,24 +185,35 @@
   border-top: 1px solid #f0f0f0;
   color: #444;
 }
-
-.presence-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .presence-button {
-  width: 16px;
+  position: relative;
+  width: 30px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
-  transition: 0.2s;
+  transition: .25s;
+  background: #c1272d;
+}
+
+.presence-button::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  top: 2px;
+  left: 2px;
+  border-radius: 50%;
+  background: white;
+  transition: .25s;
 }
 
 .presence-button.present {
   background: #009432;
+}
+
+.presence-button.present::after {
+  left: 16px;
 }
 
 .presence-button.absent {
@@ -210,7 +221,7 @@
 }
 
 .presence-button:hover {
-  transform: scale(1.15);
+  opacity: .9;
 }
 /* Histórico */
 .history-header {

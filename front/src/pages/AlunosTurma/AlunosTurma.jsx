@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { listarAlunosDaTurma, removerAlunoDaTurma, atualizarStatusAlunoNaTurma } from "../../services/turmaService";
 import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import FrequenciaModal from "../../components/RegistrarFrequencia/FrequenciaModal";
-
+import RoleGuard from "../../routes/RoleGuard";
 import {
   FaEye,
   FaTrash,
@@ -183,7 +183,7 @@ function AlunosTurma() {
           </p>
 
         </div>
-
+        <RoleGuard allowedRoutes={["admin", "professor"]}>
         <div className="header-actions">
 
           <button
@@ -220,7 +220,7 @@ function AlunosTurma() {
         </button>
 
         </div>
-
+      </RoleGuard>    
       </div>
 
       <div className="listar-card">
