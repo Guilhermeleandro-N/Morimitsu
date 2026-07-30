@@ -151,6 +151,7 @@ export class ProfessorRepository {
       const data: Record<string, unknown> = {};
       if (dto.faixa !== undefined) data.faixa = dto.faixa;
       if (dto.grau !== undefined) data.grau = dto.grau;
+      if (dto.status !== undefined) data.status = dto.status;
       const professor = await this.prisma.professor.update({
         where: { id },
         data,
@@ -186,10 +187,67 @@ export class ProfessorRepository {
     }
   }
 
+  async buscarDashboard(usuarioId: string): Promise<
+    {
+      aluno_id: string;
+      nome: string;
+      faixa: string;
+      grau_faixa: number;
+      frequencia_atual: number;
+      data_nascimento: Date | null;
+      turma_id: string;
+      turma_nome: string;
+      frequente: string;
+    }[]
+  > {
+    try {
+      const professor = await this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (!professor) return [];
+
+      const vinculos = await this.prisma.alunoTurma.findMany({
+        where: {
+          turma: {
+            professorTurmas: {
+              some: { professor_id: professor.id },
+            },
+          },
+        },
+        include: {
+          aluno: {
+            include: {
+              usuario: { select: { nome: true, data_nascimento: true } },
+            },
+          },
+          turma: { select: { nome: true } },
+        },
+      });
+
+      return vinculos.map((v) => ({
+        aluno_id: v.aluno_id,
+        nome: v.aluno.usuario.nome,
+        faixa: v.aluno.faixa,
+        grau_faixa: v.aluno.grau_faixa,
+        frequencia_atual: v.aluno.frequencia_atual,
+        data_nascimento: v.aluno.usuario.data_nascimento,
+        turma_id: v.turma_id,
+        turma_nome: v.turma.nome,
+        frequente: v.frequente,
+      }));
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar dashboard do professor',
+      );
+    }
+  }
+
   private toEntity(professor: {
     id: string;
     faixa: string;
     grau: number;
+    status: string;
     usuarioId: string;
     usuario?: { nome: string; email: string; telefone: string | null };
   }): ProfessorEntity {
@@ -197,6 +255,7 @@ export class ProfessorRepository {
     entity.id = professor.id;
     entity.faixa = professor.faixa;
     entity.grau = professor.grau;
+    entity.status = professor.status;
     entity.usuarioId = professor.usuarioId;
     if (professor.usuario) {
       entity.nome = professor.usuario.nome;

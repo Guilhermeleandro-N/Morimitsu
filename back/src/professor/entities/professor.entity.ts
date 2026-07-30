@@ -11,6 +11,9 @@ export class ProfessorEntity {
   grau!: number;
 
   @ApiProperty()
+  status!: string;
+
+  @ApiProperty()
   usuarioId!: string;
 
   @ApiPropertyOptional()

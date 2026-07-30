@@ -29,6 +29,12 @@ export class AuthService {
       throw new UnauthorizedException('Usuário desativado');
     }
 
+    if (auth.roles.length === 0) {
+      throw new UnauthorizedException(
+        'Usuário sem perfil. Complete seu cadastro, peça a um administrador para atribuir um perfil.',
+      );
+    }
+
     return this.gerarTokens(auth);
   }
 
@@ -58,6 +64,12 @@ export class AuthService {
 
     if (!auth.isEnabled()) {
       throw new UnauthorizedException('Usuário desativado');
+    }
+
+    if (auth.roles.length === 0) {
+      throw new UnauthorizedException(
+        'Usuário sem perfil. Complete seu cadastro como aluno ou professor.',
+      );
     }
 
     return this.gerarTokens(auth);

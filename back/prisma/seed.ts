@@ -121,6 +121,16 @@ async function main() {
     create: { id: 'perfil-aluno', nome: 'ALUNO', descricao: 'Perfil do aluno' },
   });
 
+  const admin = await prisma.perfil.upsert({
+    where: { id: 'perfil-admin' },
+    update: {},
+    create: {
+      id: 'perfil-admin',
+      nome: 'ADMIN',
+      descricao: 'Perfil do administrador',
+    },
+  });
+
   const allPermissions = await prisma.permission.findMany();
   const permMap = new Map(allPermissions.map((p) => [p.codigo, p.id]));
 
@@ -166,14 +176,45 @@ async function main() {
     });
   }
 
+  // Admin: permissões exclusivas (o bypass do PermissionsGuard já garante acesso total)
+  for (const perm of ADMIN_ONLY_PERMISSIONS) {
+    const permissionId = permMap.get(perm.codigo);
+    if (!permissionId) continue;
+    await prisma.perfilPermission.upsert({
+      where: {
+        perfil_id_permission_id: {
+          perfil_id: admin.id,
+          permission_id: permissionId,
+        },
+      },
+      update: {},
+      create: { perfil_id: admin.id, permission_id: permissionId },
+    });
+  }
+
   const senhaHash = await argon2.hash('Admin@1234');
-  await prisma.usuario.upsert({
+  const adminUsuario = await prisma.usuario.upsert({
     where: { email: 'admin@morimitsu.com' },
     update: {},
     create: {
       nome: 'Administrador',
       email: 'admin@morimitsu.com',
       senha: senhaHash,
+    },
+  });
+
+  // Associar perfil ADMIN ao usuário administrador
+  await prisma.userPerfil.upsert({
+    where: {
+      usuario_id_perfil_id: {
+        usuario_id: adminUsuario.id,
+        perfil_id: admin.id,
+      },
+    },
+    update: {},
+    create: {
+      usuario_id: adminUsuario.id,
+      perfil_id: admin.id,
     },
   });
 

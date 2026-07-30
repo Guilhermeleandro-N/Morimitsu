@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -16,6 +17,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Permissions } from '../authorization/decorators/permissions.decorator';
+import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
@@ -38,6 +41,8 @@ export class UserController {
 
   @Get()
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.read')
   @ApiOperation({ summary: 'Listar todos os usuários' })
   @ApiResponse({ status: 200, type: [UserEntity] })
   async listar(
@@ -50,6 +55,8 @@ export class UserController {
 
   @Get(':id')
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.read')
   @ApiOperation({ summary: 'Buscar usuário por ID' })
   @ApiResponse({ status: 200, type: UserEntity })
   async buscarPorId(@Param('id') id: string): Promise<UserEntity> {
@@ -58,6 +65,8 @@ export class UserController {
 
   @Patch(':id')
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.update')
   @ApiOperation({ summary: 'Atualizar usuário' })
   @ApiResponse({ status: 200, type: UserEntity })
   async atualizar(
@@ -70,6 +79,8 @@ export class UserController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.update')
   @ApiOperation({ summary: 'Deletar usuário' })
   @ApiResponse({ status: 204 })
   async deletar(@Param('id') id: string): Promise<void> {

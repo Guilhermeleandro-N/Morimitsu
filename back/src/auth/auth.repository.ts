@@ -16,7 +16,8 @@ export class AuthRepository {
         userPerfis: {
           include: {
             perfil: {
-              include: {
+              select: {
+                nome: true,
                 perfilPermissions: { include: { permission: true } },
               },
             },
@@ -38,7 +39,8 @@ export class AuthRepository {
         userPerfis: {
           include: {
             perfil: {
-              include: {
+              select: {
+                nome: true,
                 perfilPermissions: { include: { permission: true } },
               },
             },
@@ -60,7 +62,8 @@ export class AuthRepository {
         userPerfis: {
           include: {
             perfil: {
-              include: {
+              select: {
+                nome: true,
                 perfilPermissions: { include: { permission: true } },
               },
             },
@@ -88,6 +91,7 @@ export class AuthRepository {
     professor: { id: string } | null;
     userPerfis: {
       perfil: {
+        nome: string;
         perfilPermissions: { permission: { codigo: string } }[];
       };
     }[];
@@ -96,7 +100,13 @@ export class AuthRepository {
 
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
-    if (roles.length === 0) roles.push('admin');
+
+    for (const up of usuario.userPerfis) {
+      const roleName = up.perfil.nome.toLowerCase();
+      if (!roles.includes(roleName)) {
+        roles.push(roleName);
+      }
+    }
 
     const permissoes = new Set<string>();
     for (const up of usuario.userPerfis) {

@@ -19,6 +19,9 @@ import {
 } from '@nestjs/swagger';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/decorators/current-user.decorator';
+import { DashboardProfessorResponseDto } from './dtos/dashboard-professor.dto';
 import { CreateProfessorDto } from './dtos/create-professor.dto';
 import { UpdateProfessorDto } from './dtos/update-professor.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
@@ -54,6 +57,19 @@ export class ProfessorController {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 10;
     return this.service.listar((page - 1) * limit, limit);
+  }
+
+  @Get('dashboard')
+  @UseGuards(PermissionsGuard)
+  @Permissions('attendance.read')
+  @ApiOperation({
+    summary: 'Painel do professor: alunos próximos da graduação e aniversariantes',
+  })
+  @ApiResponse({ status: 200, type: DashboardProfessorResponseDto })
+  async dashboard(
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<DashboardProfessorResponseDto> {
+    return this.service.buscarDashboard(usuario.sub);
   }
 
   @Get('usuario/:usuarioId')

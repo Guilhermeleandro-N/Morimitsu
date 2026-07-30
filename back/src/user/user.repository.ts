@@ -21,7 +21,11 @@ export class UserRepository {
           ? new Date(dto.data_nascimento)
           : null,
       },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     return this.toEntity(usuario);
   }
@@ -29,7 +33,11 @@ export class UserRepository {
   async buscarPorId(id: string): Promise<UserEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     if (!usuario) return null;
     return this.toEntity(usuario);
@@ -38,7 +46,11 @@ export class UserRepository {
   async buscarPorEmail(email: string): Promise<UserEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { email },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     if (!usuario) return null;
     return this.toEntity(usuario);
@@ -54,7 +66,11 @@ export class UserRepository {
         where,
         skip,
         take,
-        include: { aluno: true, professor: true },
+        include: {
+          aluno: true,
+          professor: true,
+          userPerfis: { include: { perfil: { select: { nome: true } } } },
+        },
       }),
       this.prisma.usuario.count({ where }),
     ]);
@@ -76,7 +92,11 @@ export class UserRepository {
     const usuario = await this.prisma.usuario.update({
       where: { id },
       data,
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     return this.toEntity(usuario);
   }
@@ -98,11 +118,18 @@ export class UserRepository {
     status: string;
     aluno: { id: string } | null;
     professor: { id: string } | null;
+    userPerfis: { perfil: { nome: string } }[];
   }): UserEntity {
     const roles: string[] = [];
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
-    if (roles.length === 0) roles.push('user');
+
+    for (const up of usuario.userPerfis) {
+      const roleName = up.perfil.nome.toLowerCase();
+      if (!roles.includes(roleName)) {
+        roles.push(roleName);
+      }
+    }
 
     const entity = new UserEntity();
     entity.id = usuario.id;

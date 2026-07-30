@@ -399,7 +399,10 @@ export class FrequenciaRepository {
     }
   }
 
-  async alunoEstaAtivoNaTurma(alunoId: string, turmaId: string): Promise<boolean> {
+  async alunoEstaAtivoNaTurma(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<boolean> {
     try {
       const vinculo = await this.prisma.alunoTurma.findUnique({
         where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
