@@ -33,16 +33,17 @@ export class ProfessorService {
     const proximosGraduacao = alunos
       .map((a) => this.mapearGraduacaoProxima(a))
       .filter((g): g is AlunoGraduacaoProximaDto => g !== null)
-      .sort(
-        (a, b) => a.frequencias_restantes - b.frequencias_restantes,
-      );
+      .sort((a, b) => a.frequencias_restantes - b.frequencias_restantes);
 
     const proximosAniversario = alunos
       .map((a) => this.mapearAniversarioProximo(a, hoje))
       .filter((n): n is AlunoAniversarioProximoDto => n !== null)
       .sort((a, b) => a.dias_restantes - b.dias_restantes);
 
-    return { proximos_graduacao: proximosGraduacao, proximos_aniversario: proximosAniversario };
+    return {
+      proximos_graduacao: proximosGraduacao,
+      proximos_aniversario: proximosAniversario,
+    };
   }
 
   private mapearGraduacaoProxima(a: {
@@ -104,10 +105,7 @@ export class ProfessorService {
     };
   }
 
-  private calcularDiasAteAniversario(
-    dataNascimento: Date,
-    hoje: Date,
-  ): number {
+  private calcularDiasAteAniversario(dataNascimento: Date, hoje: Date): number {
     const nasc = new Date(dataNascimento);
     const aniversario = new Date(
       hoje.getFullYear(),
@@ -126,7 +124,9 @@ export class ProfessorService {
       nasc.getMonth(),
       nasc.getDate(),
     );
-    return Math.ceil((proximoAno.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.ceil(
+      (proximoAno.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24),
+    );
   }
 
   async criar(dto: CreateProfessorDto): Promise<ProfessorEntity> {

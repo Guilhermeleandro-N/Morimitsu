@@ -77,7 +77,6 @@ model Professor {
   id                         String           @id @default(uuid())
   faixa                      String           @default("BRANCA")
   grau                       Int              @default(0)
-  status                     String           @default("ATIVO")
   usuarioId                  String           @unique
   usuario                    Usuario          @relation(fields: [usuarioId], references: [id])
   frequenciasAlunoRegistradas FrequenciaAluno[]

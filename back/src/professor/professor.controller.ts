@@ -63,7 +63,8 @@ export class ProfessorController {
   @UseGuards(PermissionsGuard)
   @Permissions('attendance.read')
   @ApiOperation({
-    summary: 'Painel do professor: alunos próximos da graduação e aniversariantes',
+    summary:
+      'Painel do professor: alunos próximos da graduação e aniversariantes',
   })
   @ApiResponse({ status: 200, type: DashboardProfessorResponseDto })
   async dashboard(

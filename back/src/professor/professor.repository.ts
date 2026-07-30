@@ -151,7 +151,6 @@ export class ProfessorRepository {
       const data: Record<string, unknown> = {};
       if (dto.faixa !== undefined) data.faixa = dto.faixa;
       if (dto.grau !== undefined) data.grau = dto.grau;
-      if (dto.status !== undefined) data.status = dto.status;
       const professor = await this.prisma.professor.update({
         where: { id },
         data,
@@ -247,7 +246,6 @@ export class ProfessorRepository {
     id: string;
     faixa: string;
     grau: number;
-    status: string;
     usuarioId: string;
     usuario?: { nome: string; email: string; telefone: string | null };
   }): ProfessorEntity {
@@ -255,7 +253,6 @@ export class ProfessorRepository {
     entity.id = professor.id;
     entity.faixa = professor.faixa;
     entity.grau = professor.grau;
-    entity.status = professor.status;
     entity.usuarioId = professor.usuarioId;
     if (professor.usuario) {
       entity.nome = professor.usuario.nome;
