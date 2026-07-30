@@ -44,6 +44,7 @@ const FrequenciaModal = ({
 
   async function handleSalvar() {
 
+    console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     try {
 
       if (!user) {
@@ -65,32 +66,31 @@ const FrequenciaModal = ({
 
       await Promise.all(
 
-        presentes.map((alunoId) =>
-
+        alunos.map((aluno) =>
+          
           registrarFrequencia({
 
-            aluno_id: alunoId,
+            aluno_id: aluno.id,
 
-            professor_id:
-              professor.id,
+            professor_id: professor.id,
 
             turma_id: turmaId,
 
             data: agora,
 
-            horario_inicio:
-              inicio,
+            horario_inicio: inicio,
 
-            horario_fim:
-              agora,
+            horario_fim: agora,
 
-            status_presenca:
-              "PRESENTE",
+            status_presenca: presentes.includes(aluno.id)
+              ? "PRESENTE"
+              : "AUSENTE",
 
           })
 
+          
         )
-
+        
       );
 
       alert(

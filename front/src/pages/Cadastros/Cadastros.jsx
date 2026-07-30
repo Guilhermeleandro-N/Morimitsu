@@ -438,16 +438,6 @@ function Cadastros() {
           {/* Campos extras só para Aluno */}
           {isAlunoMode && (
             <>
-              <div className="form__group">
-                <label htmlFor="dataNascimento">Data de Nascimento</label>
-                <input
-                  type="date"
-                  id="dataNascimento"
-                  value={dataNascimento}
-                  onChange={(e) => setDataNascimento(e.target.value)}
-                  required
-                />
-              </div>
 
               <div className="form__group">
                 <label htmlFor="frequencia">Frequência Atual</label>

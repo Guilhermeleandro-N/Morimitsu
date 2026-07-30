@@ -67,3 +67,28 @@ export async function relatorioTreino(turmaId, alunosPresentes) {
     throw error;
   }
 }
+
+export async function editarFrequencia(
+  frequenciaId,
+  frequencia
+) {
+  try {
+
+    const response = await api.patch(
+      `/frequencia/${frequenciaId}`,
+      frequencia
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.error(
+      "Erro ao editar frequência:",
+      error
+    );
+
+    throw error;
+
+  }
+}
