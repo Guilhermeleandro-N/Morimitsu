@@ -1,14 +1,11 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
 import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
+import { UpdateTurmaStatusDto } from './dtos/update-turma-status.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaRepository } from './turma.repository';
@@ -46,6 +43,19 @@ export class TurmaService {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Turma não encontrada');
     await this.repository.deletar(id);
+  }
+
+  async atualizarStatus(
+    id: string,
+    dto: UpdateTurmaStatusDto,
+  ): Promise<TurmaEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Turma não encontrada');
+    const atualizada = await this.repository.atualizar(id, {
+      status: dto.status,
+    });
+    if (!atualizada) throw new NotFoundException('Turma não encontrada');
+    return atualizada;
   }
 
   async adicionarAluno(turmaId: string, dto: AddAlunoTurmaDto): Promise<void> {

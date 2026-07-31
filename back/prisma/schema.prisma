@@ -91,6 +91,7 @@ model Turma {
   horario_inicio DateTime
   horario_fim    DateTime
   data_especifica DateTime?
+  status         String           @default("ATIVO")
   segunda        Boolean          @default(false)
   terca          Boolean          @default(false)
   quarta         Boolean          @default(false)

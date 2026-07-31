@@ -29,4 +29,58 @@ export class AuthorizationRepository {
 
     return Array.from(permissions);
   }
+
+  async listarPerfis() {
+    return this.prisma.perfil.findMany({
+      include: {
+        perfilPermissions: {
+          include: { permission: true },
+        },
+      },
+    });
+  }
+
+  async listarPermissoesDoPerfil(perfilId: string) {
+    const perfil = await this.prisma.perfil.findUnique({
+      where: { id: perfilId },
+      include: {
+        perfilPermissions: {
+          include: { permission: true },
+        },
+      },
+    });
+    return perfil?.perfilPermissions.map((pp) => pp.permission) ?? [];
+  }
+
+  async listarPerfisDoUsuario(userId: string) {
+    const userPerfis = await this.prisma.userPerfil.findMany({
+      where: { usuario_id: userId },
+      include: { perfil: true },
+    });
+    return userPerfis.map((up) => up.perfil);
+  }
+
+  async atribuirPerfil(userId: string, perfilId: string) {
+    return this.prisma.userPerfil.upsert({
+      where: {
+        usuario_id_perfil_id: {
+          usuario_id: userId,
+          perfil_id: perfilId,
+        },
+      },
+      update: {},
+      create: { usuario_id: userId, perfil_id: perfilId },
+    });
+  }
+
+  async removerPerfil(userId: string, perfilId: string) {
+    return this.prisma.userPerfil.delete({
+      where: {
+        usuario_id_perfil_id: {
+          usuario_id: userId,
+          perfil_id: perfilId,
+        },
+      },
+    });
+  }
 }

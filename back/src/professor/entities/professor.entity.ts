@@ -22,6 +22,9 @@ export class ProfessorEntity {
   @ApiPropertyOptional({ nullable: true })
   telefone?: string | null;
 
+  @ApiPropertyOptional()
+  status?: string;
+
   @ApiPropertyOptional({
     type: [String],
     description: 'Roles do usuário (ex: professor)',

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TurmaEntity {
   @ApiProperty()
@@ -15,6 +15,12 @@ export class TurmaEntity {
 
   @ApiProperty({ nullable: true })
   data_especifica!: Date | null;
+
+  @ApiProperty({
+    example: 'ATIVO',
+    description: 'Status da turma: ATIVO ou INATIVO',
+  })
+  status!: string;
 
   @ApiProperty()
   segunda!: boolean;
@@ -36,4 +42,7 @@ export class TurmaEntity {
 
   @ApiProperty()
   domingo!: boolean;
+
+  @ApiPropertyOptional({ type: [String], description: 'Nomes dos professores vinculados' })
+  professores?: string[];
 }

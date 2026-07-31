@@ -42,7 +42,22 @@ export class TurmaRepository {
     try {
       const where = {};
       const [turmas, total] = await Promise.all([
-        this.prisma.turma.findMany({ where, skip, take }),
+        this.prisma.turma.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            professorTurmas: {
+              include: {
+                professor: {
+                  include: {
+                    usuario: { select: { nome: true } },
+                  },
+                },
+              },
+            },
+          },
+        }),
         this.prisma.turma.count({ where }),
       ]);
       return { data: turmas.map((t) => this.toEntity(t)), total };
@@ -302,6 +317,7 @@ export class TurmaRepository {
     horario_inicio: Date;
     horario_fim: Date;
     data_especifica: Date | null;
+    status?: string;
     segunda: boolean;
     terca: boolean;
     quarta: boolean;
@@ -309,6 +325,9 @@ export class TurmaRepository {
     sexta: boolean;
     sabado: boolean;
     domingo: boolean;
+    professorTurmas?: Array<{
+      professor: { usuario: { nome: string } };
+    }>;
   }): TurmaEntity {
     const entity = new TurmaEntity();
     entity.id = turma.id;
@@ -316,6 +335,7 @@ export class TurmaRepository {
     entity.horario_inicio = turma.horario_inicio;
     entity.horario_fim = turma.horario_fim;
     entity.data_especifica = turma.data_especifica;
+    entity.status = turma.status ?? 'ATIVO';
     entity.segunda = turma.segunda;
     entity.terca = turma.terca;
     entity.quarta = turma.quarta;
@@ -323,6 +343,9 @@ export class TurmaRepository {
     entity.sexta = turma.sexta;
     entity.sabado = turma.sabado;
     entity.domingo = turma.domingo;
+    entity.professores = turma.professorTurmas?.map(
+      (pt) => pt.professor.usuario.nome,
+    );
     return entity;
   }
 }

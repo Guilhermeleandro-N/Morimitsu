@@ -39,6 +39,9 @@ export class UpdateUserDto {
   @ApiProperty({ example: 'ATIVO' })
   @IsString()
   @IsOptional()
+  @Matches(/^(ENABLED|DISABLED|DISMISSED)$/, {
+    message: 'Status deve ser ENABLED, DISABLED ou DISMISSED',
+  })
   status?: string;
 
   @ApiPropertyOptional({ example: '2000-01-01' })

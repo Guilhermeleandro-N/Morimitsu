@@ -25,6 +25,7 @@ import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
 import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
+import { UpdateTurmaStatusDto } from './dtos/update-turma-status.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
@@ -93,6 +94,18 @@ export class TurmaController {
   @ApiResponse({ status: 204 })
   async deletar(@Param('id') id: string): Promise<void> {
     return this.service.deletar(id);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Alterar status da turma (ATIVO/INATIVO)' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  async atualizarStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateTurmaStatusDto,
+  ): Promise<TurmaEntity> {
+    return this.service.atualizarStatus(id, dto);
   }
 
   @Post(':id/aluno')
