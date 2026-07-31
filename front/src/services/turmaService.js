@@ -171,6 +171,16 @@ export async function adicionarProfessorTurma(
   }
 }
 
+export async function atualizarStatusTurma(id, status) {
+  try {
+    const response = await api.patch(`turma/${id}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar status da turma:", error);
+    throw error;
+  }
+}
+
 export async function atualizarStatusAlunoNaTurma(turmaId, alunoId, frequente) {
   try {
     const response = await api.patch(`/turma/${turmaId}/aluno/${alunoId}`, { frequente });

@@ -46,6 +46,16 @@ function Sidebar({ isOpen, setIsOpen }) {
             </li>
           </RoleGuard>
 
+          <RoleGuard allowedRoutes={["admin", "professor"]}>
+            <li
+              onClick={() => {
+                navigate("/painelProfessor");
+              }}
+            >
+              Painel
+            </li>
+          </RoleGuard>
+
           <li
             onClick={() => {
               navigate("Turmas");
@@ -79,6 +89,16 @@ function Sidebar({ isOpen, setIsOpen }) {
               }}
             >
               Lista de professores
+            </li>
+          </RoleGuard>
+
+          <RoleGuard allowedRoutes={["admin"]}>
+            <li
+              onClick={() => {
+                navigate("/concederPermissoes");
+              }}
+            >
+              Conceder Permissões
             </li>
           </RoleGuard>
         </ul>

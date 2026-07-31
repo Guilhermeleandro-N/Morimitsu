@@ -7,6 +7,8 @@ import {
   graduarAluno
 } from '../../services/alunoService';
 
+import { atualizarStatusUsuario } from '../../services/userService';
+
 import { listarTurmas } from "../../services/turmaService";
 
 import {
@@ -108,6 +110,17 @@ const PerfilAluno = () => {
 
   }
 
+  async function handleToggleStatus() {
+    const statusAtual = alunoData?.status || "ENABLED";
+    const novoStatus = statusAtual === "ENABLED" ? "DISABLED" : "ENABLED";
+    try {
+      await atualizarStatusUsuario(userId, novoStatus);
+      setAlunoData((prev) => ({ ...prev, status: novoStatus }));
+    } catch (error) {
+      console.error("Erro ao alterar status:", error);
+    }
+  }
+
   function formatarDataBR(data) {
     if (!data) return "--";
 
@@ -146,23 +159,20 @@ const PerfilAluno = () => {
   }
 
   async function handleGraduarAluno(dados) {
+    if (!alunoData?.id) {
+      alert("Dados do aluno não carregados. Aguarde.");
+      return;
+    }
     try {
-
       await graduarAluno(
         alunoData.id,
         dados.faixa,
         dados.grau_faixa
       );
-
       await buscarAluno();
-
-      
-
       setModalGraduacaoOpen(false);
-
     } catch (error) {
       console.error(error);
-
       alert(
         error?.response?.data?.message ||
         "Erro ao graduar aluno."
@@ -225,13 +235,26 @@ const PerfilAluno = () => {
               {dadosAluno.nome || "Aluno"}
             </h3>
 
-            <span
-              className={`status-badge ${String(
-                dadosAluno.status || ""
-              ).toLowerCase()}`}
-            >
-              {dadosAluno.status || "--"}
-            </span>
+            <RoleGuard allowedRoutes={["admin"]}>
+              <button
+                className={`status-badge ${String(
+                  dadosAluno.status || ""
+                ).toLowerCase()}`}
+                onClick={handleToggleStatus}
+                style={{ cursor: "pointer", border: "none" }}
+              >
+                {dadosAluno.status === "ENABLED" ? "Ativo" : "Inativo"}
+              </button>
+            </RoleGuard>
+            <RoleGuard allowedRoutes={["professor", "aluno"]}>
+              <span
+                className={`status-badge ${String(
+                  dadosAluno.status || ""
+                ).toLowerCase()}`}
+              >
+                {dadosAluno.status || "--"}
+              </span>
+            </RoleGuard>
 
             <div className="personal-details">
               <p>
@@ -395,6 +418,8 @@ const PerfilAluno = () => {
             setModalGraduacaoOpen(false)
           }
           onSave={handleGraduarAluno}
+          faixaAtual={faixa}
+          grauAtual={grau}
         />
       )}
 

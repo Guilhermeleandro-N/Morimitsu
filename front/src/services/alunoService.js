@@ -32,9 +32,19 @@ export async function BuscaAlunoPorUserId(userId) {
 
 export async function atualizarAluno(usuarioId, nome, email, senha, telefone, data_nascimento, faixa, grau, frequencia_atual) {
   try {
-    await api.patch(`user/${usuarioId}`, { nome, email, telefone, ...(senha ? { senha } : {}) });
+    await api.patch(`user/${usuarioId}`, {
+      nome,
+      email,
+      telefone,
+      data_nascimento: data_nascimento || undefined,
+      ...(senha ? { senha } : {}),
+    });
     const aluno = await BuscaAlunoPorUserId(usuarioId);
-    const response = await api.patch(`aluno/${aluno.id}`, { faixa, grau_faixa: grau, frequencia_atual, data_nascimento });
+    const response = await api.patch(`aluno/${aluno.id}`, {
+      faixa,
+      grau_faixa: grau,
+      frequencia_atual,
+    });
     return response;
   } catch (error) {
     console.log("Erro ao atualizar aluno");

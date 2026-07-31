@@ -10,7 +10,15 @@ import {
 } from "../../services/professorService";
 
 import {
-  FaEye
+  atualizarStatusUsuario
+} from "../../services/userService";
+
+import { listarAlunosCompleto } from "../../services/alunoService";
+
+import {
+  FaEye,
+  FaTrash,
+  FaArchive
 } from "react-icons/fa";
 
 import "./ListarProfessores.css";
@@ -34,14 +42,28 @@ function abrirPerfil(userId) {
     setProfessores] =
     useState([]);
 
+  const [filtroStatus, setFiltroStatus] = useState("TODOS");
+
   async function carregarProfessores() {
 
     try {
 
-      const response =
-        await listarProfessores();
+      const [response, alunos] = await Promise.all([
+        listarProfessores(),
+        listarAlunosCompleto()
+      ]);
 
-      setProfessores(response);
+      const mapaFrequencia = {};
+      alunos.forEach((a) => {
+        mapaFrequencia[a.usuarioId] = a.frequencia_atual ?? 0;
+      });
+
+      const professoresComFrequencia = response.map((p) => ({
+        ...p,
+        frequencia: mapaFrequencia[p.usuarioId] ?? 0,
+      }));
+
+      setProfessores(professoresComFrequencia);
 
     } catch (error) {
 
@@ -59,6 +81,33 @@ function abrirPerfil(userId) {
     carregarProfessores();
 
   }, []);
+
+  const professoresFiltrados = filtroStatus === "TODOS"
+    ? professores
+    : professores.filter((p) => p.status === filtroStatus);
+
+  async function handleArquivar(professor) {
+    const novoStatus = professor.status === "ENABLED" ? "DISABLED" : "ENABLED";
+    try {
+      await atualizarStatusUsuario(professor.usuarioId, novoStatus);
+      setProfessores((prev) =>
+        prev.map((p) =>
+          p.usuarioId === professor.usuarioId ? { ...p, status: novoStatus } : p
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao arquivar:", error);
+    }
+  }
+
+  function statusLabel(status) {
+    switch (status) {
+      case "ENABLED": return "Ativo";
+      case "DISABLED": return "Inativo";
+      case "DISMISSED": return "Desligado";
+      default: return status || "—";
+    }
+  }
 
   return (
 
@@ -78,6 +127,16 @@ function abrirPerfil(userId) {
 
         </div>
 
+        <select
+          className="status-filter-select"
+          value={filtroStatus}
+          onChange={(e) => setFiltroStatus(e.target.value)}
+        >
+          <option value="TODOS">Todos</option>
+          <option value="ENABLED">Ativos</option>
+          <option value="DISABLED">Inativos</option>
+        </select>
+
       </div>
 
       <div className="listar-card">
@@ -89,7 +148,7 @@ function abrirPerfil(userId) {
           </h2>
 
           <p>
-            Total de {professores.length}
+            Total de {professoresFiltrados.length}
             {" "}professores cadastrados
           </p>
 
@@ -104,9 +163,12 @@ function abrirPerfil(userId) {
               <tr>
 
                 <th>Nome</th>
-                <th>Email</th>
                 <th>Faixa</th>
                 <th>Grau</th>
+                <th>Frequência</th>
+                <th>Status</th>
+                <th>Arquivar</th>
+                <th>Excluir</th>
                 <th>Ações</th>
 
               </tr>
@@ -115,7 +177,7 @@ function abrirPerfil(userId) {
 
             <tbody>
 
-              {professores.map(
+              {professoresFiltrados.map(
                 (professor) => (
 
                   <tr
@@ -127,15 +189,41 @@ function abrirPerfil(userId) {
                     </td>
 
                     <td>
-                      {professor.email}
-                    </td>
-
-                    <td>
                       {professor.faixa}
                     </td>
 
                     <td>
                       {professor.grau}
+                    </td>
+
+                    <td>
+                      {professor.frequencia ?? 0}
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          professor.status === "ENABLED"
+                            ? "status ativo"
+                            : professor.status === "DISMISSED"
+                            ? "status desligado"
+                            : "status inativo"
+                        }
+                      >
+                        {statusLabel(professor.status)}
+                      </span>
+                    </td>
+
+                    <td>
+                      <button className="icon-btn" onClick={() => handleArquivar(professor)}>
+                        <FaArchive />
+                      </button>
+                    </td>
+
+                    <td>
+                      <button className="icon-btn delete">
+                        <FaTrash />
+                      </button>
                     </td>
 
                     <td>
@@ -162,7 +250,7 @@ function abrirPerfil(userId) {
                 <tr>
 
                   <td
-                    colSpan="5"
+                    colSpan="8"
                     style={{
                       textAlign:
                         "center",

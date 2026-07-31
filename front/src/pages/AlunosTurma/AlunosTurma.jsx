@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { listarAlunosDaTurma, removerAlunoDaTurma, atualizarStatusAlunoNaTurma } from "../../services/turmaService";
+import { listarAlunosDaTurma, removerAlunoDaTurma, atualizarStatusAlunoNaTurma, atualizarStatusTurma } from "../../services/turmaService";
 import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import FrequenciaModal from "../../components/RegistrarFrequencia/FrequenciaModal";
 import RoleGuard from "../../routes/RoleGuard";
@@ -27,6 +27,11 @@ function AlunosTurma() {
   
   const turmaHorarioInicio = location.state?.turmaHorarioInicio;
   const turmaHorarioFim = location.state?.turmaHorarioFim;
+
+  const [statusTurma, setStatusTurma] = useState(
+    location.state?.turmaStatus || "ATIVO"
+  );
+
   const [alunos, setAlunos] = useState([]);
   const [modalAdicionarOpen, setModalAdicionarOpen] =
     useState(false);
@@ -97,6 +102,16 @@ function AlunosTurma() {
       );
     } catch (error) {
       console.error("Erro ao alternar status do aluno:", error);
+    }
+  }
+
+  async function handleToggleStatusTurma() {
+    const novoStatus = statusTurma === "ATIVO" ? "INATIVO" : "ATIVO";
+    try {
+      await atualizarStatusTurma(turmaId, novoStatus);
+      setStatusTurma(novoStatus);
+    } catch (error) {
+      console.error("Erro ao alternar status da turma:", error);
     }
   }
 
@@ -191,6 +206,7 @@ function AlunosTurma() {
             onClick={() =>
               setModalAdicionarOpen(true)
             }
+            title="Adicionar aluno à turma"
           >
             <FaUserPlus />
           </button>
@@ -200,6 +216,7 @@ function AlunosTurma() {
           onClick={() =>
             setModalFrequenciaOpen(true)
           }
+          title="Registrar frequência"
         >
           <FaClipboardCheck />
         </button>
@@ -227,11 +244,22 @@ function AlunosTurma() {
 
         <div className="listar-header">
 
-          <h2>{turmaNome}</h2>
+          <div className="listar-header-left">
+            <h2>{turmaNome}</h2>
+            <p>
+              Total de {alunos.length} alunos nesta turma
+            </p>
+          </div>
 
-          <p>
-            Total de {alunos.length} alunos nesta turma
-          </p>
+          <RoleGuard allowedRoutes={["admin"]}>
+            <button
+              className={`turma-status-btn ${statusTurma === "ATIVO" ? "status-ativo" : "status-inativo"}`}
+              onClick={handleToggleStatusTurma}
+              title={statusTurma === "ATIVO" ? "Clique para inativar" : "Clique para ativar"}
+            >
+              {statusTurma === "ATIVO" ? "Ativo" : "Inativo"}
+            </button>
+          </RoleGuard>
 
         </div>
 
@@ -393,12 +421,8 @@ function AlunosTurma() {
     onClose={() =>
       setModalFrequenciaOpen(false)
     }
-    onSalvar={(presentes) => {
-      console.log(
-        "Alunos presentes:",
-        presentes
-      );
-
+    onSalvar={async (presentes) => {
+      await carregarAlunos();
       setModalFrequenciaOpen(false);
     }}
   />

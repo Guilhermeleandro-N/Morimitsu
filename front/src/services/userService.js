@@ -21,15 +21,22 @@ export async function criarUser(nome, email, senha, telefone){
 
 export async function buscarUser(id){
    try {
-    const response = await api.get(`user/${id}`
-    );
-    
+    const response = await api.get(`user/${id}`);
     return response.data;
-    
-   }catch(error){
-    return error
-    console.log(error)
+   } catch(error){
+    console.log(error);
+    throw error;
    }
+}
+
+export async function atualizarStatusUsuario(id, status) {
+  try {
+    const response = await api.patch(`user/${id}`, { status });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar status do usuário:", error);
+    throw error;
+  }
 }
 
 

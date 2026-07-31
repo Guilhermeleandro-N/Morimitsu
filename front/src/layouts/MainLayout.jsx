@@ -8,9 +8,23 @@ export default function MainLayout(){
     return(
     <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <Header isOpen={isOpen} setIsOpen={setIsOpen} />
+        {isOpen && (
+          <div
+            onClick={() => setIsOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 998,
+              background: "rgba(0,0,0,0.3)",
+            }}
+          />
+        )}
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
-        <main style={{ flex: 1, overflow: "hidden" }}>
-                <Outlet />
+        <main
+          style={{ flex: 1, overflow: "hidden" }}
+          onClick={() => isOpen && setIsOpen(false)}
+        >
+            <Outlet />
         </main>
     </div>
     )

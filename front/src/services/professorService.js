@@ -104,3 +104,23 @@ export async function buscarProfessorEUsuario(
   }
 }
 
+export async function buscarDashboardProfessor() {
+  try {
+    const response = await api.get("professor/dashboard");
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar dashboard do professor:", error);
+    throw error;
+  }
+}
+
+export async function atualizarProfessor(id, dados) {
+  try {
+    const response = await api.patch(`professor/${id}`, dados);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar professor:", error);
+    throw error;
+  }
+}
+

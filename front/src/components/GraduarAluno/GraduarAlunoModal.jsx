@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import "./GraduarAlunoModal.css";
 
-const GraduarAlunoModal = ({ onClose, onSave }) => {
-  const [faixa, setFaixa] = useState("");
-  const [grau, setGrau] = useState("");
+const GraduarAlunoModal = ({ onClose, onSave, faixaAtual, grauAtual }) => {
+  const [faixa, setFaixa] = useState(faixaAtual || "");
+  const [grau, setGrau] = useState(grauAtual != null ? String(grauAtual) : "");
 
   const handleSubmit = () => {
     onSave({

@@ -9,8 +9,11 @@ import {
   registrarFrequencia
 } from "../../services/frequenciaService";
 
+import api from "../../api/axios";
+
 import {
-  buscarProfessorPorUsuarioId
+  buscarProfessorPorUsuarioId,
+  criarProfessor,
 } from "../../services/professorService";
 
 import {
@@ -44,18 +47,29 @@ const FrequenciaModal = ({
 
   async function handleSalvar() {
 
-    console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     try {
 
       if (!user) {
         alert("Usuário não está logado.");
         return;
       }
-      console.log(user);
-      const professor =
-        await buscarProfessorPorUsuarioId(
-          user.userId
-        );
+
+      let professor;
+      try {
+        professor = await buscarProfessorPorUsuarioId(user.userId);
+      } catch {
+        // Admin pode não ter registro de Professor — cria na hora
+        professor = await criarProfessor(user.userId, "PRETA", 0);
+      }
+
+      // Garante que o professor está vinculado à turma
+      try {
+        await api.post(`turma/${turmaId}/professor`, {
+          professor_id: professor.id,
+        });
+      } catch {
+        // Já vinculado, ignora
+      }
 
       const agora = new Date();
 

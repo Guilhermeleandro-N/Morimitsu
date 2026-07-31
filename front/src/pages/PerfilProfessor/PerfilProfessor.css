@@ -13,7 +13,6 @@
 ============================ */
 
 .main {
-
   width: 100%;
   min-height: 100vh;
   background: #eceaea;
@@ -24,7 +23,7 @@
   width: 100%;
   max-width: 1250px;
   margin: 0 auto;
-  padding-top: 0px
+  padding-top: 0px;
 }
 
 /* ============================
@@ -60,11 +59,11 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: .2s;
+  transition: 0.2s;
 }
 
 .btn-edit:hover {
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* ============================
@@ -86,7 +85,7 @@
 .content-card {
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 3px 14px rgba(0,0,0,.08);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
   padding: 32px;
 }
 
@@ -140,10 +139,13 @@
 }
 
 .status-badge {
+  display: block;
+  height: 35px;
+  width: fit-content;
   margin: 0 auto 28px;
-  padding: 7px 18px;
+  padding: 8px 24px;
   border-radius: 30px;
-  font-size: .9rem;
+  font-size: 0.9rem;
   font-weight: bold;
   color: white;
 }
@@ -151,6 +153,35 @@
 .status-badge.enabled,
 .status-badge.ativo {
   background: #0a992d;
+}
+
+.status-badge.disabled,
+.status-badge.inativo {
+  background: #9ca3af;
+}
+
+.status-badge.dismissed,
+.status-badge.desligado {
+  background: #dc2626;
+}
+
+.btn-status-toggle-perfil {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 8px 20px;
+  border: 1px solid #c1272d;
+  border-radius: 8px;
+  background: white;
+  color: #c1272d;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-status-toggle-perfil:hover {
+  background: #c1272d;
+  color: white;
 }
 
 .personal-details {
@@ -174,12 +205,72 @@
 ============================ */
 
 .history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 25px;
 }
 
 .history-header h3 {
   font-size: 1.6rem;
   color: #222;
+}
+
+.presence-total {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #888;
+  font-size: 18px;
+}
+
+.presence-total strong {
+  color: #555;
+}
+
+.presence-button {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: 0.25s;
+  background: #c1272d;
+}
+
+.presence-button::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  top: 2px;
+  left: 2px;
+  border-radius: 50%;
+  background: white;
+  transition: 0.25s;
+}
+
+.presence-button.present {
+  background: #009432;
+}
+
+.presence-button.present::after {
+  left: 16px;
+}
+
+.presence-button.absent {
+  background: #c1272d;
+}
+
+.presence-button:hover {
+  opacity: 0.9;
+}
+
+.presence-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .history-table {
@@ -250,7 +341,7 @@
 }
 
 .btn-graduate:hover {
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* ============================
@@ -258,7 +349,6 @@
 ============================ */
 
 @media (max-width: 1100px) {
-
   .profile-grid {
     grid-template-columns: 1fr;
   }
@@ -268,11 +358,9 @@
     width: 100%;
     margin: auto;
   }
-
 }
 
 @media (max-width: 768px) {
-
   .main {
     padding: 25px 18px;
   }
@@ -303,7 +391,6 @@
   .history-header h3 {
     font-size: 1.3rem;
   }
-
 }
 
 /* ============================
@@ -311,7 +398,6 @@
 ============================ */
 
 @media (max-width: 600px) {
-
   .history-table thead {
     display: none;
   }
@@ -350,5 +436,4 @@
     font-weight: bold;
     text-transform: uppercase;
   }
-
 }

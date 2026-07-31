@@ -15,6 +15,8 @@ import CadastrarUsuario from "../pages/CadastrarUsuario/CadastrarUsuario";
 import ListarProfessores from "../pages/ListarProfessores/ListarProfessores";
 import ConcederPermissoes from "../pages/ConcederPermissoes/ConcederPermissoes";
 import PerfilProfessor from "../pages/PerfilProfessor/PerfilProfessor";
+import PainelProfessor from "../pages/PainelProfessor/PainelProfessor";
+import EditarProfessor from "../pages/EditarProfessor/EditarProfessor";
 export default function AppRoutes() {
   return (
     <Routes>
@@ -119,16 +121,37 @@ export default function AppRoutes() {
             }
           />
 
+          <Route
+            path="/painelProfessor"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+                <PainelProfessor />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/editarProfessor"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin"]}>
+                <EditarProfessor />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/concederPermissoes"
+            element={
+              <ProtectedRoute rolesPermitidas={["admin"]}>
+                <ConcederPermissoes />
+              </ProtectedRoute>
+            }
+          />
+
       </Route>
 
 
       
-      <Route
-        path="/concederPermissoes"
-        element={
-          <ConcederPermissoes />
-        }
-      />
     </Routes>
   );
 }

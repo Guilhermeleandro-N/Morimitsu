@@ -1,7 +1,19 @@
 @import "../ListarAlunos/ListarAlunos.css";
 
+.listar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
 .listar-header h2 {
     font-size: 28px;
+}
+
+.listar-header-left {
+    display: flex;
+    flex-direction: column;
 }
 
 .listar-container {
@@ -89,4 +101,34 @@
 
     background-color: #a81818;
     transform: translateY(-2px);
+}
+
+.turma-status-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.2s;
+    color: white;
+    white-space: nowrap;
+}
+
+.turma-status-btn.status-ativo {
+    background-color: #16a34a;
+}
+
+.turma-status-btn.status-ativo:hover {
+    background-color: #15803d;
+}
+
+.turma-status-btn.status-inativo {
+    background-color: #9ca3af;
+}
+
+.turma-status-btn.status-inativo:hover {
+    background-color: #6b7280;
 }
