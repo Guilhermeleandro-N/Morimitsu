@@ -18,9 +18,12 @@ export class TurmaEntity {
 
   @ApiProperty({
     example: 'ATIVO',
-    description: 'Status da turma: ATIVO ou INATIVO',
+    description: 'Status da turma: ATIVO, INATIVO ou ARQUIVADA',
   })
   status!: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  arquivada_em!: Date | null;
 
   @ApiProperty()
   segunda!: boolean;
@@ -43,6 +46,9 @@ export class TurmaEntity {
   @ApiProperty()
   domingo!: boolean;
 
-  @ApiPropertyOptional({ type: [String], description: 'Nomes dos professores vinculados' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Nomes dos professores vinculados',
+  })
   professores?: string[];
 }

@@ -64,6 +64,14 @@ export class UserService {
     await this.repository.deletar(id);
   }
 
+  async arquivar(id: string, arquivado: boolean): Promise<UserEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Usuário não encontrado');
+    const entity = await this.repository.arquivar(id, arquivado);
+    if (!entity) throw new NotFoundException('Usuário não encontrado');
+    return this.enriquecer(entity);
+  }
+
   private async enriquecer(entity: UserEntity): Promise<UserEntity> {
     entity.permissoes = await this.authorizationService.getUserPermissions(
       entity.id,

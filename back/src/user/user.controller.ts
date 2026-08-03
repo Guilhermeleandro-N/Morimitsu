@@ -21,6 +21,7 @@ import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { ArquivarUsuarioDto } from './dtos/arquivar-usuario.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { UserEntity } from './entities/user.entity';
@@ -85,5 +86,18 @@ export class UserController {
   @ApiResponse({ status: 204 })
   async deletar(@Param('id') id: string): Promise<void> {
     return this.service.deletar(id);
+  }
+
+  @Patch(':id/arquivar')
+  @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.update')
+  @ApiOperation({ summary: 'Arquivar ou reativar usuário' })
+  @ApiResponse({ status: 200, type: UserEntity })
+  async arquivar(
+    @Param('id') id: string,
+    @Body() dto: ArquivarUsuarioDto,
+  ): Promise<UserEntity> {
+    return this.service.arquivar(id, dto.arquivado);
   }
 }

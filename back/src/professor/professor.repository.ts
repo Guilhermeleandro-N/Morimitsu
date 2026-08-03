@@ -53,7 +53,15 @@ export class ProfessorRepository {
           usuarioId: dto.usuarioId,
         },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true, status: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+            },
+          },
         },
       });
       await this.prisma.userPerfil.upsert({
@@ -108,7 +116,15 @@ export class ProfessorRepository {
           skip,
           take,
           include: {
-            usuario: { select: { nome: true, email: true, telefone: true, status: true } },
+            usuario: {
+              select: {
+                nome: true,
+                email: true,
+                telefone: true,
+                status: true,
+                arquivado_at: true,
+              },
+            },
           },
         }),
         this.prisma.professor.count({ where }),
@@ -126,7 +142,15 @@ export class ProfessorRepository {
       const professor = await this.prisma.professor.findUnique({
         where: { id },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true, status: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+            },
+          },
         },
       });
       if (!professor) return null;
@@ -143,7 +167,15 @@ export class ProfessorRepository {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true, status: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+            },
+          },
         },
       });
       if (!professor) return null;
@@ -167,7 +199,15 @@ export class ProfessorRepository {
         where: { id },
         data,
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true, status: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+            },
+          },
         },
       });
       return this.toEntity(professor);
@@ -259,7 +299,13 @@ export class ProfessorRepository {
     faixa: string;
     grau: number;
     usuarioId: string;
-    usuario?: { nome: string; email: string; telefone: string | null; status: string };
+    usuario?: {
+      nome: string;
+      email: string;
+      telefone: string | null;
+      status: string;
+      arquivado_at: Date | null;
+    };
   }): ProfessorEntity {
     const entity = new ProfessorEntity();
     entity.id = professor.id;
@@ -271,6 +317,7 @@ export class ProfessorRepository {
       entity.email = professor.usuario.email;
       entity.telefone = professor.usuario.telefone;
       entity.status = professor.usuario.status;
+      entity.arquivado_at = professor.usuario.arquivado_at;
     }
     return entity;
   }

@@ -18,6 +18,7 @@ model Usuario {
   senha      String
   telefone      String?
   data_nascimento DateTime?
+  arquivado_at DateTime?
   status     String      @default("ENABLED")
   aluno      Aluno?
   professor  Professor?
@@ -92,6 +93,7 @@ model Turma {
   horario_fim    DateTime
   data_especifica DateTime?
   status         String           @default("ATIVO")
+  arquivada_em   DateTime?
   segunda        Boolean          @default(false)
   terca          Boolean          @default(false)
   quarta         Boolean          @default(false)

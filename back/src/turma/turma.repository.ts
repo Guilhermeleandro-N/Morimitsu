@@ -40,7 +40,7 @@ export class TurmaRepository {
     take: number,
   ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
-      const where = {};
+      const where = { status: { not: 'ARQUIVADA' } };
       const [turmas, total] = await Promise.all([
         this.prisma.turma.findMany({
           where,
@@ -64,6 +64,93 @@ export class TurmaRepository {
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar turmas no banco de dados',
+      );
+    }
+  }
+
+  async listarArquivadas(
+    skip: number,
+    take: number,
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
+    try {
+      const where = { status: 'ARQUIVADA' };
+      const [turmas, total] = await Promise.all([
+        this.prisma.turma.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            professorTurmas: {
+              include: {
+                professor: {
+                  include: {
+                    usuario: { select: { nome: true } },
+                  },
+                },
+              },
+            },
+          },
+        }),
+        this.prisma.turma.count({ where }),
+      ]);
+      return { data: turmas.map((t) => this.toEntity(t)), total };
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao listar turmas arquivadas no banco de dados',
+      );
+    }
+  }
+
+  async arquivar(id: string): Promise<TurmaEntity | null> {
+    try {
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: { status: 'ARQUIVADA', arquivada_em: new Date() },
+      });
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
+      throw new InternalServerErrorException(
+        'Erro ao arquivar turma no banco de dados',
+      );
+    }
+  }
+
+  async reativar(id: string): Promise<TurmaEntity | null> {
+    try {
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: { status: 'ATIVO', arquivada_em: null },
+      });
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
+      throw new InternalServerErrorException(
+        'Erro ao reativar turma no banco de dados',
+      );
+    }
+  }
+
+  async deletarArquivadasApos(dataLimite: Date): Promise<number> {
+    try {
+      const { count } = await this.prisma.turma.deleteMany({
+        where: {
+          status: 'ARQUIVADA',
+          arquivada_em: { not: null, lt: dataLimite },
+        },
+      });
+      return count;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao excluir turmas arquivadas no banco de dados',
       );
     }
   }
@@ -318,6 +405,7 @@ export class TurmaRepository {
     horario_fim: Date;
     data_especifica: Date | null;
     status?: string;
+    arquivada_em: Date | null;
     segunda: boolean;
     terca: boolean;
     quarta: boolean;
@@ -336,6 +424,7 @@ export class TurmaRepository {
     entity.horario_fim = turma.horario_fim;
     entity.data_especifica = turma.data_especifica;
     entity.status = turma.status ?? 'ATIVO';
+    entity.arquivada_em = turma.arquivada_em ?? null;
     entity.segunda = turma.segunda;
     entity.terca = turma.terca;
     entity.quarta = turma.quarta;

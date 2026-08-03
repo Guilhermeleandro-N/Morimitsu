@@ -16,6 +16,9 @@ export class UserEntity {
   @ApiPropertyOptional({ type: String, nullable: true })
   data_nascimento!: Date | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
+  arquivado_at!: Date | null;
+
   @ApiProperty()
   status!: string;
 

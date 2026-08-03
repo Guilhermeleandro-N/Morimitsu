@@ -109,12 +109,26 @@ export class UserRepository {
     ]);
   }
 
+  async arquivar(id: string, arquivado: boolean): Promise<UserEntity | null> {
+    const usuario = await this.prisma.usuario.update({
+      where: { id },
+      data: { arquivado_at: arquivado ? new Date() : null },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
+    });
+    return this.toEntity(usuario);
+  }
+
   private toEntity(usuario: {
     id: string;
     nome: string;
     email: string;
     telefone: string | null;
     data_nascimento: Date | null;
+    arquivado_at: Date | null;
     status: string;
     aluno: { id: string } | null;
     professor: { id: string } | null;
@@ -137,6 +151,7 @@ export class UserRepository {
     entity.email = usuario.email;
     entity.telefone = usuario.telefone;
     entity.data_nascimento = usuario.data_nascimento;
+    entity.arquivado_at = usuario.arquivado_at;
     entity.status = usuario.status;
     entity.roles = roles;
     return entity;

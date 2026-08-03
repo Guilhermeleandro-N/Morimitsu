@@ -65,6 +65,41 @@ export class TurmaController {
     return new PaginatedResult(data, total, page, limit);
   }
 
+  @Get('arquivadas')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.read')
+  @ApiOperation({ summary: 'Listar turmas arquivadas' })
+  @ApiResponse({ status: 200, type: [TurmaEntity] })
+  async listarArquivadas(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<TurmaEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 100;
+    const { data, total } = await this.service.listarArquivadas(
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
+  }
+
+  @Patch(':id/arquivar')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Arquivar turma' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  async arquivar(@Param('id') id: string): Promise<TurmaEntity> {
+    return this.service.arquivar(id);
+  }
+
+  @Patch(':id/reativar')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Reativar turma arquivada' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  async reativar(@Param('id') id: string): Promise<TurmaEntity> {
+    return this.service.reativar(id);
+  }
+
   @Get(':id')
   @UseGuards(PermissionsGuard)
   @Permissions('turma.read')

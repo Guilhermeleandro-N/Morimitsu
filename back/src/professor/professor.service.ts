@@ -106,27 +106,26 @@ export class ProfessorService {
   }
 
   private calcularDiasAteAniversario(dataNascimento: Date, hoje: Date): number {
-    const nasc = new Date(dataNascimento);
-    const aniversario = new Date(
-      hoje.getFullYear(),
-      nasc.getMonth(),
-      nasc.getDate(),
-    );
+    const MS_DIA = 1000 * 60 * 60 * 24;
 
-    const diffMs = aniversario.getTime() - hoje.getTime();
-    const dias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    const nasc = new Date(dataNascimento);
+    const mesNasc = nasc.getUTCMonth();
+    const diaNasc = nasc.getUTCDate();
+
+    const hojeUTC = Date.UTC(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      hoje.getDate(),
+    );
+    const aniversarioUTC = Date.UTC(hoje.getFullYear(), mesNasc, diaNasc);
+
+    const dias = Math.round((aniversarioUTC - hojeUTC) / MS_DIA);
 
     if (dias >= 0) return dias;
 
     // Já passou este ano — calcular para o próximo ano
-    const proximoAno = new Date(
-      hoje.getFullYear() + 1,
-      nasc.getMonth(),
-      nasc.getDate(),
-    );
-    return Math.ceil(
-      (proximoAno.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const proximoAnoUTC = Date.UTC(hoje.getFullYear() + 1, mesNasc, diaNasc);
+    return Math.round((proximoAnoUTC - hojeUTC) / MS_DIA);
   }
 
   async criar(dto: CreateProfessorDto): Promise<ProfessorEntity> {

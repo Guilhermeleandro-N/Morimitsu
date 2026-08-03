@@ -25,6 +25,9 @@ export class ProfessorEntity {
   @ApiPropertyOptional()
   status?: string;
 
+  @ApiPropertyOptional({ nullable: true })
+  arquivado_at?: Date | null;
+
   @ApiPropertyOptional({
     type: [String],
     description: 'Roles do usuário (ex: professor)',
