@@ -4,6 +4,7 @@ import api from "../../api/axios";
 import { criarUser } from "../../services/userService";
 import { criarAlunoExistente } from "../../services/alunoService";
 import { criarProfessor } from "../../services/professorService";
+import { listarPerfisDoUsuario } from "../../services/authorizationService";
 import "./Cadastros.css";
 
 const FAIXAS = [
@@ -69,7 +70,20 @@ function Cadastros() {
       // API retorna { data: [...], meta: { total, page, ... } }
       const lista = body?.data ?? body?.users ?? body;
       const array = Array.isArray(lista) ? lista : [];
-      setUsuarios(array);
+
+      // Filtra administradores — admin não pode ser cadastrado como aluno/professor
+      const naoAdmins = [];
+      for (const user of array) {
+        try {
+          const perfis = await listarPerfisDoUsuario(user.id);
+          const isAdmin = perfis.some((p) => p.nome?.toLowerCase() === "admin");
+          if (!isAdmin) naoAdmins.push(user);
+        } catch {
+          naoAdmins.push(user);
+        }
+      }
+
+      setUsuarios(naoAdmins);
     } catch (error) {
       console.error("Erro ao carregar usuários:", error);
       setUsuarios([]);

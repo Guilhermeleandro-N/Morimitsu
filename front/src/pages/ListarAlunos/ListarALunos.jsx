@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { listarAlunosCompleto } from "../../services/alunoService";
 import { atualizarStatusUsuario } from "../../services/userService";
+import { listarPerfisDoUsuario } from "../../services/authorizationService";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaTrash, FaArchive } from "react-icons/fa";
 
@@ -33,7 +34,24 @@ const ListarAluno = () => {
     async function carregarAlunos() {
       try {
         const response = await listarAlunosCompleto();
-        setAlunos(response);
+
+        // Filtra administradores da lista de alunos
+        const alunosSemAdmin = [];
+        for (const aluno of response) {
+          if (!aluno.usuario) {
+            alunosSemAdmin.push(aluno);
+            continue;
+          }
+          try {
+            const perfis = await listarPerfisDoUsuario(aluno.usuario.id);
+            const isAdmin = perfis.some((p) => p.nome?.toLowerCase() === "admin");
+            if (!isAdmin) alunosSemAdmin.push(aluno);
+          } catch {
+            alunosSemAdmin.push(aluno);
+          }
+        }
+
+        setAlunos(alunosSemAdmin);
       } catch (error) {
         console.log("Erro ao carregar alunos:", error);
       }

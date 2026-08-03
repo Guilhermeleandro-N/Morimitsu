@@ -11,6 +11,8 @@ const prisma = new PrismaClient({
 });
 
 const PROFESSOR_PERMISSIONS = [
+  { codigo: 'user.read', descricao: 'Visualizar usuários' },
+  { codigo: 'user.update', descricao: 'Atualizar usuários' },
   { codigo: 'turma.read', descricao: 'Visualizar turma' },
   { codigo: 'turma.update', descricao: 'Atualizar turma' },
   { codigo: 'student.create', descricao: 'Criar aluno' },
