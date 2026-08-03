@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/login/Login";
-import Home from "../pages/Home/Home";
 import Cadastros from "../pages/Cadastros/Cadastros";
 import EditarAluno from "../pages/EditarAluno/EditarAluno";
 import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
@@ -17,6 +16,7 @@ import ConcederPermissoes from "../pages/ConcederPermissoes/ConcederPermissoes";
 import PerfilProfessor from "../pages/PerfilProfessor/PerfilProfessor";
 import PainelProfessor from "../pages/PainelProfessor/PainelProfessor";
 import EditarProfessor from "../pages/EditarProfessor/EditarProfessor";
+import TurmasArquivadas from "../pages/TurmasArquivadas/TurmasArquivadas";
 export default function AppRoutes() {
   return (
     <Routes>
@@ -76,10 +76,10 @@ export default function AppRoutes() {
           />
 
           <Route
-            path="/teste"
+            path="/turmasArquivadas"
             element={
               <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-                <Home />
+                <TurmasArquivadas />
               </ProtectedRoute>
             }
           />

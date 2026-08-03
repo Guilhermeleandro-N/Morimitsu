@@ -24,6 +24,9 @@ const EditarAluno = () => {
     telefone: alunoData.telefone || "",
     grau: alunoData.grau_faixa || "",
     frequencia: alunoData.frequencia_atual || "",
+    data_nascimento: alunoData.data_nascimento
+      ? String(alunoData.data_nascimento).split("T")[0]
+      : "",
   });
 
   const [message, setMessage] = useState("");
@@ -38,7 +41,7 @@ const EditarAluno = () => {
         form.email,
         "Admin@123456", // senha temporária
         form.telefone,
-        null, // data_nascimento removida
+        form.data_nascimento,
         form.faixa,
         parseInt(form.grau),
         parseInt(form.frequencia),
@@ -138,6 +141,19 @@ const EditarAluno = () => {
                 name="grau"
                 placeholder="Grau"
                 value={form.grau}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* DATA DE NASCIMENTO */}
+            <div className="form__group">
+              <label htmlFor="data_nascimento">Data de Nascimento</label>
+
+              <input
+                type="date"
+                id="data_nascimento"
+                name="data_nascimento"
+                value={form.data_nascimento}
                 onChange={handleChange}
               />
             </div>

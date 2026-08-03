@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { listarProfessores } from "../../services/professorService";
 
-import { atualizarStatusUsuario } from "../../services/userService";
+import { arquivarUsuario } from "../../services/userService";
 
 import { listarAlunosCompleto } from "../../services/alunoService";
 
@@ -71,16 +71,21 @@ function ListarProfessores() {
   const professoresFiltrados =
     filtroStatus === "TODOS"
       ? professores
-      : professores.filter((p) => p.status === filtroStatus);
+      : filtroStatus === "ARQUIVADO"
+        ? professores.filter((p) => p.arquivado_at)
+        : professores.filter((p) => p.status === filtroStatus);
 
   async function handleArquivar(professor) {
-    const novoStatus = professor.status === "ENABLED" ? "DISABLED" : "ENABLED";
+    const arquivado = !professor.arquivado_at;
     try {
-      await atualizarStatusUsuario(professor.usuarioId, novoStatus);
+      await arquivarUsuario(professor.usuarioId, arquivado);
       setProfessores((prev) =>
         prev.map((p) =>
           p.usuarioId === professor.usuarioId
-            ? { ...p, status: novoStatus }
+            ? {
+                ...p,
+                arquivado_at: arquivado ? new Date().toISOString() : null,
+              }
             : p,
         ),
       );
@@ -119,6 +124,7 @@ function ListarProfessores() {
           <option value="TODOS">Todos</option>
           <option value="ENABLED">Ativos</option>
           <option value="DISABLED">Inativos</option>
+          <option value="ARQUIVADO">Arquivados</option>
         </select>
       </div>
 

@@ -181,6 +181,45 @@ export async function atualizarStatusTurma(id, status) {
   }
 }
 
+export async function listarTurmasArquivadas() {
+  try {
+    const response = await api.get("turma/arquivadas");
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.error("Erro ao listar turmas arquivadas:", error);
+    throw error;
+  }
+}
+
+export async function arquivarTurma(id) {
+  try {
+    const response = await api.patch(`turma/${id}/arquivar`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao arquivar turma:", error);
+    throw error;
+  }
+}
+
+export async function reativarTurma(id) {
+  try {
+    const response = await api.patch(`turma/${id}/reativar`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao reativar turma:", error);
+    throw error;
+  }
+}
+
+export async function excluirTurma(id) {
+  try {
+    await api.delete(`turma/${id}`);
+  } catch (error) {
+    console.error("Erro ao excluir turma:", error);
+    throw error;
+  }
+}
+
 export async function atualizarStatusAlunoNaTurma(turmaId, alunoId, frequente) {
   try {
     const response = await api.patch(`/turma/${turmaId}/aluno/${alunoId}`, { frequente });

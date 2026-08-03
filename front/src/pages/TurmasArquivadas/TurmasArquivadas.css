@@ -1,0 +1,78 @@
+@import "../Turmas/VisualizarTurmas.css";
+
+.status-arquivada {
+  background-color: #7e22ce;
+}
+
+.arquivada-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666;
+}
+
+.arquivada-info strong {
+  color: #7e22ce;
+}
+
+.arquivada-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #ececec;
+}
+
+.arquivada-actions button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-reativar {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.btn-reativar:hover {
+  background-color: #dcfce7;
+}
+
+.btn-excluir {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.btn-excluir:hover {
+  background-color: #fee2e2;
+}
+
+.arquivadas-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
+  text-align: center;
+}
+
+.arquivadas-erro {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}

@@ -39,7 +39,8 @@ function CadastrarUsuario() {
         form.nome,
         form.email,
         form.senha,
-        form.telefone
+        form.telefone,
+        form.data_nascimento
       );
 
       if (response && response.id) {

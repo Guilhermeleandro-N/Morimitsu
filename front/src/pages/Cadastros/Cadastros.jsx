@@ -165,6 +165,7 @@ function Cadastros() {
           novoEmail.trim(),
           novoSenha,
           novoTelefone.trim(),
+          dataNascimento || undefined,
         );
 
         if (!userResponse || !userResponse.id) {
@@ -463,6 +464,16 @@ function Cadastros() {
                   value={frequencia}
                   onChange={(e) => setFrequencia(e.target.value)}
                   required
+                />
+              </div>
+
+              <div className="form__group form__group--full">
+                <label htmlFor="dataNascimento">Data de Nascimento</label>
+                <input
+                  type="date"
+                  id="dataNascimento"
+                  value={dataNascimento}
+                  onChange={(e) => setDataNascimento(e.target.value)}
                 />
               </div>
             </>

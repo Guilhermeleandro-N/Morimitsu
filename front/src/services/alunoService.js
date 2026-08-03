@@ -1,8 +1,11 @@
 import api from "../api/axios"
 import { buscarUser } from "./userService"
 
-export async function criarAlunoExistente(usuarioId, faixa, grau_faixa, frequencia_atual) {
+export async function criarAlunoExistente(usuarioId, faixa, grau_faixa, frequencia_atual, data_nascimento) {
   try {
+    if (data_nascimento) {
+      await api.patch(`user/${usuarioId}`, { data_nascimento });
+    }
     const response = await api.post("aluno", { usuarioId, faixa, grau_faixa, frequencia_atual });
     return response;
   } catch (error) {

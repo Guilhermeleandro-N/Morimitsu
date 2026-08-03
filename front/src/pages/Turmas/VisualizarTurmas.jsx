@@ -6,7 +6,7 @@ import CriarTurmaModal from "../../components/CriarTurma/CriarTurmaModal.jsx";
 
 import EditarTurmaModal from "../../components/EditarTurma/EditarTurmaModal";
 
-import { listarTurmas } from "../../services/turmaService";
+import { listarTurmas, arquivarTurma } from "../../services/turmaService";
 
 import RoleGuard from "../../routes/RoleGuard";
 
@@ -57,6 +57,16 @@ function VisualizarTurmas() {
     setTurmas((prev) => [...prev, novaTurma]);
 
     setModalOpen(false);
+  };
+
+  const handleArquivar = async (turmaId) => {
+    try {
+      await arquivarTurma(turmaId);
+      setMenuAberto(null);
+      await buscarTurmas();
+    } catch (error) {
+      console.error("Erro ao arquivar turma:", error);
+    }
   };
 
   const turmasFiltradas =
@@ -169,20 +179,10 @@ function VisualizarTurmas() {
 
                     <button
                       onClick={() => {
-                        console.log("Mover", turma.id);
-                        setMenuAberto(null);
+                        handleArquivar(turma.id);
                       }}
                     >
-                      Mover
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        console.log("Ocultar", turma.id);
-                        setMenuAberto(null);
-                      }}
-                    >
-                      Ocultar
+                      Arquivar Turma
                     </button>
 
                     <button

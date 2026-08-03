@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { listarAlunosCompleto } from "../../services/alunoService";
-import { atualizarStatusUsuario } from "../../services/userService";
+import { arquivarUsuario } from "../../services/userService";
 import { listarPerfisDoUsuario } from "../../services/authorizationService";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaTrash, FaArchive } from "react-icons/fa";
@@ -17,12 +17,20 @@ const ListarAluno = () => {
   }
 
   async function handleArquivar(aluno) {
-    const novoStatus = aluno.usuario?.status === "ENABLED" ? "DISABLED" : "ENABLED";
+    const arquivado = !aluno.usuario?.arquivado_at;
     try {
-      await atualizarStatusUsuario(aluno.usuarioId, novoStatus);
+      await arquivarUsuario(aluno.usuarioId, arquivado);
       setAlunos((prev) =>
         prev.map((a) =>
-          a.id === aluno.id ? { ...a, usuario: { ...a.usuario, status: novoStatus } } : a
+          a.id === aluno.id
+            ? {
+                ...a,
+                usuario: {
+                  ...a.usuario,
+                  arquivado_at: arquivado ? new Date().toISOString() : null,
+                },
+              }
+            : a
         )
       );
     } catch (error) {
@@ -59,9 +67,12 @@ const ListarAluno = () => {
     carregarAlunos();
   }, []);
 
-  const alunosFiltrados = filtroStatus === "TODOS"
-    ? alunos.filter((a) => a.usuario)
-    : alunos.filter((a) => a.usuario && a.usuario.status === filtroStatus);
+  const alunosFiltrados =
+    filtroStatus === "TODOS"
+      ? alunos.filter((a) => a.usuario)
+      : filtroStatus === "ARQUIVADO"
+        ? alunos.filter((a) => a.usuario && a.usuario.arquivado_at)
+        : alunos.filter((a) => a.usuario && a.usuario.status === filtroStatus);
 
   function getFaixaClass(faixa) {
     switch (faixa?.toLowerCase()) {
@@ -88,7 +99,7 @@ const ListarAluno = () => {
         >
           <option value="TODOS">Todos</option>
           <option value="ENABLED">Ativos</option>
-          <option value="DISABLED">Inativos</option>
+          <option value="ARQUIVADO">Arquivados</option>
         </select>
       </div>
 
@@ -125,10 +136,12 @@ const ListarAluno = () => {
                   <td>
                     <span
                       className={
-                        aluno.usuario?.status === "ENABLED" ? "status ativo" : "status inativo"
+                        aluno.usuario?.arquivado_at
+                          ? "status arquivado"
+                          : "status ativo"
                       }
                     >
-                      {aluno.usuario?.status === "ENABLED" ? "Ativo" : "Inativo"}
+                      {aluno.usuario?.arquivado_at ? "Arquivado" : "Ativo"}
                     </span>
                   </td>
                   <td>
