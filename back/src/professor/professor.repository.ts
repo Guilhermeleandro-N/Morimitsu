@@ -44,6 +44,22 @@ export class ProfessorRepository {
     }
   }
 
+  async atualizarDataNascimento(
+    usuarioId: string,
+    dataNascimento: string,
+  ): Promise<void> {
+    try {
+      await this.prisma.usuario.update({
+        where: { id: usuarioId },
+        data: { data_nascimento: new Date(dataNascimento) },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao atualizar data de nascimento no banco de dados',
+      );
+    }
+  }
+
   async criar(dto: CreateProfessorDto): Promise<ProfessorEntity> {
     try {
       const professor = await this.prisma.professor.create({
@@ -60,6 +76,7 @@ export class ProfessorRepository {
               telefone: true,
               status: true,
               arquivado_at: true,
+              data_nascimento: true,
             },
           },
         },
@@ -123,6 +140,7 @@ export class ProfessorRepository {
                 telefone: true,
                 status: true,
                 arquivado_at: true,
+                data_nascimento: true,
               },
             },
           },
@@ -149,6 +167,7 @@ export class ProfessorRepository {
               telefone: true,
               status: true,
               arquivado_at: true,
+              data_nascimento: true,
             },
           },
         },
@@ -174,6 +193,7 @@ export class ProfessorRepository {
               telefone: true,
               status: true,
               arquivado_at: true,
+              data_nascimento: true,
             },
           },
         },
@@ -206,6 +226,7 @@ export class ProfessorRepository {
               telefone: true,
               status: true,
               arquivado_at: true,
+              data_nascimento: true,
             },
           },
         },
@@ -241,6 +262,7 @@ export class ProfessorRepository {
   async buscarDashboard(usuarioId: string): Promise<
     {
       aluno_id: string;
+      usuario_id: string;
       nome: string;
       faixa: string;
       grau_faixa: number;
@@ -278,6 +300,7 @@ export class ProfessorRepository {
 
       return vinculos.map((v) => ({
         aluno_id: v.aluno_id,
+        usuario_id: v.aluno.usuarioId,
         nome: v.aluno.usuario.nome,
         faixa: v.aluno.faixa,
         grau_faixa: v.aluno.grau_faixa,
@@ -303,6 +326,7 @@ export class ProfessorRepository {
       nome: string;
       email: string;
       telefone: string | null;
+      data_nascimento: Date | null;
       status: string;
       arquivado_at: Date | null;
     };
@@ -316,6 +340,7 @@ export class ProfessorRepository {
       entity.nome = professor.usuario.nome;
       entity.email = professor.usuario.email;
       entity.telefone = professor.usuario.telefone;
+      entity.data_nascimento = professor.usuario.data_nascimento;
       entity.status = professor.usuario.status;
       entity.arquivado_at = professor.usuario.arquivado_at;
     }

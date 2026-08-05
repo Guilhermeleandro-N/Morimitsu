@@ -5,6 +5,9 @@ export class AlunoGraduacaoProximaDto {
   aluno_id!: string;
 
   @ApiProperty()
+  usuario_id!: string;
+
+  @ApiProperty()
   nome!: string;
 
   @ApiProperty()

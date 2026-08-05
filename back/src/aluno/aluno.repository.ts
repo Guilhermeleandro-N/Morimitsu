@@ -300,6 +300,25 @@ export class AlunoRepository {
     }
   }
 
+  // Professor também participa como aluno (ex.: turma do admin) —
+  // sincroniza a graduação no registro de professor, se existir.
+  async atualizarGraduacaoProfessor(
+    usuarioId: string,
+    faixa: string,
+    grau: number,
+  ): Promise<void> {
+    try {
+      await this.prisma.professor.updateMany({
+        where: { usuarioId },
+        data: { faixa, grau },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao atualizar graduação do professor no banco de dados',
+      );
+    }
+  }
+
   private toEntity(aluno: {
     id: string;
     frequencia_atual: number;

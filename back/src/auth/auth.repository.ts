@@ -23,6 +23,9 @@ export class AuthRepository {
             },
           },
         },
+        userPermissions: {
+          include: { permission: true },
+        },
       },
     });
 
@@ -46,6 +49,9 @@ export class AuthRepository {
             },
           },
         },
+        userPermissions: {
+          include: { permission: true },
+        },
       },
     });
 
@@ -68,6 +74,9 @@ export class AuthRepository {
               },
             },
           },
+        },
+        userPermissions: {
+          include: { permission: true },
         },
       },
     });
@@ -95,6 +104,7 @@ export class AuthRepository {
         perfilPermissions: { permission: { codigo: string } }[];
       };
     }[];
+    userPermissions: { is_removed: boolean; permission: { codigo: string } }[];
   }): AuthEntity {
     const roles: string[] = [];
 
@@ -112,6 +122,14 @@ export class AuthRepository {
     for (const up of usuario.userPerfis) {
       for (const pp of up.perfil.perfilPermissions) {
         permissoes.add(pp.permission.codigo);
+      }
+    }
+
+    for (const override of usuario.userPermissions) {
+      if (override.is_removed) {
+        permissoes.delete(override.permission.codigo);
+      } else {
+        permissoes.add(override.permission.codigo);
       }
     }
 

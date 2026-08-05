@@ -10,7 +10,7 @@ import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
-import { PROGRESSAO_FAIXAS } from '../common/faixas.constants';
+import { PROGRESSAO_FAIXAS, GRAUS_POR_FAIXA } from '../common/faixas.constants';
 
 @Injectable()
 export class AlunoService {
@@ -157,6 +157,41 @@ export class AlunoService {
     updateDto.grau_faixa = novoGrau;
     const entity = await this.repository.atualizar(id, updateDto);
     if (!entity) throw new NotFoundException('Aluno não encontrado');
+    return this.enriquecer(entity);
+  }
+
+  async graduarProximoNivel(id: string): Promise<AlunoEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Aluno não encontrado');
+
+    let novoGrau = existente.grau_faixa + 1;
+    let novaFaixa = existente.faixa;
+
+    if (novoGrau > GRAUS_POR_FAIXA) {
+      const indiceAtual = PROGRESSAO_FAIXAS.indexOf(existente.faixa);
+      const proximoIndice = indiceAtual + 1;
+      if (proximoIndice < PROGRESSAO_FAIXAS.length) {
+        novaFaixa = PROGRESSAO_FAIXAS[proximoIndice];
+      }
+      novoGrau = 0;
+    }
+
+    if (novaFaixa === existente.faixa && novoGrau === existente.grau_faixa) {
+      throw new BadRequestException('Aluno já está no nível máximo');
+    }
+
+    const updateDto = new UpdateAlunoDto();
+    updateDto.faixa = novaFaixa;
+    updateDto.grau_faixa = novoGrau;
+    const entity = await this.repository.atualizar(id, updateDto);
+    if (!entity) throw new NotFoundException('Aluno não encontrado');
+
+    await this.repository.atualizarGraduacaoProfessor(
+      entity.usuarioId,
+      novaFaixa,
+      novoGrau,
+    );
+
     return this.enriquecer(entity);
   }
 

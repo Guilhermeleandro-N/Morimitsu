@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { CurrentUser, JwtPayload } from '../auth/decorators/current-user.decorator';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
@@ -50,34 +51,36 @@ export class TurmaController {
 
   @Get()
   @UseGuards(PermissionsGuard)
-  @Permissions('turma.read')
-  @ApiOperation({ summary: 'Listar todas as turmas' })
+  @ApiOperation({ summary: 'Listar turmas (filtradas pelo usuário logado)' })
   @ApiResponse({ status: 200, type: [TurmaEntity] })
   async listar(
     @Query() pagination: PaginationQueryDto,
+    @CurrentUser() usuario: JwtPayload,
   ): Promise<PaginatedResult<TurmaEntity>> {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 10;
     const { data, total } = await this.service.listar(
       (page - 1) * limit,
       limit,
+      usuario,
     );
     return new PaginatedResult(data, total, page, limit);
   }
 
   @Get('arquivadas')
   @UseGuards(PermissionsGuard)
-  @Permissions('turma.read')
-  @ApiOperation({ summary: 'Listar turmas arquivadas' })
+  @ApiOperation({ summary: 'Listar turmas arquivadas (filtradas pelo usuário)' })
   @ApiResponse({ status: 200, type: [TurmaEntity] })
   async listarArquivadas(
     @Query() pagination: PaginationQueryDto,
+    @CurrentUser() usuario: JwtPayload,
   ): Promise<PaginatedResult<TurmaEntity>> {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 100;
     const { data, total } = await this.service.listarArquivadas(
       (page - 1) * limit,
       limit,
+      usuario,
     );
     return new PaginatedResult(data, total, page, limit);
   }

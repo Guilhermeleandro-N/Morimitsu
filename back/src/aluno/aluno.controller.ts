@@ -139,6 +139,17 @@ export class AlunoController {
     return this.service.graduar(id, dto);
   }
 
+  @Patch(':id/graduar/proximo')
+  @UseGuards(PermissionsGuard)
+  @Permissions('student.rank.update')
+  @ApiOperation({
+    summary: 'Graduar aluno automaticamente para o próximo grau/faixa',
+  })
+  @ApiResponse({ status: 200, type: AlunoEntity })
+  async graduarProximo(@Param('id') id: string): Promise<AlunoEntity> {
+    return this.service.graduarProximoNivel(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(PermissionsGuard)

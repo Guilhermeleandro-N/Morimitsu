@@ -22,6 +22,9 @@ export class ProfessorEntity {
   @ApiPropertyOptional({ nullable: true })
   telefone?: string | null;
 
+  @ApiPropertyOptional({ nullable: true })
+  data_nascimento?: Date | null;
+
   @ApiPropertyOptional()
   status?: string;
 

@@ -226,6 +226,20 @@ export class FrequenciaRepository {
       },
     });
 
+    // Professor também pode participar como aluno (ex.: turma do admin).
+    // Sincroniza a graduação no registro de professor, se existir.
+    const aluno = await this.prisma.aluno.findUnique({
+      where: { id: alunoId },
+      select: { usuarioId: true },
+    });
+
+    if (aluno) {
+      await this.prisma.professor.updateMany({
+        where: { usuarioId: aluno.usuarioId },
+        data: { grau: novoGrau, faixa: novaFaixa },
+      });
+    }
+
     // Notificar todos os professores da turma
     const professorTurmas = await this.prisma.professorTurma.findMany({
       where: { turma_id: turmaId },

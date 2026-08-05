@@ -4,6 +4,7 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import { JwtPayload } from '../auth/decorators/current-user.decorator';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
@@ -61,15 +62,27 @@ export class TurmaService implements OnModuleInit, OnModuleDestroy {
   async listar(
     skip: number,
     take: number,
+    usuario?: JwtPayload,
   ): Promise<{ data: TurmaEntity[]; total: number }> {
-    return this.repository.listar(skip, take);
+    return this.repository.listar(
+      skip,
+      take,
+      usuario?.sub,
+      usuario?.roles,
+    );
   }
 
   async listarArquivadas(
     skip: number,
     take: number,
+    usuario?: JwtPayload,
   ): Promise<{ data: TurmaEntity[]; total: number }> {
-    return this.repository.listarArquivadas(skip, take);
+    return this.repository.listarArquivadas(
+      skip,
+      take,
+      usuario?.sub,
+      usuario?.roles,
+    );
   }
 
   async arquivar(id: string): Promise<TurmaEntity> {

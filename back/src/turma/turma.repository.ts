@@ -38,9 +38,13 @@ export class TurmaRepository {
   async listar(
     skip: number,
     take: number,
+    usuarioId?: string,
+    roles: string[] = [],
   ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
-      const where = { status: { not: 'ARQUIVADA' } };
+      const where = this.montarFiltroPorUsuario(usuarioId, roles, {
+        status: { not: 'ARQUIVADA' },
+      });
       const [turmas, total] = await Promise.all([
         this.prisma.turma.findMany({
           where,
@@ -71,9 +75,13 @@ export class TurmaRepository {
   async listarArquivadas(
     skip: number,
     take: number,
+    usuarioId?: string,
+    roles: string[] = [],
   ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
-      const where = { status: 'ARQUIVADA' };
+      const where = this.montarFiltroPorUsuario(usuarioId, roles, {
+        status: 'ARQUIVADA',
+      });
       const [turmas, total] = await Promise.all([
         this.prisma.turma.findMany({
           where,
@@ -99,6 +107,36 @@ export class TurmaRepository {
         'Erro ao listar turmas arquivadas no banco de dados',
       );
     }
+  }
+
+  // Admin vê todas; professor vê as que ministra/participa;
+  // aluno vê apenas as que participa.
+  private montarFiltroPorUsuario(
+    usuarioId: string | undefined,
+    roles: string[],
+    base: Prisma.TurmaWhereInput,
+  ): Prisma.TurmaWhereInput {
+    if (!usuarioId || roles.includes('admin')) return base;
+
+    const or: Prisma.TurmaWhereInput[] = [];
+
+    if (roles.includes('professor')) {
+      or.push({
+        professorTurmas: { some: { professor: { usuarioId } } },
+      });
+    }
+
+    if (roles.includes('aluno')) {
+      or.push({
+        alunoTurmas: { some: { aluno: { usuarioId } } },
+      });
+    }
+
+    if (or.length === 0) {
+      return { ...base, id: 'sem-acesso' };
+    }
+
+    return { ...base, OR: or };
   }
 
   async arquivar(id: string): Promise<TurmaEntity | null> {

@@ -48,6 +48,7 @@ export class ProfessorService {
 
   private mapearGraduacaoProxima(a: {
     aluno_id: string;
+    usuario_id: string;
     nome: string;
     faixa: string;
     grau_faixa: number;
@@ -65,6 +66,7 @@ export class ProfessorService {
 
     return {
       aluno_id: a.aluno_id,
+      usuario_id: a.usuario_id,
       nome: a.nome,
       faixa: a.faixa,
       grau_faixa: a.grau_faixa,
@@ -139,6 +141,12 @@ export class ProfessorService {
       throw new ConflictException('Usuário já é professor');
 
     const entity = await this.repository.criar(dto);
+    if (dto.data_nascimento) {
+      await this.repository.atualizarDataNascimento(
+        dto.usuarioId,
+        dto.data_nascimento,
+      );
+    }
     return this.enriquecer(entity);
   }
 
@@ -174,6 +182,12 @@ export class ProfessorService {
   ): Promise<ProfessorEntity> {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Professor não encontrado');
+    if (dto.data_nascimento !== undefined) {
+      await this.repository.atualizarDataNascimento(
+        existente.usuarioId,
+        dto.data_nascimento,
+      );
+    }
     const entity = await this.repository.atualizar(id, dto);
     if (!entity) throw new NotFoundException('Professor não encontrado');
     return this.enriquecer(entity);
