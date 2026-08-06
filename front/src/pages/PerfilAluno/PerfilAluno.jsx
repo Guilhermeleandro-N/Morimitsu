@@ -1,7 +1,7 @@
 import React from 'react';
 import "./PerfilAluno.css";
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import {
   BuscarAlunoCompletoPorUserId,
   graduarAluno
@@ -16,10 +16,12 @@ import {
   editarFrequencia
 } from "../../services/frequenciaService";
 import RoleGuard from '../../routes/RoleGuard';
+import { AuthContext } from "../../context/AuthContext";
 import GraduarAlunoModal from "../../components/GraduarAluno/GraduarAlunoModal.jsx";
 
 const PerfilAluno = () => {
 
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.id;
@@ -192,8 +194,7 @@ const PerfilAluno = () => {
 
 
   return (
-    <div className='main'>
-      <div className="container">
+    <div className="container">
 
         <header className="page-header">
 
@@ -217,7 +218,7 @@ const PerfilAluno = () => {
 
         </header>
 
-        <main className="profile-grid">
+        <div className="profile-grid">
 
           <aside className="sidebar-card">
 
@@ -246,7 +247,7 @@ const PerfilAluno = () => {
                 {dadosAluno.status === "ENABLED" ? "Ativo" : "Inativo"}
               </button>
             </RoleGuard>
-            <RoleGuard allowedRoutes={["professor", "aluno"]}>
+            {user && !user.roles.includes("admin") && (
               <span
                 className={`status-badge ${String(
                   dadosAluno.status || ""
@@ -254,7 +255,7 @@ const PerfilAluno = () => {
               >
                 {dadosAluno.status || "--"}
               </span>
-            </RoleGuard>
+            )}
 
             <div className="personal-details">
               <p>
@@ -408,9 +409,7 @@ const PerfilAluno = () => {
 
           </section>
 
-        </main>
-
-      </div>
+        </div>
 
       {modalGraduacaoOpen && (
         <GraduarAlunoModal

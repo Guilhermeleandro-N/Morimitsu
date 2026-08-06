@@ -4,7 +4,8 @@ import {buscarUser} from "./userService.js";
 export async function criarProfessor(
   usuarioId,
   faixa,
-  grau
+  grau,
+  data_nascimento
 ) {
   try {
 
@@ -14,6 +15,7 @@ export async function criarProfessor(
         usuarioId,
         faixa,
         grau,
+        ...(data_nascimento ? { data_nascimento } : {}),
       }
     );
 

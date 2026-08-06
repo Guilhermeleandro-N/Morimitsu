@@ -84,19 +84,13 @@
 
 .turma-banner {
   background: linear-gradient(135deg, #111111, #2a2a2a);
-
-  min-height: 150px;
-
+  height: 150px;
+  width: 410px;
   padding: 24px;
-
   color: white;
 
   display: flex;
   align-items: flex-start;
-}
-
-.turma-banner > div {
-  width: 100%;
 }
 
 .turma-banner h3 {
@@ -104,9 +98,13 @@
   margin-bottom: 0;
 }
 
-.turma-banner span {
+.turma-horario {
   font-size: 15px;
   color: #d8d8d8;
+  justify-content: flex-start;
+
+  display: flex;
+  flex-basis: 100%;
 }
 
 .turma-professor {
@@ -115,27 +113,41 @@
   font-style: italic;
 }
 
-.turma-title-row {
+.turma-banner > div {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
   width: 100%;
 }
 
-.status-badge {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-left: auto;
+.turma-title-row {
+  flex: 1;
+  display: flex;
 }
 
-.status-ativo {
+.turma-title h3 {
+  font-size: 24px;
+  margin-bottom: 0;
+}
+
+.turma-status-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.status-badge {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-badge.status-ativo {
   background-color: #16a34a;
 }
 
-.status-inativo {
+.status-badge.status-inativo {
   background-color: #9ca3af;
 }
 

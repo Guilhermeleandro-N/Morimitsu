@@ -40,7 +40,7 @@ function CadastrarUsuario() {
         form.email,
         form.senha,
         form.telefone,
-        form.data_nascimento
+        form.data_nascimento,
       );
 
       if (response && response.id) {
@@ -58,8 +58,7 @@ function CadastrarUsuario() {
       }
     } catch (error) {
       const msg =
-        error?.response?.data?.message ||
-        "✖ Erro ao conectar com o servidor.";
+        error?.response?.data?.message || "✖ Erro ao conectar com o servidor.";
       showMessage(msg, "error");
     }
   }
@@ -99,7 +98,7 @@ function CadastrarUsuario() {
               type="email"
               id="email"
               name="email"
-              placeholder="email@exemplo.com"
+              placeholder="email@morimitsu.com"
               value={form.email}
               onChange={handleChange}
               required

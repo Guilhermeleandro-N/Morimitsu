@@ -1,8 +1,7 @@
-/* Configurações Gerais */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 .content-card {
@@ -15,21 +14,14 @@
   height: 54px;
 }
 
-.main {
-  width: 100%;
-  height: 100%;
-  background: #eceaea;
-  padding: 0px 60px;
-}
-
 .container {
   width: 100%;
   height: 100%;
-  /* REMOVA o max-height fixo. Isso impede que o conteúdo cresça no mobile */
-  /* max-height: 500px; <--- REMOVER */
-  margin: 0 auto;
-  padding: 40px 20px;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background: #eceaea;
+  padding: 40px;
 }
 
 /* Cabeçalho */
@@ -37,6 +29,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 0;
   margin-bottom: 18px;
   width: 100%;
 }
@@ -44,6 +37,7 @@
 .header-info h1 {
   font-size: 24px;
   font-weight: 700;
+  margin-top: 0;
   margin-bottom: 4px;
 }
 
@@ -67,25 +61,40 @@
   opacity: 0.9;
 }
 
-/* Grid Principal */
 .profile-grid {
-  display: grid;
-  grid-template-columns: 360px 1fr;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 28px;
-  align-items: start;
-}
-
-/* Estilo Comum dos Cards */
-.sidebar-card,
-.content-card {
-  background: white;
-  border-radius: 18px;
-  padding: 36px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  max-height: 750px;
+  max-width: 1300px;
 }
 
 .sidebar-card {
-  min-height: 100%;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  width: 360px;
+}
+.content-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.08);
+  padding: 32px;
+  width: 940px;
+}
+
+.sidebar-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 730px;
+}
+
+.content-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 730px;
 }
 
 .card-title {
@@ -121,30 +130,33 @@
   font-size: 28px;
   margin-bottom: 12px;
   color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .status-badge {
   display: block;
-  height: 35px;
   width: fit-content;
   margin: 0 auto 30px;
-  padding: 8px 24px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .status-badge.ativo,
 .status-badge.enabled {
-  background-color: #009432;
+  background-color: #16a34a;
   color: white;
 }
 
 .status-badge.inativo,
 .status-badge.disabled {
-  background-color: #9ca3af;
-  color: white;
+  background-color: #e5e5e5;
+  color: #777;
 }
 
 .status-badge.desligado,

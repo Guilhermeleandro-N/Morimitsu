@@ -6,6 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 import RoleGuard from "../../routes/RoleGuard";
 import {
   UserRoundPlus,
+  UserRound,
   LayoutDashboard,
   Users,
   GraduationCap,
@@ -23,6 +24,18 @@ function Sidebar({ isOpen, setIsOpen }) {
     logout();
     navigate("login");
   };
+
+  function abrirMeuPerfil() {
+    if (!user) return;
+    const roles = user.roles || [];
+    if (roles.includes("professor")) {
+      navigate("/perfilProfessor", { state: { id: user.userId } });
+    } else if (roles.includes("aluno")) {
+      navigate("/perfilAluno", { state: { id: user.userId } });
+    } else {
+      navigate("/perfilProfessor", { state: { id: user.userId } });
+    }
+  }
 
   let nome;
   if (!user) {
@@ -93,14 +106,16 @@ function Sidebar({ isOpen, setIsOpen }) {
         <div className="nav-divider" />
 
         <ul className="nav-section">
-          <li
-            onClick={() => {
-              navigate("Turmas");
-            }}
-          >
-            <GraduationCap size={22} className="menu-icon" />
-            <span>Minhas Turmas</span>
-          </li>
+          <RoleGuard allowedRoutes={["admin", "professor", "aluno"]}>
+            <li
+              onClick={() => {
+                navigate("Turmas");
+              }}
+            >
+              <GraduationCap size={22} className="menu-icon" />
+              <span>Minhas Turmas</span>
+            </li>
+          </RoleGuard>
 
           <RoleGuard allowedRoutes={["admin", "professor"]}>
             <li
@@ -117,6 +132,13 @@ function Sidebar({ isOpen, setIsOpen }) {
         <div className="nav-divider" />
 
         <ul className="nav-section">
+          <RoleGuard allowedRoutes={["admin", "professor", "aluno"]}>
+            <li onClick={abrirMeuPerfil}>
+              <UserRound size={22} className="menu-icon" />
+              <span>Meu Perfil</span>
+            </li>
+          </RoleGuard>
+
           <RoleGuard allowedRoutes={["admin"]}>
             <li
               onClick={() => {

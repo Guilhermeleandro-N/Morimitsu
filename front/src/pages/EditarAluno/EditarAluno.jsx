@@ -111,7 +111,7 @@ const EditarAluno = () => {
                 type="email"
                 id="email"
                 name="email"
-                placeholder="email@example.com"
+                placeholder="email@morimitsu.com"
                 value={form.email}
                 onChange={handleChange}
               />

@@ -65,3 +65,13 @@ export const graduarAluno = async (alunoId, faixa, grau_faixa) => {
     throw error;
   }
 };
+
+export const graduarProximoNivel = async (alunoId) => {
+  try {
+    const response = await api.patch(`/aluno/${alunoId}/graduar/proximo`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao graduar aluno:", error);
+    throw error;
+  }
+};

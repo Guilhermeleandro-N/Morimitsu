@@ -106,7 +106,14 @@ function Cadastros() {
       const filtrados = usuarios.filter((u) =>
         u.nome?.toLowerCase().includes(valor.toLowerCase()),
       );
-      console.log("Busca — valor:", valor, "usuarios.length:", usuarios.length, "filtrados:", filtrados.length);
+      console.log(
+        "Busca — valor:",
+        valor,
+        "usuarios.length:",
+        usuarios.length,
+        "filtrados:",
+        filtrados.length,
+      );
       setSugestoes(filtrados.slice(0, 8));
       setDropdownAberto(filtrados.length > 0);
     }, 300);
@@ -207,7 +214,12 @@ function Cadastros() {
           dataNascimento,
         );
       } else {
-        await criarProfessor(usuarioId, faixa, parseInt(grau) || 0);
+        await criarProfessor(
+          usuarioId,
+          faixa,
+          parseInt(grau) || 0,
+          dataNascimento || undefined,
+        );
       }
 
       const msgSucesso = isAlunoMode
@@ -301,7 +313,7 @@ function Cadastros() {
                 <input
                   type="email"
                   id="novoEmail"
-                  placeholder="email@exemplo.com"
+                  placeholder="email@morimitsu.com"
                   value={novoEmail}
                   onChange={(e) => setNovoEmail(e.target.value)}
                   required
@@ -453,7 +465,6 @@ function Cadastros() {
           {/* Campos extras só para Aluno */}
           {isAlunoMode && (
             <>
-
               <div className="form__group">
                 <label htmlFor="frequencia">Frequência Atual</label>
                 <input
@@ -466,18 +477,18 @@ function Cadastros() {
                   required
                 />
               </div>
-
-              <div className="form__group form__group--full">
-                <label htmlFor="dataNascimento">Data de Nascimento</label>
-                <input
-                  type="date"
-                  id="dataNascimento"
-                  value={dataNascimento}
-                  onChange={(e) => setDataNascimento(e.target.value)}
-                />
-              </div>
             </>
           )}
+
+          <div className="form__group form__group--full">
+            <label htmlFor="dataNascimento">Data de Nascimento</label>
+            <input
+              type="date"
+              id="dataNascimento"
+              value={dataNascimento}
+              onChange={(e) => setDataNascimento(e.target.value)}
+            />
+          </div>
 
           {/* Botões */}
           <div className="form__actions">

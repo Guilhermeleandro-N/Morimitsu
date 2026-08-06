@@ -30,6 +30,39 @@ export async function listarPermissoesDoPerfil(perfilId) {
   }
 }
 
+export async function listarPermissoes() {
+  try {
+    const response = await api.get("authorization/permissoes");
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao listar permissões:", error);
+    throw error;
+  }
+}
+
+export async function listarPermissoesDoUsuario(userId) {
+  try {
+    const response = await api.get(`authorization/user/${userId}/permissoes`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao listar permissões do usuário:", error);
+    throw error;
+  }
+}
+
+export async function definirPermissaoDoUsuario(userId, permissionId, ativa) {
+  try {
+    const response = await api.post(`authorization/user/${userId}/permissao`, {
+      permission_id: permissionId,
+      ativa,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao definir permissão do usuário:", error);
+    throw error;
+  }
+}
+
 export async function atribuirPerfil(userId, perfilId) {
   try {
     const response = await api.post(`authorization/user/${userId}/perfil`, { perfil_id: perfilId });

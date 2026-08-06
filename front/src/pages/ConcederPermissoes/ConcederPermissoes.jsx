@@ -1,11 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
 import "./ConcederPermissoes.css";
-import { listarUsuarios, listarPerfis, listarPerfisDoUsuario, atribuirPerfil, removerPerfil, listarPermissoesDoPerfil } from "../../services/authorizationService";
+import {
+  listarUsuarios,
+  listarPerfis,
+  listarPerfisDoUsuario,
+  atribuirPerfil,
+  removerPerfil,
+  listarPermissoesDoUsuario,
+  definirPermissaoDoUsuario,
+} from "../../services/authorizationService";
 
 const TABS = {
   ALUNO: { nome: "ALUNO", label: "Aluno" },
   PROFESSOR: { nome: "PROFESSOR", label: "Professor" },
 };
+
+// Ordem de agrupamento das permissões por categoria
+const CATEGORIAS = [
+  { titulo: "Turmas", padrao: /turma/ },
+  { titulo: "Alunos", padrao: /student|aluno/ },
+  { titulo: "Professores", padrao: /professor/ },
+  { titulo: "Presenças", padrao: /attendance|presenca/ },
+  { titulo: "Treinos", padrao: /training|treino/ },
+  { titulo: "Usuários", padrao: /^user\./ },
+  { titulo: "Dashboard", padrao: /dashboard/ },
+  { titulo: "Perfil", padrao: /profile|perfil/ },
+  { titulo: "Notificações", padrao: /notification|notificacao/ },
+];
 
 function ConcederPermissoes() {
   const [usuarios, setUsuarios] = useState([]);
@@ -13,27 +34,41 @@ function ConcederPermissoes() {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
   const [tipoUsuario, setTipoUsuario] = useState("PROFESSOR");
   const [perfisUsuario, setPerfisUsuario] = useState([]);
-  const [permissoesPerfil, setPermissoesPerfil] = useState({});
+  const [permissoesUsuario, setPermissoesUsuario] = useState([]);
+  const [permissoesPorPerfil, setPermissoesPorPerfil] = useState({});
   const [carregando, setCarregando] = useState(false);
+  const [salvandoPermissao, setSalvandoPermissao] = useState(null);
 
   useEffect(() => {
     async function carregar() {
       try {
-        const users = await listarUsuarios();
+        const [users, perfis] = await Promise.all([
+          listarUsuarios(),
+          listarPerfis(),
+        ]);
         const allUsers = Array.isArray(users) ? users : [];
 
         // Filtra admins: verifica perfil de cada usuário
         const naoAdmins = [];
         for (const user of allUsers) {
           try {
-            const perfis = await listarPerfisDoUsuario(user.id);
-            const isAdmin = perfis.some((p) => p.nome?.toLowerCase() === "admin");
+            const perfisUser = await listarPerfisDoUsuario(user.id);
+            const isAdmin = perfisUser.some((p) => p.nome?.toLowerCase() === "admin");
             if (!isAdmin) naoAdmins.push(user);
           } catch {
             naoAdmins.push(user); // se falhar, inclui
           }
         }
         setUsuarios(naoAdmins);
+
+        // Mapa nome do perfil -> permissões padrão daquele perfil
+        const mapa = {};
+        (Array.isArray(perfis) ? perfis : []).forEach((p) => {
+          mapa[(p.nome || "").toUpperCase()] = (p.perfilPermissions || [])
+            .map((pp) => pp.permission)
+            .filter(Boolean);
+        });
+        setPermissoesPorPerfil(mapa);
       } catch (error) {
         console.error("Erro ao carregar usuários:", error);
       }
@@ -49,6 +84,15 @@ function ConcederPermissoes() {
     } catch {
       setPerfisUsuario([]);
     }
+    setCarregando(true);
+    try {
+      const perms = await listarPermissoesDoUsuario(user.id);
+      setPermissoesUsuario(perms);
+    } catch {
+      setPermissoesUsuario([]);
+    } finally {
+      setCarregando(false);
+    }
   }
 
   // Tenta achar o perfil pelo nome (case insensitive) nos perfis do usuário
@@ -56,25 +100,69 @@ function ConcederPermissoes() {
     (p) => p.nome?.toLowerCase() === tipoUsuario.toLowerCase()
   );
 
-  async function carregarPermissoes() {
-    if (!perfilAtivo) return;
-    if (permissoesPerfil[perfilAtivo.id]) return;
-    setCarregando(true);
+  const permissoesUsuarioSet = useMemo(
+    () => new Set(permissoesUsuario.map((p) => p.id)),
+    [permissoesUsuario]
+  );
+
+  const permissoesDoPerfil = useMemo(
+    () => permissoesPorPerfil[tipoUsuario] || [],
+    [permissoesPorPerfil, tipoUsuario]
+  );
+
+  // Agrupa as permissões por categoria (turma, aluno, professor, ...)
+  const permissoesAgrupadas = useMemo(() => {
+    let semGrupo = [...permissoesDoPerfil];
+    const grupos = [];
+
+    for (const cat of CATEGORIAS) {
+      const padrao = cat.padrao;
+      const correspondentes = semGrupo.filter((p) =>
+        padrao.test((p.codigo || "").toLowerCase())
+      );
+
+      if (correspondentes.length > 0) {
+        grupos.push({
+          titulo: cat.titulo,
+          perms: [...correspondentes].sort((a, b) =>
+            (a.descricao || "").localeCompare(b.descricao || "")
+          ),
+        });
+        semGrupo = semGrupo.filter(
+          (p) => !padrao.test((p.codigo || "").toLowerCase())
+        );
+      }
+    }
+
+    if (semGrupo.length > 0) {
+      grupos.push({
+        titulo: "Outros",
+        perms: [...semGrupo].sort((a, b) =>
+          (a.descricao || "").localeCompare(b.descricao || "")
+        ),
+      });
+    }
+
+    return grupos;
+  }, [permissoesDoPerfil]);
+
+  async function handleTogglePermissao(perm) {
+    if (!usuarioSelecionado || salvandoPermissao) return;
+    const ativo = permissoesUsuarioSet.has(perm.id);
+    setSalvandoPermissao(perm.id);
     try {
-      const perms = await listarPermissoesDoPerfil(perfilAtivo.id);
-      setPermissoesPerfil((prev) => ({ ...prev, [perfilAtivo.id]: perms }));
+      await definirPermissaoDoUsuario(usuarioSelecionado.id, perm.id, !ativo);
+      setPermissoesUsuario((prev) => {
+        const novos = prev.filter((p) => p.id !== perm.id);
+        if (!ativo) novos.push(perm);
+        return novos;
+      });
     } catch (error) {
-      console.error("Erro ao carregar permissões:", error);
+      console.error("Erro ao alternar permissão:", error);
     } finally {
-      setCarregando(false);
+      setSalvandoPermissao(null);
     }
   }
-
-  useEffect(() => {
-    if (perfilAtivo) carregarPermissoes();
-  }, [perfilAtivo]);
-
-  const permissoesAtuais = perfilAtivo ? permissoesPerfil[perfilAtivo.id] || [] : [];
 
   async function handleTogglePerfil() {
     if (!usuarioSelecionado) return;
@@ -93,9 +181,31 @@ function ConcederPermissoes() {
           setPerfisUsuario((prev) => [...prev, perfilParaAtribuir]);
         }
       }
+      const perms = await listarPermissoesDoUsuario(usuarioSelecionado.id);
+      setPermissoesUsuario(perms);
     } catch (error) {
       console.error("Erro ao alternar perfil:", error);
     }
+  }
+
+  function renderPermissaoCard(perm) {
+    return (
+      <div className="permissao-card" key={perm.id}>
+        <div>
+          <h4>{perm.descricao}</h4>
+          <p>Código: {perm.codigo}</p>
+        </div>
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={permissoesUsuarioSet.has(perm.id)}
+            disabled={carregando || salvandoPermissao !== null}
+            onChange={() => handleTogglePermissao(perm)}
+          />
+          <span className="slider"></span>
+        </label>
+      </div>
+    );
   }
 
   const usuariosFiltrados = useMemo(() => {
@@ -156,49 +266,37 @@ function ConcederPermissoes() {
                 </div>
               </div>
 
-              <div className="permissoes-grid">
-                {permissoesAtuais.length > 0 ? (
-                  permissoesAtuais.map((perm) => (
-                    <div className="permissao-card" key={perm.id}>
-                      <div>
-                        <h4>{perm.descricao}</h4>
-                        <p>Código: {perm.codigo}</p>
+              {carregando ? (
+                <div className="empty-selection">Carregando permissões...</div>
+              ) : (
+                <>
+                  <h3 className="permissoes-section-title">
+                    Permissões do perfil de {TABS[tipoUsuario]?.label}
+                  </h3>
+                  {permissoesAgrupadas.length > 0 ? (
+                    <div className="permissoes-grid">
+                      {permissoesAgrupadas.flatMap((grupo) =>
+                        grupo.perms.map(renderPermissaoCard)
+                      )}
+                    </div>
+                  ) : (
+                    <div className="permissoes-grid">
+                      <div className="permissao-card">
+                        <div>
+                          <h4>Nenhuma permissão</h4>
+                          <p>Este perfil não possui permissões configuradas.</p>
+                        </div>
                       </div>
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={!!perfilAtivo}
-                          onChange={handleTogglePerfil}
-                        />
-                        <span className="slider"></span>
-                      </label>
                     </div>
-                  ))
-                ) : (
-                  <div className="permissao-card">
-                    <div>
-                      <h4>{carregando ? "Carregando..." : "Nenhuma permissão"}</h4>
-                      <p>
-                        {perfilAtivo
-                          ? "Este perfil não possui permissões configuradas."
-                          : `Usuário não possui o perfil de ${TABS[tipoUsuario]?.label || tipoUsuario}.`}
-                      </p>
-                    </div>
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={!!perfilAtivo}
-                        onChange={handleTogglePerfil}
-                      />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
-                )}
-              </div>
+                  )}
+                </>
+              )}
 
               <div className="salvar-container">
                 <button className="btn-salvar" onClick={handleTogglePerfil}>
-                  {perfilAtivo ? `Remover perfil de ${TABS[tipoUsuario]?.label}` : `Atribuir perfil de ${TABS[tipoUsuario]?.label}`}
+                  {perfilAtivo
+                    ? `Remover perfil base de ${TABS[tipoUsuario]?.label}`
+                    : `Atribuir perfil base de ${TABS[tipoUsuario]?.label}`}
                 </button>
               </div>
             </>

@@ -6,7 +6,8 @@ import React, {
 import "./FrequenciaModal.css";
 
 import {
-  registrarFrequencia
+  registrarFrequencia,
+  registrarTreinoProfessor,
 } from "../../services/frequenciaService";
 
 import api from "../../api/axios";
@@ -105,6 +106,13 @@ const FrequenciaModal = ({
           
         )
         
+      );
+
+      // Registra que o professor esteve presente na aula
+      await registrarTreinoProfessor(
+        professor.id,
+        turmaId,
+        agora
       );
 
       alert(

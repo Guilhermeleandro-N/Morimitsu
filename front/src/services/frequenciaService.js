@@ -35,6 +35,21 @@ export async function registrarFrequenciaTurma(usuarioId, turmaId, alunosPresent
   }
 }
 
+export async function registrarTreinoProfessor(professorId, turmaId, data) {
+  try {
+    const response = await api.post("frequencia/treino", {
+      professor_id: professorId,
+      turma_id: turmaId,
+      data,
+      status_aula: "REALIZADA",
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao registrar treino do professor:", error);
+    throw error;
+  }
+}
+
 export async function listarFrequenciasAluno(alunoId) {
   try {
     const response = await api.get(`/frequencia/aluno/${alunoId}`);

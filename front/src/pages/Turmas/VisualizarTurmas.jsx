@@ -122,19 +122,24 @@ function VisualizarTurmas() {
             <div className="turma-banner">
               <div>
                 <div className="turma-title-row">
-                  <h3>{turma.nome}</h3>
+                  <div className="turma-title">
+                    <h3>{turma.nome}</h3>
+                  </div>
+                </div>
+                <div className="turma-status-row">
                   <span
                     className={`status-badge ${turma.status === "ATIVO" ? "status-ativo" : "status-inativo"}`}
                   ></span>
                 </div>
 
-                <span>
+                <span className="turma-horario">
                   {formatarHorario(turma.horario_inicio)}
                   {" - "}
                   {formatarHorario(turma.horario_fim)}
                   {turma.professores?.length > 0 && (
                     <span className="turma-professor">
-                      {" • Prof.: "}{turma.professores.join(", ")}
+                      {" • Prof.: "}
+                      {turma.professores.join(", ")}
                     </span>
                   )}
                 </span>

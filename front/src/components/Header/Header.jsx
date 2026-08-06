@@ -1,4 +1,3 @@
-import {useEffect, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import {GiHamburgerMenu} from "react-icons/gi";
 import { IoIosLogOut } from "react-icons/io";
@@ -15,17 +14,8 @@ const Header = ({isOpen, setIsOpen}) => {
   }else{
      nome = user.nome;
   }
-console.log(user)
+  console.log(user)
   const navigate = useNavigate()
-  const abrirPerfilAluno = (userId) => {
-    console.log(userId)
-    navigate("/perfilAluno", {
-      state: {
-          id: userId
-      }
-    })
-  }
-
 
   const handleMenuToggle = () => {
       setIsOpen(!isOpen)
@@ -38,7 +28,7 @@ console.log(user)
                 <GiHamburgerMenu size={24} />
         </button>
       
-      <div className='nome-logo' onClick={() => {abrirPerfilAluno(user.userId)}} >
+      <div className='nome-logo' onClick={() => {navigate("/")}} >
         <img src={logo} alt="logo" />
         <div className="nome-logo-text">
           <span className="titulo">Morimitsu</span>

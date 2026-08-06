@@ -119,6 +119,16 @@
   gap: 22px;
 }
 
+.permissoes-section-title {
+  font-size: 17px;
+  color: #444;
+  margin: 28px 0 14px;
+}
+
+.permissoes-section-title:first-of-type {
+  margin-top: 0;
+}
+
 .permissao-card {
   background: #f8f8f8;
 
@@ -140,21 +150,6 @@
 .permissao-card p {
   font-size: 14px;
   color: #666;
-}
-
-.permissoes-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.permissao-tag {
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 12px;
-  background: #e0e0e0;
-  color: #555;
 }
 
 .btn-ver-permissoes {
@@ -240,7 +235,7 @@
 }
 
 .btn-salvar {
-  width: 300px;
+  width: 350px;
   height: 50px;
   border: none;
   border-radius: 10px;

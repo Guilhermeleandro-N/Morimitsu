@@ -6,6 +6,7 @@ import { listarProfessores } from "../../services/professorService";
 import {
   adicionarAlunoNaTurma,
   adicionarProfessorTurma,
+  listarAlunosDaTurma,
 } from "../../services/turmaService";
 
 import "./AdicionarAlunoTurmaModal.css";
@@ -43,10 +44,18 @@ function AdicionarAlunoTurmaModal({
   useEffect(() => {
     async function carregar() {
       try {
-        const alunosResponse =
-          await listarAlunosCompleto();
+        const [alunosResponse, alunosDaTurmaResponse] = await Promise.all([
+          listarAlunosCompleto(),
+          listarAlunosDaTurma(turmaId),
+        ]);
 
-        setAlunos(alunosResponse);
+        const jaNaTurma = new Set(
+          (alunosDaTurmaResponse || []).map((aluno) => aluno.id)
+        );
+
+        setAlunos(
+          alunosResponse.filter((aluno) => !jaNaTurma.has(aluno.id))
+        );
 
         const professoresResponse =
           await listarProfessores();
@@ -63,7 +72,7 @@ function AdicionarAlunoTurmaModal({
     }
 
     carregar();
-  }, []);
+  }, [turmaId]);
 
   async function adicionarAluno() {
     if (

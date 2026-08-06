@@ -1,25 +1,53 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { buscarDashboardProfessor } from "../../services/professorService";
+import { graduarProximoNivel } from "../../services/alunoService";
 import { FaGraduationCap, FaBirthdayCake } from "react-icons/fa";
 import "./PainelProfessor.css";
 
 function PainelProfessor() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [graduando, setGraduando] = useState(null);
+  const [toast, setToast] = useState(null);
+  const navigate = useNavigate();
+
+  async function carregarDashboard() {
+    try {
+      const data = await buscarDashboardProfessor();
+      setDashboard(data);
+    } catch (error) {
+      console.error("Erro ao carregar painel:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function mostrarToast(mensagem, tipo = "success") {
+    setToast({ mensagem, tipo });
+    setTimeout(() => setToast(null), 3000);
+  }
 
   useEffect(() => {
-    async function carregarDashboard() {
-      try {
-        const data = await buscarDashboardProfessor();
-        setDashboard(data);
-      } catch (error) {
-        console.error("Erro ao carregar painel:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     carregarDashboard();
   }, []);
+
+  async function handleGraduar(item) {
+    if (graduando) return;
+    setGraduando(item.aluno_id);
+    try {
+      await graduarProximoNivel(item.aluno_id);
+      await carregarDashboard();
+      mostrarToast(`${item.nome} graduado(a) com sucesso!`, "success");
+    } catch (error) {
+      mostrarToast(
+        error?.response?.data?.message || "Erro ao graduar aluno.",
+        "error"
+      );
+    } finally {
+      setGraduando(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -34,6 +62,11 @@ function PainelProfessor() {
 
   return (
     <div className="painel-container">
+      {toast && (
+        <div className={`painel-toast ${toast.tipo}`}>
+          {toast.mensagem}
+        </div>
+      )}
       <div className="painel-header">
         <h1>Painel do Professor</h1>
         <p>Visão geral dos alunos das suas turmas</p>
@@ -74,6 +107,27 @@ function PainelProfessor() {
                     </p>
                   </div>
                   <div className="card-footer">
+                    <div className="card-actions">
+                      <button
+                        className="btn-graduar"
+                        onClick={() => handleGraduar(item)}
+                        disabled={graduando === item.aluno_id}
+                      >
+                        {graduando === item.aluno_id
+                          ? "Graduando..."
+                          : "Graduar"}
+                      </button>
+                      <button
+                        className="btn-ver-perfil"
+                        onClick={() =>
+                          navigate("/perfilAluno", {
+                            state: { id: item.usuario_id },
+                          })
+                        }
+                      >
+                        Ver Perfil
+                      </button>
+                    </div>
                     <span className="restantes-badge">
                       {item.frequencias_restantes} frequência
                       {item.frequencias_restantes !== 1 ? "s" : ""} restante
