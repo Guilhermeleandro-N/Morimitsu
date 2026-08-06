@@ -57,11 +57,22 @@ export class ProfessorService {
     turma_nome: string;
     frequente: string;
   }): AlunoGraduacaoProximaDto | null {
-    const cicloAtual = a.frequencia_atual % FREQUENCIAS_POR_GRAU;
-    if (cicloAtual === 0) return null;
-
-    const restantes = FREQUENCIAS_POR_GRAU - cicloAtual;
     const LIMIAR = 5;
+    const grausEsperados = Math.floor(
+      a.frequencia_atual / FREQUENCIAS_POR_GRAU,
+    );
+
+    let restantes: number;
+    if (a.grau_faixa < grausEsperados) {
+      // Aluno com frequência acumulada que ainda não graduou — graduar agora
+      restantes = 0;
+    } else {
+      // Aluno em dia — mostra se estiver a até 5 frequências da próxima graduação
+      const progresso =
+        a.frequencia_atual - a.grau_faixa * FREQUENCIAS_POR_GRAU;
+      restantes = FREQUENCIAS_POR_GRAU - progresso;
+    }
+
     if (restantes > LIMIAR) return null;
 
     return {
