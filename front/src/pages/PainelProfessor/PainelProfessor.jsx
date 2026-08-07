@@ -36,7 +36,7 @@ function PainelProfessor() {
     if (graduando) return;
     setGraduando(item.aluno_id);
     try {
-      await graduarProximoNivel(item.aluno_id);
+      await graduarProximoNivel(item.aluno_id, item.turma_id);
       await carregarDashboard();
       mostrarToast(`${item.nome} graduado(a) com sucesso!`, "success");
     } catch (error) {

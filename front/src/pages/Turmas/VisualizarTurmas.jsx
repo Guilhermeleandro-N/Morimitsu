@@ -17,7 +17,6 @@ function VisualizarTurmas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editarModalOpen, setEditarModalOpen] = useState(false);
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
-  const [filtroStatus, setFiltroStatus] = useState("TODAS");
 
   const navigate = useNavigate();
   const [turmas, setTurmas] = useState([]);
@@ -69,11 +68,6 @@ function VisualizarTurmas() {
     }
   };
 
-  const turmasFiltradas =
-    filtroStatus === "TODAS"
-      ? turmas
-      : turmas.filter((t) => t.status === filtroStatus);
-
   return (
     <div className="turmas-container">
       <div className="turmas-header">
@@ -84,17 +78,6 @@ function VisualizarTurmas() {
         </div>
         <div className="turmas-header-actions">
           <RoleGuard allowedRoutes={["admin", "professor"]}>
-            <select
-              className="status-filter-select"
-              value={filtroStatus}
-              onChange={(e) => setFiltroStatus(e.target.value)}
-            >
-              <option value="TODAS">Todas</option>
-              <option value="ATIVO">Ativas</option>
-              <option value="INATIVO">Inativas</option>
-            </select>
-          </RoleGuard>
-          <RoleGuard allowedRoutes={["admin", "professor"]}>
             <button className="btn-criar" onClick={() => setModalOpen(true)}>
               Criar Turma
             </button>
@@ -103,7 +86,7 @@ function VisualizarTurmas() {
       </div>
 
       <div className="turmas-grid">
-        {turmasFiltradas.map((turma) => (
+        {turmas.map((turma) => (
           <div
             className="turma-card"
             key={turma.id}

@@ -67,8 +67,9 @@ function AlunosTurma() {
               );
 
             return {
+              ...alunoCompleto,
               ...aluno,
-              ...alunoCompleto
+              frequencia_atual: aluno.frequencia_atual,
             };
 
           })

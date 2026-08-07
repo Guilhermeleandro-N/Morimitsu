@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/login/Login";
+import EsqueciSenha from "../pages/EsqueciSenha/EsqueciSenha";
 import Cadastros from "../pages/Cadastros/Cadastros";
 import EditarAluno from "../pages/EditarAluno/EditarAluno";
 import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
@@ -26,6 +27,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/esqueciSenha" element={<EsqueciSenha />} />
       <Route path="/cadastrarUsuario" element={<CadastrarUsuario />} />
 
       <Route

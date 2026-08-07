@@ -84,14 +84,24 @@ export async function buscarProfessorEUsuario(
     const usuario =
       await buscarUser(usuarioId);
 
-    const professor =
-      await api.get(
-        `professor/usuario/${usuario.id}`
-      );
+    let professor = null;
+    try {
+      const resp =
+        await api.get(
+          `professor/usuario/${usuario.id}`
+        );
+      professor = resp.data;
+    } catch {
+      professor = {
+        usuarioId: usuario.id,
+        faixa: "--",
+        grau: 0,
+      };
+    }
 
     return {
       usuario,
-      professor: professor.data,
+      professor,
     };
 
   } catch (error) {

@@ -7,8 +7,6 @@ import {
 } from "../../services/turmaService";
 import { Archive, RotateCcw, Trash2, CalendarClock } from "lucide-react";
 
-const DIAS_PARA_EXCLUSAO = 30;
-
 function TurmasArquivadas() {
   const [turmas, setTurmas] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -51,14 +49,6 @@ function TurmasArquivadas() {
     };
   }, []);
 
-  const diasRestantes = (turma) => {
-    if (!turma.arquivada_em) return DIAS_PARA_EXCLUSAO;
-    const arquivadaEm = new Date(turma.arquivada_em).getTime();
-    const limite = arquivadaEm + DIAS_PARA_EXCLUSAO * 24 * 60 * 60 * 1000;
-    const restantes = Math.ceil((limite - Date.now()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, restantes);
-  };
-
   const formatarHorario = (data) =>
     new Date(data).toLocaleTimeString("pt-BR", {
       hour: "2-digit",
@@ -66,8 +56,10 @@ function TurmasArquivadas() {
       timeZone: "UTC",
     });
 
-  const formatarDataArquivada = (data) =>
-    new Date(data).toLocaleDateString("pt-BR");
+  const formatarDataArquivada = (data) => {
+    if (!data) return "--";
+    return new Date(data).toLocaleDateString("pt-BR");
+  };
 
   const obterDiasSemana = (turma) => {
     const dias = [];
@@ -108,7 +100,7 @@ function TurmasArquivadas() {
       <div className="turmas-header">
         <div>
           <h1>Turmas Arquivadas</h1>
-          <p>Turmas arquivadas são excluídas automaticamente após 30 dias</p>
+          <p>Turmas inativas ou arquivadas</p>
         </div>
       </div>
 
@@ -150,13 +142,8 @@ function TurmasArquivadas() {
                 <div className="arquivada-info">
                   <CalendarClock size={16} />
                   <span>
-                    Arquivada em {formatarDataArquivada(turma.arquivada_em)}
-                  </span>
-                </div>
-                <div className="arquivada-info">
-                  <span>
-                    Exclusão automática em{" "}
-                    <strong>{diasRestantes(turma)} dia(s)</strong>
+                    Arquivada em{" "}
+                    {formatarDataArquivada(turma.arquivada_em)}
                   </span>
                 </div>
               </div>

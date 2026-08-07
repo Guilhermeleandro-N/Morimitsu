@@ -48,6 +48,14 @@ const authService = {
     this.setAccessToken(data?.token);
     return data?.token ?? null;
   },
+
+  async resetarSenha(email, novaSenha) {
+    const { data } = await axios.post(
+      `${API_BASE_URL}/auth/resetar-senha`,
+      { email, novaSenha }
+    );
+    return data;
+  },
 };
 
 export default authService;

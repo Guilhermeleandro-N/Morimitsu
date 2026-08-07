@@ -189,7 +189,7 @@ const PerfilAluno = () => {
   const dadosAluno = alunoData || {};
   const faixa = dadosAluno.faixa ?? "";
   const grau = dadosAluno.grau_faixa ?? "";
-  const presencas = dadosAluno.frequencia_atual ?? 0;
+  const presencas = dadosAluno.total_presencas ?? dadosAluno.frequencia_atual ?? 0;
 
 
 

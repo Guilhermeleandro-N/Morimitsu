@@ -67,7 +67,11 @@ const Login = () => {
         </form>
         {message && <p className="form-error">{message}</p>}
       </div>
-      <a href="#" className="forgot-password">
+      <a
+        className="forgot-password"
+        onClick={() => navigate("/esqueciSenha")}
+        style={{ cursor: "pointer" }}
+      >
         Esqueci minha senha
       </a>
       <a

@@ -78,12 +78,25 @@ const PerfilProfessor = () => {
     if (!userId) return;
     try {
       const response = await buscarProfessorEUsuario(userId);
-      setProfessorData(response.professor);
-      setPrimeiraLetra(response.professor.nome?.charAt(0) ?? "");
+      const professor = response.professor || {};
+      const usuario = response.usuario || {};
+      setProfessorData({
+        ...usuario,
+        ...professor,
+        faixa: professor.faixa || usuario.faixa || "--",
+        grau: professor.grau ?? usuario.grau ?? 0,
+      });
+      setPrimeiraLetra(
+        (professor.nome || usuario.nome || "")
+          .charAt(0)
+          .toUpperCase(),
+      );
       try {
         const aluno = await BuscarAlunoCompletoPorUserId(userId);
         setAlunoData(aluno);
-        setPresencas(aluno.frequencia_atual ?? 0);
+        setPresencas(
+          aluno.total_presencas ?? aluno.frequencia_atual ?? 0
+        );
         await buscarFrequencias(aluno.id);
       } catch {
         setHistorico([]);

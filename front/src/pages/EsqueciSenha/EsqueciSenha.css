@@ -1,0 +1,8 @@
+.form-error.success {
+  color: #2e7d32;
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

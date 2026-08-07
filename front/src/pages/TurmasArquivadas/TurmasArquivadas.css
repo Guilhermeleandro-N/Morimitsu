@@ -1,7 +1,7 @@
 @import "../Turmas/VisualizarTurmas.css";
 
 .status-arquivada {
-  background-color: #7e22ce;
+  background-color: #9ca3af;
 }
 
 .arquivada-info {
@@ -14,7 +14,7 @@
 }
 
 .arquivada-info strong {
-  color: #7e22ce;
+  color: #6b7280;
 }
 
 .arquivada-actions {
