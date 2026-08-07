@@ -26,8 +26,9 @@ export class ProfessorService {
 
   async buscarDashboard(
     usuarioId: string,
+    roles: string[] = [],
   ): Promise<DashboardProfessorResponseDto> {
-    const alunos = await this.repository.buscarDashboard(usuarioId);
+    const alunos = await this.repository.buscarDashboard(usuarioId, roles);
     const hoje = new Date();
 
     const proximosGraduacao = alunos
@@ -35,14 +36,28 @@ export class ProfessorService {
       .filter((g): g is AlunoGraduacaoProximaDto => g !== null)
       .sort((a, b) => a.frequencias_restantes - b.frequencias_restantes);
 
+    // Evita duplicar o mesmo aluno (vínculos em várias turmas)
+    const graduacoesUnicas = [
+      ...new Map(
+        proximosGraduacao.map((g) => [g.aluno_id, g]),
+      ).values(),
+    ].sort((a, b) => a.frequencias_restantes - b.frequencias_restantes);
+
     const proximosAniversario = alunos
       .map((a) => this.mapearAniversarioProximo(a, hoje))
       .filter((n): n is AlunoAniversarioProximoDto => n !== null)
       .sort((a, b) => a.dias_restantes - b.dias_restantes);
 
+    // Evita duplicar o mesmo aluno (vínculos em várias turmas)
+    const aniversariosUnicos = [
+      ...new Map(
+        proximosAniversario.map((n) => [n.aluno_id, n]),
+      ).values(),
+    ].sort((a, b) => a.dias_restantes - b.dias_restantes);
+
     return {
-      proximos_graduacao: proximosGraduacao,
-      proximos_aniversario: proximosAniversario,
+      proximos_graduacao: graduacoesUnicas,
+      proximos_aniversario: aniversariosUnicos,
     };
   }
 
@@ -58,20 +73,13 @@ export class ProfessorService {
     frequente: string;
   }): AlunoGraduacaoProximaDto | null {
     const LIMIAR = 5;
-    const grausEsperados = Math.floor(
-      a.frequencia_atual / FREQUENCIAS_POR_GRAU,
-    );
 
-    let restantes: number;
-    if (a.grau_faixa < grausEsperados) {
-      // Aluno com frequência acumulada que ainda não graduou — graduar agora
-      restantes = 0;
-    } else {
-      // Aluno em dia — mostra se estiver a até 5 frequências da próxima graduação
-      const progresso =
-        a.frequencia_atual - a.grau_faixa * FREQUENCIAS_POR_GRAU;
-      restantes = FREQUENCIAS_POR_GRAU - progresso;
-    }
+    // A frequência é por turma e zera após a graduação.
+    // Aluno pronto (>= 30) permanece no painel até ser graduado.
+    const restantes =
+      a.frequencia_atual >= FREQUENCIAS_POR_GRAU
+        ? 0
+        : FREQUENCIAS_POR_GRAU - a.frequencia_atual;
 
     if (restantes > LIMIAR) return null;
 

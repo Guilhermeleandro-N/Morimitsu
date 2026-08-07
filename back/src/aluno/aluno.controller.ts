@@ -23,7 +23,7 @@ import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { AlunoService } from './aluno.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
-import { GraduarAlunoDto } from './dtos/graduar-aluno.dto';
+import { GraduarAlunoDto, GraduarProximoNivelDto } from './dtos/graduar-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
@@ -146,8 +146,11 @@ export class AlunoController {
     summary: 'Graduar aluno automaticamente para o próximo grau/faixa',
   })
   @ApiResponse({ status: 200, type: AlunoEntity })
-  async graduarProximo(@Param('id') id: string): Promise<AlunoEntity> {
-    return this.service.graduarProximoNivel(id);
+  async graduarProximo(
+    @Param('id') id: string,
+    @Body() dto: GraduarProximoNivelDto,
+  ): Promise<AlunoEntity> {
+    return this.service.graduarProximoNivel(id, dto.turma_id);
   }
 
   @Delete(':id')

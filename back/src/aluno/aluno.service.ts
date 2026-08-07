@@ -72,6 +72,7 @@ export class AlunoService {
   async buscarPorUsuarioId(usuarioId: string): Promise<AlunoEntity> {
     const entity = await this.repository.buscarPorUsuarioId(usuarioId);
     if (!entity) throw new NotFoundException('Aluno não encontrado');
+    entity.total_presencas = await this.repository.contarPresencas(entity.id);
     return this.enriquecer(entity);
   }
 
@@ -79,9 +80,7 @@ export class AlunoService {
     const perfil = await this.repository.buscarPerfilCompleto(usuarioId);
     if (!perfil) throw new NotFoundException('Perfil de aluno não encontrado');
 
-    const totalPresencas = perfil.historico.filter(
-      (f) => f.status_presenca === 'PRESENTE',
-    ).length;
+    const totalPresencas = await this.repository.contarPresencas(perfil.id);
 
     const entity = new AlunoEntity();
     entity.id = perfil.id;
@@ -91,7 +90,7 @@ export class AlunoService {
     entity.telefone = perfil.telefone;
     entity.faixa = perfil.faixa;
     entity.grau_faixa = perfil.grau_faixa;
-    entity.frequencia_atual = perfil.frequencia_atual;
+    entity.frequencia_atual = totalPresencas;
     entity.total_presencas = totalPresencas;
     entity.historico_frequencias = perfil.historico;
     return this.enriquecer(entity);
@@ -160,7 +159,10 @@ export class AlunoService {
     return this.enriquecer(entity);
   }
 
-  async graduarProximoNivel(id: string): Promise<AlunoEntity> {
+  async graduarProximoNivel(
+    id: string,
+    turmaId?: string,
+  ): Promise<AlunoEntity> {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Aluno não encontrado');
 
@@ -185,6 +187,10 @@ export class AlunoService {
     updateDto.grau_faixa = novoGrau;
     const entity = await this.repository.atualizar(id, updateDto);
     if (!entity) throw new NotFoundException('Aluno não encontrado');
+
+    if (turmaId) {
+      await this.repository.zerarFrequenciaTurma(entity.id, turmaId);
+    }
 
     await this.repository.atualizarGraduacaoProfessor(
       entity.usuarioId,

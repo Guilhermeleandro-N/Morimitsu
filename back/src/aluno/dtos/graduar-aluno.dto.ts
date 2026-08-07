@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class GraduarAlunoDto {
   @ApiPropertyOptional({
@@ -18,4 +18,15 @@ export class GraduarAlunoDto {
   @IsInt()
   @Min(0)
   grau_faixa?: number;
+}
+
+export class GraduarProximoNivelDto {
+  @ApiPropertyOptional({
+    example: 'uuid-da-turma',
+    description:
+      'Turma em que a graduação está acontecendo. A frequência desta turma é zerada após a graduação.',
+  })
+  @IsOptional()
+  @IsUUID()
+  turma_id?: string;
 }

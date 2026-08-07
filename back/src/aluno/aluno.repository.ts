@@ -254,6 +254,52 @@ export class AlunoRepository {
     }
   }
 
+  async contarPresencas(alunoId: string): Promise<number> {
+    try {
+      const resultado = await this.prisma.alunoTurma.aggregate({
+        where: { aluno_id: alunoId },
+        _sum: { frequencia_atual: true },
+      });
+      return resultado._sum.frequencia_atual ?? 0;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao contar presenças do aluno no banco de dados',
+      );
+    }
+  }
+
+  async zerarFrequenciaTurma(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    try {
+      const vinculo = await this.prisma.alunoTurma.findUnique({
+        where: {
+          aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId },
+        },
+        select: { frequencia_atual: true },
+      });
+
+      const zerada = vinculo?.frequencia_atual ?? 0;
+
+      await this.prisma.alunoTurma.updateMany({
+        where: { aluno_id: alunoId, turma_id: turmaId },
+        data: { frequencia_atual: 0 },
+      });
+
+      if (zerada > 0) {
+        await this.prisma.aluno.update({
+          where: { id: alunoId },
+          data: { frequencia_atual: { decrement: zerada } },
+        });
+      }
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao zerar frequência da turma no banco de dados',
+      );
+    }
+  }
+
   async atualizar(
     id: string,
     dto: UpdateAlunoDto,

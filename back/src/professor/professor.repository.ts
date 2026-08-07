@@ -259,7 +259,10 @@ export class ProfessorRepository {
     }
   }
 
-  async buscarDashboard(usuarioId: string): Promise<
+  async buscarDashboard(
+    usuarioId: string,
+    roles: string[] = [],
+  ): Promise<
     {
       aluno_id: string;
       usuario_id: string;
@@ -274,6 +277,32 @@ export class ProfessorRepository {
     }[]
   > {
     try {
+      if (roles.includes('admin')) {
+        const vinculos = await this.prisma.alunoTurma.findMany({
+          include: {
+            aluno: {
+              include: {
+                usuario: { select: { nome: true, data_nascimento: true } },
+              },
+            },
+            turma: { select: { nome: true } },
+          },
+        });
+
+        return vinculos.map((v) => ({
+          aluno_id: v.aluno_id,
+          usuario_id: v.aluno.usuarioId,
+          nome: v.aluno.usuario.nome,
+          faixa: v.aluno.faixa,
+          grau_faixa: v.aluno.grau_faixa,
+          frequencia_atual: v.aluno.frequencia_atual,
+          data_nascimento: v.aluno.usuario.data_nascimento,
+          turma_id: v.turma_id,
+          turma_nome: v.turma.nome,
+          frequente: v.frequente,
+        }));
+      }
+
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId },
         select: { id: true },

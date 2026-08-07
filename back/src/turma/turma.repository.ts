@@ -43,7 +43,7 @@ export class TurmaRepository {
   ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
       const where = this.montarFiltroPorUsuario(usuarioId, roles, {
-        status: { not: 'ARQUIVADA' },
+        status: 'ATIVO',
       });
       const [turmas, total] = await Promise.all([
         this.prisma.turma.findMany({
@@ -80,7 +80,7 @@ export class TurmaRepository {
   ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
       const where = this.montarFiltroPorUsuario(usuarioId, roles, {
-        status: 'ARQUIVADA',
+        status: { in: ['ARQUIVADA', 'INATIVO'] },
       });
       const [turmas, total] = await Promise.all([
         this.prisma.turma.findMany({
@@ -177,18 +177,27 @@ export class TurmaRepository {
     }
   }
 
-  async deletarArquivadasApos(dataLimite: Date): Promise<number> {
+  async atualizarStatus(
+    id: string,
+    status: string,
+  ): Promise<TurmaEntity | null> {
     try {
-      const { count } = await this.prisma.turma.deleteMany({
-        where: {
-          status: 'ARQUIVADA',
-          arquivada_em: { not: null, lt: dataLimite },
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: {
+          status,
+          arquivada_em: status === 'INATIVO' ? new Date() : null,
         },
       });
-      return count;
-    } catch {
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
       throw new InternalServerErrorException(
-        'Erro ao excluir turmas arquivadas no banco de dados',
+        'Erro ao atualizar status da turma no banco de dados',
       );
     }
   }
@@ -331,11 +340,12 @@ export class TurmaRepository {
         }),
         this.prisma.alunoTurma.count({ where }),
       ]);
+
       return {
         data: vinculos.map((v) => {
           const entity = new AlunoEntity();
           entity.id = v.aluno.id;
-          entity.frequencia_atual = v.aluno.frequencia_atual;
+          entity.frequencia_atual = v.frequencia_atual;
           entity.grau_faixa = v.aluno.grau_faixa;
           entity.faixa = v.aluno.faixa;
           entity.usuarioId = v.aluno.usuarioId;

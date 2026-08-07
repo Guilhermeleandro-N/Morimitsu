@@ -19,7 +19,10 @@ import {
 } from '@nestjs/swagger';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
-import { CurrentUser, JwtPayload } from '../auth/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  JwtPayload,
+} from '../auth/decorators/current-user.decorator';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
@@ -69,7 +72,9 @@ export class TurmaController {
 
   @Get('arquivadas')
   @UseGuards(PermissionsGuard)
-  @ApiOperation({ summary: 'Listar turmas arquivadas (filtradas pelo usuário)' })
+  @ApiOperation({
+    summary: 'Listar turmas arquivadas (filtradas pelo usuário)',
+  })
   @ApiResponse({ status: 200, type: [TurmaEntity] })
   async listarArquivadas(
     @Query() pagination: PaginationQueryDto,

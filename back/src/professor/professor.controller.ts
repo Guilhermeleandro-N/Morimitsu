@@ -70,7 +70,7 @@ export class ProfessorController {
   async dashboard(
     @CurrentUser() usuario: JwtPayload,
   ): Promise<DashboardProfessorResponseDto> {
-    return this.service.buscarDashboard(usuario.sub);
+    return this.service.buscarDashboard(usuario.sub, usuario.roles);
   }
 
   @Get('usuario/:usuarioId')

@@ -89,6 +89,21 @@ export class AuthRepository {
     return this.toAuthEntity(usuario);
   }
 
+  async atualizarSenha(email: string, novaSenha: string): Promise<void> {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (!usuario) return;
+
+    const senhaHash = await argon2.hash(novaSenha);
+    await this.prisma.usuario.update({
+      where: { id: usuario.id },
+      data: { senha: senhaHash },
+    });
+  }
+
   private toAuthEntity(usuario: {
     id: string;
     nome: string;

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
@@ -6,6 +10,7 @@ import { AuthRepository } from './auth.repository';
 import { LoginRequestDto } from './dtos/login-request.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { AuthEntity } from './entities/auth.entity';
 import { TokenBlacklistService } from './token-blacklist.service';
 
@@ -30,6 +35,16 @@ export class AuthService {
     }
 
     return this.gerarTokens(auth);
+  }
+
+  async resetarSenha(dto: ResetPasswordDto): Promise<void> {
+    const usuario = await this.repository.buscarPorEmail(dto.email);
+
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    await this.repository.atualizarSenha(dto.email, dto.novaSenha);
   }
 
   async refreshToken(dto: RefreshTokenRequestDto): Promise<LoginResponseDto> {

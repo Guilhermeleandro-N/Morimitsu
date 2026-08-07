@@ -13,9 +13,7 @@ import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
 import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
 import { FrequenciaEntity } from './entities/frequencia.entity';
 import {
-  PROGRESSAO_FAIXAS,
   FREQUENCIAS_POR_GRAU,
-  GRAUS_POR_FAIXA,
 } from '../common/faixas.constants';
 
 export interface GraduacaoResultado {
@@ -41,17 +39,16 @@ export class FrequenciaRepository {
         return { frequencia: this.toEntity(frequencia), graduacao: null };
       }
 
-      const aluno = await this.prisma.aluno.update({
+      await this.prisma.aluno.update({
         where: { id: dto.aluno_id },
         data: { frequencia_atual: { increment: 1 } },
       });
 
+      await this.incrementarFrequencia(dto.aluno_id, dto.turma_id);
+
       const graduacao = await this.verificarGraduacao(
         dto.aluno_id,
         dto.turma_id,
-        aluno.frequencia_atual,
-        aluno.faixa,
-        aluno.grau_faixa,
       );
 
       return { frequencia: this.toEntity(frequencia), graduacao };
@@ -108,13 +105,9 @@ export class FrequenciaRepository {
         data: { frequencia_atual: { increment: 1 } },
       });
 
-      await this.verificarGraduacao(
-        alunoId,
-        turmaId,
-        aluno.frequencia_atual,
-        aluno.faixa,
-        aluno.grau_faixa,
-      );
+      await this.incrementarFrequencia(alunoId, turmaId);
+
+      await this.verificarGraduacao(alunoId, turmaId);
 
       frequencias.push(this.toEntity(freq));
     }
@@ -162,13 +155,9 @@ export class FrequenciaRepository {
             data: { frequencia_atual: { increment: 1 } },
           });
 
-          await this.verificarGraduacao(
-            atual.aluno_id,
-            atual.turma_id,
-            aluno.frequencia_atual,
-            aluno.faixa,
-            aluno.grau_faixa,
-          );
+          await this.incrementarFrequencia(atual.aluno_id, atual.turma_id);
+
+          await this.verificarGraduacao(atual.aluno_id, atual.turma_id);
         } else if (
           dto.status_presenca === 'AUSENTE' &&
           atual.status_presenca === 'PRESENTE'
@@ -177,6 +166,8 @@ export class FrequenciaRepository {
             where: { id: atual.aluno_id },
             data: { frequencia_atual: { decrement: 1 } },
           });
+
+          await this.decrementarFrequencia(atual.aluno_id, atual.turma_id);
         }
       }
 
@@ -194,50 +185,41 @@ export class FrequenciaRepository {
     }
   }
 
+  private async incrementarFrequencia(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    await this.prisma.alunoTurma.updateMany({
+      where: { aluno_id: alunoId, turma_id: turmaId },
+      data: { frequencia_atual: { increment: 1 } },
+    });
+  }
+
+  private async decrementarFrequencia(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    await this.prisma.alunoTurma.updateMany({
+      where: { aluno_id: alunoId, turma_id: turmaId },
+      data: { frequencia_atual: { decrement: 1 } },
+    });
+  }
+
   private async verificarGraduacao(
     alunoId: string,
     turmaId: string,
-    frequenciaAtual: number,
-    faixaAtual: string,
-    grauFaixaAtual: number,
   ): Promise<GraduacaoResultado | null> {
-    if (frequenciaAtual % FREQUENCIAS_POR_GRAU !== 0) {
+    // A graduação é manual: somente o admin ou o professor responsável
+    // pode graduar o aluno. Aqui apenas notificamos os professores quando
+    // o aluno atinge os 30 frequências na turma (pronto para graduar).
+    const vinculo = await this.prisma.alunoTurma.findUnique({
+      where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
+      select: { frequencia_atual: true },
+    });
+
+    const frequenciaTurma = vinculo?.frequencia_atual ?? 0;
+    if (frequenciaTurma % FREQUENCIAS_POR_GRAU !== 0) {
       return null;
-    }
-
-    let novoGrau = grauFaixaAtual + 1;
-    let novaFaixa = faixaAtual;
-
-    if (novoGrau > GRAUS_POR_FAIXA) {
-      const indiceAtual = PROGRESSAO_FAIXAS.indexOf(novaFaixa);
-      const proximoIndice = indiceAtual + 1;
-      if (proximoIndice < PROGRESSAO_FAIXAS.length) {
-        novaFaixa = PROGRESSAO_FAIXAS[proximoIndice];
-      }
-      novoGrau = 0;
-    }
-
-    await this.prisma.aluno.update({
-      where: { id: alunoId },
-      data: {
-        grau_faixa: novoGrau,
-        faixa: novaFaixa,
-        ...(novoGrau === 0 && { frequencia_atual: 0 }),
-      },
-    });
-
-    // Professor também pode participar como aluno (ex.: turma do admin).
-    // Sincroniza a graduação no registro de professor, se existir.
-    const aluno = await this.prisma.aluno.findUnique({
-      where: { id: alunoId },
-      select: { usuarioId: true },
-    });
-
-    if (aluno) {
-      await this.prisma.professor.updateMany({
-        where: { usuarioId: aluno.usuarioId },
-        data: { grau: novoGrau, faixa: novaFaixa },
-      });
     }
 
     // Notificar todos os professores da turma
@@ -246,17 +228,19 @@ export class FrequenciaRepository {
       select: { professor_id: true },
     });
 
-    const mensagem = `Aluno atingiu ${frequenciaAtual} frequências e avançou para ${novaFaixa} grau ${novoGrau}`;
+    const mensagem = `Aluno atingiu ${frequenciaTurma} frequências e está pronto para a próxima graduação`;
 
-    await this.prisma.notificacao.createMany({
-      data: professorTurmas.map((pt) => ({
-        professor_id: pt.professor_id,
-        aluno_id: alunoId,
-        mensagem,
-      })),
-    });
+    if (professorTurmas.length > 0) {
+      await this.prisma.notificacao.createMany({
+        data: professorTurmas.map((pt) => ({
+          professor_id: pt.professor_id,
+          aluno_id: alunoId,
+          mensagem,
+        })),
+      });
+    }
 
-    return { novoGrau, novaFaixa, graduou: true };
+    return null;
   }
 
   async listarPorAluno(
