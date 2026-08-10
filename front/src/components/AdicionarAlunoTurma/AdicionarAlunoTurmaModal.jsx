@@ -197,6 +197,14 @@ function AdicionarAlunoTurmaModal({
     }
   }
 
+  const usuariosProfessores =
+    new Set(
+      (professores || []).map(
+        (professor) =>
+          professor.usuarioId
+      )
+    );
+
   const alunosFiltrados =
     alunos.filter((aluno) =>
       aluno.usuario?.nome
@@ -309,6 +317,13 @@ function AdicionarAlunoTurmaModal({
                         aluno.usuario
                           ?.nome
                       }
+                      {usuariosProfessores.has(
+                        aluno.usuarioId
+                      ) && (
+                        <span className="badge-professor">
+                          Prof.
+                        </span>
+                      )}
                     </label>
 
                   </div>

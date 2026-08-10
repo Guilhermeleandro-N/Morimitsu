@@ -6,9 +6,15 @@ import CriarTurmaModal from "../../components/CriarTurma/CriarTurmaModal.jsx";
 
 import EditarTurmaModal from "../../components/EditarTurma/EditarTurmaModal";
 
-import { listarTurmas, arquivarTurma } from "../../services/turmaService";
+import {
+  listarTurmas,
+  arquivarTurma,
+  excluirTurma,
+} from "../../services/turmaService";
 
 import RoleGuard from "../../routes/RoleGuard";
+
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +23,8 @@ function VisualizarTurmas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editarModalOpen, setEditarModalOpen] = useState(false);
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
+  const [confirmExcluirOpen, setConfirmExcluirOpen] = useState(false);
+  const [turmaParaExcluir, setTurmaParaExcluir] = useState(null);
 
   const navigate = useNavigate();
   const [turmas, setTurmas] = useState([]);
@@ -67,6 +75,34 @@ function VisualizarTurmas() {
       console.error("Erro ao arquivar turma:", error);
     }
   };
+
+  function abrirConfirmacaoExcluir(turmaId) {
+    setTurmaParaExcluir(turmaId);
+    setConfirmExcluirOpen(true);
+  }
+
+  async function handleExcluir() {
+    if (!turmaParaExcluir) return;
+
+    try {
+      await excluirTurma(turmaParaExcluir);
+      setTurmas((prev) =>
+        prev.filter((turma) => turma.id !== turmaParaExcluir)
+      );
+      setMenuAberto(null);
+    } catch (error) {
+      console.error("Erro ao excluir turma:", error);
+      alert("Erro ao excluir turma.");
+    } finally {
+      setConfirmExcluirOpen(false);
+      setTurmaParaExcluir(null);
+    }
+  }
+
+  function fecharConfirmacaoExcluir() {
+    setConfirmExcluirOpen(false);
+    setTurmaParaExcluir(null);
+  }
 
   return (
     <div className="turmas-container">
@@ -131,10 +167,6 @@ function VisualizarTurmas() {
 
             <div className="turma-content">
               <div className="dias-container">{obterDiasSemana(turma)}</div>
-
-              {turma.data_especifica && (
-                <div className="data-especifica">Aula específica</div>
-              )}
             </div>
 
             <div className="turma-footer">
@@ -176,8 +208,7 @@ function VisualizarTurmas() {
                     <button
                       className="danger"
                       onClick={() => {
-                        console.log("Excluir", turma.id);
-                        setMenuAberto(null);
+                        abrirConfirmacaoExcluir(turma.id);
                       }}
                     >
                       Excluir Turma
@@ -212,6 +243,17 @@ function VisualizarTurmas() {
             setEditarModalOpen(false);
             setTurmaSelecionada(null);
           }}
+        />
+      )}
+
+      {confirmExcluirOpen && turmaParaExcluir && (
+        <ConfirmModal
+          title="Confirmar exclusão"
+          message="Deseja realmente excluir esta turma? Todos os vínculos e registros dela serão removidos."
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          onConfirm={handleExcluir}
+          onCancel={fecharConfirmacaoExcluir}
         />
       )}
     </div>

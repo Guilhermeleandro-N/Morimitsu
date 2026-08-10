@@ -106,7 +106,10 @@ function Sidebar({ isOpen, setIsOpen }) {
         <div className="nav-divider" />
 
         <ul className="nav-section">
-          <RoleGuard allowedRoutes={["admin", "professor", "aluno"]}>
+          <RoleGuard
+            allowedRoutes={["admin", "professor", "aluno"]}
+            permissoes={["screen.turma.listar"]}
+          >
             <li
               onClick={() => {
                 navigate("Turmas");

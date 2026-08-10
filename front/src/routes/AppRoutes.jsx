@@ -42,7 +42,10 @@ export default function AppRoutes() {
         <Route
           path="/turmas"
           element={
-            <ProtectedRoute rolesPermitidas={TODOS_PERFIS}>
+            <ProtectedRoute
+              rolesPermitidas={TODOS_PERFIS}
+              permissoesNecessarias={["screen.turma.listar"]}
+            >
               <VisualizarTurmas />
             </ProtectedRoute>
           }
