@@ -24,12 +24,6 @@ export class CreateTurmaDto {
   @IsDate()
   horario_fim!: Date;
 
-  @ApiPropertyOptional({ example: '2024-06-15T00:00:00.000Z' })
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  data_especifica?: Date;
-
   @ApiPropertyOptional()
   @IsBoolean()
   @IsOptional()

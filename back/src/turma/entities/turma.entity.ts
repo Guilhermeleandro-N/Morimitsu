@@ -13,9 +13,6 @@ export class TurmaEntity {
   @ApiProperty()
   horario_fim!: Date;
 
-  @ApiProperty({ nullable: true })
-  data_especifica!: Date | null;
-
   @ApiProperty({
     example: 'ATIVO',
     description: 'Status da turma: ATIVO, INATIVO ou ARQUIVADA',

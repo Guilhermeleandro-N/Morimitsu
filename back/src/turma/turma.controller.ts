@@ -54,6 +54,7 @@ export class TurmaController {
 
   @Get()
   @UseGuards(PermissionsGuard)
+  @Permissions('turma.read')
   @ApiOperation({ summary: 'Listar turmas (filtradas pelo usuário logado)' })
   @ApiResponse({ status: 200, type: [TurmaEntity] })
   async listar(
@@ -72,6 +73,7 @@ export class TurmaController {
 
   @Get('arquivadas')
   @UseGuards(PermissionsGuard)
+  @Permissions('turma.read')
   @ApiOperation({
     summary: 'Listar turmas arquivadas (filtradas pelo usuário)',
   })

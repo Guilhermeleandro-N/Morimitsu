@@ -104,7 +104,6 @@ model Turma {
   nome           String
   horario_inicio DateTime
   horario_fim    DateTime
-  data_especifica DateTime?
   status         String           @default("ATIVO")
   arquivada_em   DateTime?
   segunda        Boolean          @default(false)
