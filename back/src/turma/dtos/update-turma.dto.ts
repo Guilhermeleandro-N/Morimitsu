@@ -20,12 +20,6 @@ export class UpdateTurmaDto {
   @IsOptional()
   horario_fim?: Date;
 
-  @ApiProperty({ example: '2024-06-15T00:00:00.000Z' })
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  data_especifica?: Date;
-
   @ApiProperty({ enum: ['ATIVO', 'INATIVO'], example: 'ATIVO' })
   @IsString()
   @IsOptional()

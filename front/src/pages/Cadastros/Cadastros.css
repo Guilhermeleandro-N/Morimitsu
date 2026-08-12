@@ -110,16 +110,16 @@
 
 .register__form {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
 .form__group {
-  margin-bottom: -16px;
+  margin-bottom: 0;
 }
 
 .form__group--full {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 .form__group label {
@@ -212,7 +212,7 @@
 }
 
 .form__actions {
-  grid-column: span 3;
+  grid-column: span 2;
   display: flex;
   gap: 4px;
   margin-top: 2px;
@@ -263,7 +263,7 @@
 }
 
 .message {
-  grid-column: span 3;
+  grid-column: span 2;
   text-align: center;
   padding: 12px 16px;
   border-radius: 8px;
@@ -291,6 +291,9 @@
   .form__actions,
   .message {
     grid-column: span 1;
+  }
+  .register__container {
+    padding: 70px 20px;
   }
   .form__actions {
     flex-direction: column-reverse;

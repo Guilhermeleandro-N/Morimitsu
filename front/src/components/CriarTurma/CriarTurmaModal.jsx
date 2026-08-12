@@ -9,7 +9,6 @@ function CriarTurmaModal({ onClose, onCreate }) {
     nome: "",
     horario_inicio: "",
     horario_fim: "",
-    data_especifica: "",
 
     segunda: false,
     terca: false,
@@ -43,9 +42,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
 
     const [horas, minutos] = hora.split(":");
 
-    hoje.setHours(horas);
-    hoje.setMinutes(minutos);
-    hoje.setSeconds(0);
+    hoje.setUTCHours(horas);
+    hoje.setUTCMinutes(minutos);
+    hoje.setUTCSeconds(0);
+    hoje.setUTCMilliseconds(0);
 
     return hoje;
 
@@ -61,8 +61,6 @@ function CriarTurmaModal({ onClose, onCreate }) {
         criarDataHora(formData.horario_inicio),
 
         criarDataHora(formData.horario_fim),
-
-        formData.data_especifica || null,
 
         formData.segunda,
         formData.terca,
@@ -150,20 +148,6 @@ function CriarTurmaModal({ onClose, onCreate }) {
               type="time"
               name="horario_fim"
               value={formData.horario_fim}
-              onChange={handleChange}
-            />
-
-          </div>
-
-          {/* DATA ESPECÍFICA */}
-          <div className="input-group full-width">
-
-            <label>Data específica (opcional)</label>
-
-            <input
-              type="date"
-              name="data_especifica"
-              value={formData.data_especifica}
               onChange={handleChange}
             />
 

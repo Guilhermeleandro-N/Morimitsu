@@ -178,6 +178,27 @@
     font-weight: 600;
 }
 
+.badge-professor {
+
+    display: inline-block;
+
+    margin-left: 8px;
+
+    padding: 2px 8px;
+
+    border-radius: 999px;
+
+    background: #c71d1d;
+
+    color: #fff;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    vertical-align: middle;
+}
+
 .modal-actions {
 
     margin-top: 40px;

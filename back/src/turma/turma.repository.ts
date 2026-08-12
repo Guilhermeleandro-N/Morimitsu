@@ -238,7 +238,13 @@ export class TurmaRepository {
 
   async deletar(id: string): Promise<void> {
     try {
-      await this.prisma.turma.delete({ where: { id } });
+      await this.prisma.$transaction([
+        this.prisma.alunoTurma.deleteMany({ where: { turma_id: id } }),
+        this.prisma.professorTurma.deleteMany({ where: { turma_id: id } }),
+        this.prisma.frequenciaAluno.deleteMany({ where: { turma_id: id } }),
+        this.prisma.frequenciaProf.deleteMany({ where: { turma_id: id } }),
+        this.prisma.turma.delete({ where: { id } }),
+      ]);
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
@@ -451,7 +457,6 @@ export class TurmaRepository {
     nome: string;
     horario_inicio: Date;
     horario_fim: Date;
-    data_especifica: Date | null;
     status?: string;
     arquivada_em: Date | null;
     segunda: boolean;
@@ -470,7 +475,6 @@ export class TurmaRepository {
     entity.nome = turma.nome;
     entity.horario_inicio = turma.horario_inicio;
     entity.horario_fim = turma.horario_fim;
-    entity.data_especifica = turma.data_especifica;
     entity.status = turma.status ?? 'ATIVO';
     entity.arquivada_em = turma.arquivada_em ?? null;
     entity.segunda = turma.segunda;

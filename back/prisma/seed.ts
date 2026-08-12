@@ -15,6 +15,7 @@ const PROFESSOR_PERMISSIONS = [
   { codigo: 'user.update', descricao: 'Atualizar usuários' },
   { codigo: 'turma.read', descricao: 'Visualizar turma' },
   { codigo: 'turma.update', descricao: 'Atualizar turma' },
+  { codigo: 'turma.create', descricao: 'Criar turma' },
   { codigo: 'student.create', descricao: 'Criar aluno' },
   { codigo: 'student.read', descricao: 'Visualizar aluno' },
   { codigo: 'student.update', descricao: 'Atualizar aluno' },

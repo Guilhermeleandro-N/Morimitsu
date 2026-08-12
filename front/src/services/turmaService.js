@@ -4,7 +4,6 @@ export async function criarTurma(
     nome,
     horario_inicio,
     horario_fim,
-    data_especifica,
     segunda,
     terca,
     quarta,
@@ -19,7 +18,6 @@ export async function criarTurma(
             nome: nome,
             horario_inicio: horario_inicio,
             horario_fim: horario_fim,
-            data_especifica: data_especifica,
             segunda: segunda,
             terca: terca,
             quarta: quarta,
@@ -67,37 +65,7 @@ export async function listarTurmas() {
 
 }
 
-/*export async function AtualizarTurma(id, nome, 
-            horario_inicio, 
-            horario_fim, 
-            data_especifica, 
-            segunda, 
-            terca, 
-            quarta, 
-            quinta, 
-            sexta, 
-            sabado, 
-            domingo){
-    try{
-        const response = await  api.patch(`turma/${id}`,{
-            nome, 
-            horario_inicio, 
-            horario_fim, 
-            data_especifica, 
-            segunda, 
-            terca, 
-            quarta, 
-            quinta, 
-            sexta, 
-            sabado, 
-            domingo
-        })
-        console.log("Turma atualizada")
-    }catch(error){
-        console.log(error)
-        return error;
-    }
-}*/
+
 
 export async function AtualizarTurma(id, dados) {
     try {

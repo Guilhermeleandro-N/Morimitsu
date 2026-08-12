@@ -14,6 +14,7 @@ function EditarTurmaModal({ turma, onClose, onSave }) {
                     hour: "2-digit",
                     minute: "2-digit",
                     hour12: false,
+                    timeZone: "UTC",
                 })
             : "",
 
@@ -23,11 +24,8 @@ function EditarTurmaModal({ turma, onClose, onSave }) {
                     hour: "2-digit",
                     minute: "2-digit",
                     hour12: false,
+                    timeZone: "UTC",
                 })
-            : "",
-
-        data_especifica: turma.data_especifica
-            ? turma.data_especifica.split("T")[0]
             : "",
 
         segunda: turma.segunda || false,
@@ -60,9 +58,6 @@ function EditarTurmaModal({ turma, onClose, onSave }) {
         nome: formData.nome,
         horario_inicio: `2024-01-01T${formData.horario_inicio}:00.000Z`,
         horario_fim: `2024-01-01T${formData.horario_fim}:00.000Z`,
-        data_especifica: formData.data_especifica
-            ? `${formData.data_especifica}T00:00:00.000Z`
-            : null,
         segunda: formData.segunda,
         terca: formData.terca,
         quarta: formData.quarta,
@@ -113,17 +108,6 @@ function EditarTurmaModal({ turma, onClose, onSave }) {
                             type="time"
                             name="horario_fim"
                             value={formData.horario_fim}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div className="input-group full-width">
-                        <label>Data específica</label>
-
-                        <input
-                            type="date"
-                            name="data_especifica"
-                            value={formData.data_especifica}
                             onChange={handleChange}
                         />
                     </div>

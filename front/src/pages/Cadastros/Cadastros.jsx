@@ -32,7 +32,6 @@ function Cadastros() {
 
   const [faixa, setFaixa] = useState("");
   const [grau, setGrau] = useState("");
-  const [dataNascimento, setDataNascimento] = useState("");
   const [frequencia, setFrequencia] = useState("");
 
   const [message, setMessage] = useState("");
@@ -132,7 +131,6 @@ function Cadastros() {
     setUsuarioSelecionado(null);
     setFaixa("");
     setGrau("");
-    setDataNascimento("");
     setFrequencia("");
     setMessage("");
     setNovoUsuario(false);
@@ -172,7 +170,6 @@ function Cadastros() {
           novoEmail.trim(),
           novoSenha,
           novoTelefone.trim(),
-          dataNascimento || undefined,
         );
 
         if (!userResponse || !userResponse.id) {
@@ -211,15 +208,9 @@ function Cadastros() {
           faixa,
           parseInt(grau) || 0,
           parseInt(frequencia) || 0,
-          dataNascimento,
         );
       } else {
-        await criarProfessor(
-          usuarioId,
-          faixa,
-          parseInt(grau) || 0,
-          dataNascimento || undefined,
-        );
+        await criarProfessor(usuarioId, faixa, parseInt(grau) || 0);
       }
 
       const msgSucesso = isAlunoMode
@@ -278,148 +269,118 @@ function Cadastros() {
         </div>
 
         <form className="register__form" onSubmit={handleSubmit}>
-          {novoUsuario ? (
-            <>
-              {/* Campos do novo usuário */}
-              <div className="form__group form__group--full">
-                <div className="form__label-row">
-                  <label htmlFor="novoNome">Nome completo</label>
-                  <button
-                    type="button"
-                    className="btn-novo-usuario"
-                    onClick={() => {
-                      setNovoUsuario(false);
-                      setNovoNome("");
-                      setNovoEmail("");
-                      setNovoTelefone("");
-                      setNovoSenha("");
-                    }}
-                  >
-                    ← Buscar usuário existente
-                  </button>
-                </div>
+          {/* Nome */}
+          <div className="form__group form__group--full" ref={dropdownRef}>
+            <div className="form__label-row">
+              <label htmlFor={novoUsuario ? "novoNome" : "nome"}>
+                {novoUsuario ? "Nome completo" : "Nome"}
+              </label>
+              <button
+                type="button"
+                className="btn-novo-usuario"
+                onClick={() => {
+                  if (novoUsuario) {
+                    setNovoUsuario(false);
+                    setNovoNome("");
+                    setNovoEmail("");
+                    setNovoTelefone("");
+                    setNovoSenha("");
+                  } else {
+                    setNovoUsuario(true);
+                    setUsuarioSelecionado(null);
+                    setBusca("");
+                    setSugestoes([]);
+                    setDropdownAberto(false);
+                  }
+                }}
+              >
+                {novoUsuario ? "← Buscar usuário existente" : "+ Novo usuário"}
+              </button>
+            </div>
+            {novoUsuario ? (
+              <input
+                type="text"
+                id="novoNome"
+                placeholder="Nome completo"
+                value={novoNome}
+                onChange={(e) => setNovoNome(e.target.value)}
+                required
+              />
+            ) : (
+              <div className="busca-wrapper">
                 <input
                   type="text"
-                  id="novoNome"
-                  placeholder="Nome completo"
-                  value={novoNome}
-                  onChange={(e) => setNovoNome(e.target.value)}
+                  id="nome"
+                  placeholder="Digite o nome do usuário..."
+                  value={busca}
+                  onChange={handleBuscaChange}
+                  onFocus={() => {
+                    if (sugestoes.length > 0) setDropdownAberto(true);
+                  }}
+                  autoComplete="off"
                   required
                 />
+                {dropdownAberto && sugestoes.length > 0 && (
+                  <div className="busca-dropdown">
+                    {sugestoes.map((usr) => (
+                      <div
+                        key={usr.id}
+                        className="busca-item"
+                        onClick={() => selecionarUsuario(usr)}
+                      >
+                        <div className="busca-nome">{usr.nome}</div>
+                        <div className="busca-email">{usr.email}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+            )}
+          </div>
 
-              <div className="form__group">
-                <label htmlFor="novoEmail">E-mail</label>
-                <input
-                  type="email"
-                  id="novoEmail"
-                  placeholder="email@morimitsu.com"
-                  value={novoEmail}
-                  onChange={(e) => setNovoEmail(e.target.value)}
-                  required
-                />
-              </div>
+          {/* E-mail | Senha — mesmo tamanho do nome */}
+          <div
+            className={
+              novoUsuario ? "form__group" : "form__group form__group--full"
+            }
+          >
+            <label htmlFor={novoUsuario ? "novoEmail" : "email"}>E-mail</label>
+            {novoUsuario ? (
+              <input
+                type="email"
+                id="novoEmail"
+                placeholder="email@morimitsu.com"
+                value={novoEmail}
+                onChange={(e) => setNovoEmail(e.target.value)}
+                required
+              />
+            ) : (
+              <input
+                type="email"
+                id="email"
+                value={usuarioSelecionado?.email || ""}
+                disabled
+                placeholder="—"
+              />
+            )}
+          </div>
 
-              <div className="form__group">
-                <label htmlFor="novoTelefone">Telefone</label>
-                <input
-                  type="tel"
-                  id="novoTelefone"
-                  placeholder="(85) 99999-9999"
-                  value={novoTelefone}
-                  onChange={(e) => setNovoTelefone(e.target.value)}
-                />
-              </div>
-
-              <div className="form__group form__group--full">
-                <label htmlFor="novoSenha">Senha</label>
-                <input
-                  type="password"
-                  id="novoSenha"
-                  placeholder="Mín. 8 caracteres"
-                  value={novoSenha}
-                  onChange={(e) => setNovoSenha(e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Nome com autocomplete */}
-              <div className="form__group form__group--full" ref={dropdownRef}>
-                <div className="form__label-row">
-                  <label htmlFor="nome">Nome</label>
-                  <button
-                    type="button"
-                    className="btn-novo-usuario"
-                    onClick={() => {
-                      setNovoUsuario(true);
-                      setUsuarioSelecionado(null);
-                      setBusca("");
-                      setSugestoes([]);
-                      setDropdownAberto(false);
-                    }}
-                  >
-                    + Novo usuário
-                  </button>
-                </div>
-                <div className="busca-wrapper">
-                  <input
-                    type="text"
-                    id="nome"
-                    placeholder="Digite o nome do usuário..."
-                    value={busca}
-                    onChange={handleBuscaChange}
-                    onFocus={() => {
-                      if (sugestoes.length > 0) setDropdownAberto(true);
-                    }}
-                    autoComplete="off"
-                    required
-                  />
-                  {dropdownAberto && sugestoes.length > 0 && (
-                    <div className="busca-dropdown">
-                      {sugestoes.map((usr) => (
-                        <div
-                          key={usr.id}
-                          className="busca-item"
-                          onClick={() => selecionarUsuario(usr)}
-                        >
-                          <div className="busca-nome">{usr.nome}</div>
-                          <div className="busca-email">{usr.email}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="form__group">
-                <label htmlFor="email">E-mail</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={usuarioSelecionado?.email || ""}
-                  disabled
-                  placeholder="—"
-                />
-              </div>
-
-              {/* Telefone */}
-              <div className="form__group">
-                <label htmlFor="telefone">Telefone</label>
-                <input
-                  type="tel"
-                  id="telefone"
-                  value={usuarioSelecionado?.telefone || ""}
-                  disabled
-                  placeholder="—"
-                />
-              </div>
-            </>
+          {/* Senha — ao lado do e-mail ao cadastrar o usuário junto */}
+          {novoUsuario && (
+            <div className="form__group">
+              <label htmlFor="novoSenha">Senha</label>
+              <input
+                type="password"
+                id="novoSenha"
+                placeholder="Mín. 8 caracteres, 1 maiúsculo, 1 número e 1 especial"
+                value={novoSenha}
+                onChange={(e) => setNovoSenha(e.target.value)}
+                required
+              />
+            </div>
           )}
 
-          {/* Faixa */}
+          {/* Faixa | Grau */}
           <div className="form__group">
             <label htmlFor="faixa">
               {isAlunoMode ? "Faixa Atual" : "Faixa"}
@@ -447,7 +408,6 @@ function Cadastros() {
             )}
           </div>
 
-          {/* Grau */}
           <div className="form__group">
             <label htmlFor="grau">{isAlunoMode ? "Grau Atual" : "Grau"}</label>
             <input
@@ -462,33 +422,44 @@ function Cadastros() {
             />
           </div>
 
-          {/* Campos extras só para Aluno */}
-          {isAlunoMode && (
-            <>
-              <div className="form__group">
-                <label htmlFor="frequencia">Frequência Atual</label>
-                <input
-                  type="number"
-                  id="frequencia"
-                  min="0"
-                  placeholder="0"
-                  value={frequencia}
-                  onChange={(e) => setFrequencia(e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          )}
-
-          <div className="form__group form__group--full">
-            <label htmlFor="dataNascimento">Data de Nascimento</label>
-            <input
-              type="date"
-              id="dataNascimento"
-              value={dataNascimento}
-              onChange={(e) => setDataNascimento(e.target.value)}
-            />
+          {/* Telefone | Frequência Atual */}
+          <div className="form__group">
+            <label htmlFor={novoUsuario ? "novoTelefone" : "telefone"}>
+              Telefone
+            </label>
+            {novoUsuario ? (
+              <input
+                type="tel"
+                id="novoTelefone"
+                placeholder="(85) 99999-9999"
+                value={novoTelefone}
+                onChange={(e) => setNovoTelefone(e.target.value)}
+              />
+            ) : (
+              <input
+                type="tel"
+                id="telefone"
+                value={usuarioSelecionado?.telefone || ""}
+                disabled
+                placeholder="—"
+              />
+            )}
           </div>
+
+          {isAlunoMode && (
+            <div className="form__group">
+              <label htmlFor="frequencia">Frequência Atual</label>
+              <input
+                type="number"
+                id="frequencia"
+                min="0"
+                placeholder="0"
+                value={frequencia}
+                onChange={(e) => setFrequencia(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           {/* Botões */}
           <div className="form__actions">
