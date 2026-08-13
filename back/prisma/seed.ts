@@ -45,6 +45,8 @@ const ALUNO_PERMISSIONS = [
   { codigo: 'profile.read', descricao: 'Visualizar próprio perfil' },
   { codigo: 'attendance.read', descricao: 'Visualizar presença' },
   { codigo: 'training.read', descricao: 'Visualizar treino' },
+  { codigo: 'turma.read', descricao: 'Visualizar turma' },
+  { codigo: 'notification.read', descricao: 'Visualizar notificações' },
   // criar permissao de visualizar seus proprios dados de presenca e treino, sem acessar os dados dos outros alunos
 ];
 
@@ -90,6 +92,10 @@ const SCREEN_ALUNO_PERMISSIONS = [
   {
     codigo: 'screen.treino.visualizar',
     descricao: 'Tela de visualização de treinos',
+  },
+  {
+    codigo: 'screen.turma.listar',
+    descricao: 'Tela de listagem de turmas',
   },
 ];
 

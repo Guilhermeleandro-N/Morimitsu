@@ -7,13 +7,15 @@ import { PaginatedResult } from '../common/interfaces/paginated-result.interface
 export class NotificacaoService {
   constructor(private readonly repository: NotificacaoRepository) {}
 
-  async listarPorProfessor(
-    professorUsuarioId: string,
+  async listarParaUsuario(
+    usuarioId: string,
+    roles: string[],
     skip: number,
     take: number,
   ): Promise<PaginatedResult<NotificacaoEntity>> {
-    const { data, total } = await this.repository.listarPorProfessor(
-      professorUsuarioId,
+    const { data, total } = await this.repository.listarParaUsuario(
+      usuarioId,
+      roles,
       skip,
       take,
     );
@@ -22,13 +24,17 @@ export class NotificacaoService {
 
   async marcarComoLida(
     id: string,
-    professorUsuarioId: string,
+    usuarioId: string,
+    roles: string[],
   ): Promise<NotificacaoEntity> {
-    return this.repository.marcarComoLida(id, professorUsuarioId);
+    return this.repository.marcarComoLida(id, usuarioId, roles);
   }
 
-  async contarNaoLidas(professorUsuarioId: string): Promise<{ count: number }> {
-    const count = await this.repository.contarNaoLidas(professorUsuarioId);
+  async contarNaoLidas(
+    usuarioId: string,
+    roles: string[],
+  ): Promise<{ count: number }> {
+    const count = await this.repository.contarNaoLidas(usuarioId, roles);
     return { count };
   }
 }

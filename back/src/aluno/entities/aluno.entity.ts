@@ -10,6 +10,12 @@ export class AlunoEntity {
   @ApiPropertyOptional({ nullable: true })
   telefone?: string | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
+  data_nascimento?: Date | null;
+
+  @ApiPropertyOptional({ description: 'Status do usuário (ENABLED/DISABLED)' })
+  status?: string;
+
   @ApiProperty()
   id!: string;
 

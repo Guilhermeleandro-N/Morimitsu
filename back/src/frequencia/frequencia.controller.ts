@@ -67,7 +67,7 @@ export class FrequenciaController {
   @Permissions('attendance.read')
   @ApiOperation({
     summary:
-      'Histórico de presenças de um aluno (ativos e inativos com vínculo ao professor)',
+      'Histórico de presenças de um aluno (o próprio aluno, admin ou professor com vínculo)',
   })
   @ApiResponse({ status: 200, type: [FrequenciaEntity] })
   async listarPorAluno(
@@ -77,12 +77,9 @@ export class FrequenciaController {
   ): Promise<PaginatedResult<FrequenciaEntity>> {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 10;
-    const professorUsuarioId = usuario.roles?.includes('admin')
-      ? undefined
-      : usuario.sub;
     const { data, total } = await this.service.listarPorAluno(
       alunoId,
-      professorUsuarioId,
+      usuario,
       (page - 1) * limit,
       limit,
     );
@@ -180,6 +177,25 @@ export class FrequenciaController {
     const limit = pagination.limit ?? 10;
     const { data, total } = await this.service.listarTreinosPorProfessor(
       professorId,
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
+  }
+
+  @Get('treino/turma/:turmaId')
+  @UseGuards(PermissionsGuard)
+  @Permissions('training.read')
+  @ApiOperation({ summary: 'Listar treinos marcados de uma turma' })
+  @ApiResponse({ status: 200, type: [FrequenciaProfEntity] })
+  async listarTreinosPorTurma(
+    @Param('turmaId') turmaId: string,
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<FrequenciaProfEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listarTreinosPorTurma(
+      turmaId,
       (page - 1) * limit,
       limit,
     );

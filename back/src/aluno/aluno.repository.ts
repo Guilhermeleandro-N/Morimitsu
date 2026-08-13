@@ -172,6 +172,7 @@ export class AlunoRepository {
     email: string;
     telefone: string | null;
     data_nascimento: Date | null;
+    status: string;
     faixa: string;
     grau_faixa: number;
     frequencia_atual: number;
@@ -187,6 +188,7 @@ export class AlunoRepository {
               email: true,
               telefone: true,
               data_nascimento: true,
+              status: true,
             },
           },
           frequencias: {
@@ -204,6 +206,7 @@ export class AlunoRepository {
         email: aluno.usuario.email,
         telefone: aluno.usuario.telefone,
         data_nascimento: aluno.usuario.data_nascimento,
+        status: aluno.usuario.status,
         faixa: aluno.faixa,
         grau_faixa: aluno.grau_faixa,
         frequencia_atual: aluno.frequencia_atual,
@@ -273,26 +276,23 @@ export class AlunoRepository {
     turmaId: string,
   ): Promise<void> {
     try {
-      const vinculo = await this.prisma.alunoTurma.findUnique({
-        where: {
-          aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId },
-        },
-        select: { frequencia_atual: true },
-      });
-
-      const zerada = vinculo?.frequencia_atual ?? 0;
-
       await this.prisma.alunoTurma.updateMany({
         where: { aluno_id: alunoId, turma_id: turmaId },
         data: { frequencia_atual: 0 },
       });
 
-      if (zerada > 0) {
-        await this.prisma.aluno.update({
-          where: { id: alunoId },
-          data: { frequencia_atual: { decrement: zerada } },
-        });
-      }
+      // Recalcula a frequência global do aluno como a soma dos vínculos
+      // restantes. Isso garante que, após a graduação, o card saia do painel
+      // mesmo quando o vínculo zerado não refletia o valor global.
+      const soma = await this.prisma.alunoTurma.aggregate({
+        where: { aluno_id: alunoId },
+        _sum: { frequencia_atual: true },
+      });
+
+      await this.prisma.aluno.update({
+        where: { id: alunoId },
+        data: { frequencia_atual: soma._sum.frequencia_atual ?? 0 },
+      });
     } catch {
       throw new InternalServerErrorException(
         'Erro ao zerar frequência da turma no banco de dados',

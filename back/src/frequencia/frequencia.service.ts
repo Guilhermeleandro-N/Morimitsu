@@ -54,17 +54,28 @@ export class FrequenciaService {
 
   async listarPorAluno(
     alunoId: string,
-    professorUsuarioId?: string,
+    usuario?: { sub: string; roles?: string[] },
     skip = 0,
     take = 10,
   ): Promise<{ data: FrequenciaEntity[]; total: number }> {
-    if (professorUsuarioId) {
-      const temVinculo = await this.repository.alunoTemVinculoComProfessor(
-        alunoId,
-        professorUsuarioId,
-      );
-      if (!temVinculo) {
-        throw new ForbiddenException('Você não possui vínculo com este aluno');
+    if (usuario) {
+      const roles = usuario.roles ?? [];
+      const isAdmin = roles.includes('admin');
+
+      if (!isAdmin) {
+        const eProprioAluno = await this.repository.alunoPertenceAoUsuario(
+          alunoId,
+          usuario.sub,
+        );
+        const temVinculo = await this.repository.alunoTemVinculoComProfessor(
+          alunoId,
+          usuario.sub,
+        );
+        if (!eProprioAluno && !temVinculo) {
+          throw new ForbiddenException(
+            'Você não possui vínculo com este aluno',
+          );
+        }
       }
     }
     return this.repository.listarPorAluno(alunoId, skip, take);
@@ -178,5 +189,13 @@ export class FrequenciaService {
     take: number,
   ): Promise<{ data: FrequenciaProfEntity[]; total: number }> {
     return this.repository.listarTreinosPorProfessor(professorId, skip, take);
+  }
+
+  async listarTreinosPorTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaProfEntity[]; total: number }> {
+    return this.repository.listarTreinosPorTurma(turmaId, skip, take);
   }
 }
