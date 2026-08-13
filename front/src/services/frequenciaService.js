@@ -70,6 +70,16 @@ export async function listarFrequenciasTurma(turmaId) {
   }
 }
 
+export async function listarTreinosPorTurma(turmaId) {
+  try {
+    const response = await api.get(`/frequencia/treino/turma/${turmaId}`);
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.error("Erro ao listar treinos da turma:", error);
+    throw error;
+  }
+}
+
 export async function relatorioTreino(turmaId, alunosPresentes) {
   try {
     const response = await api.post("frequencia/turma/relatorio", {

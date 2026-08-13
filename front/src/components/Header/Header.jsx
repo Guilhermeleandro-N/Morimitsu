@@ -5,6 +5,7 @@ import logo from "../../assets/morimitsu.png";
 import "./Header.css"
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import NotificationBell from "../NotificationBell/NotificationBell";
 
 const Header = ({isOpen, setIsOpen}) => {
   let nome;
@@ -39,7 +40,7 @@ const Header = ({isOpen, setIsOpen}) => {
       </div>
 
     <div className='header-right'>
-      
+      <NotificationBell />
     </div>
     </header>
   )

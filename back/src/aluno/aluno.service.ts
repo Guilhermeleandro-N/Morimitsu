@@ -88,6 +88,8 @@ export class AlunoService {
     entity.nome = perfil.nome;
     entity.email = perfil.email;
     entity.telefone = perfil.telefone;
+    entity.status = perfil.status;
+    entity.data_nascimento = perfil.data_nascimento;
     entity.faixa = perfil.faixa;
     entity.grau_faixa = perfil.grau_faixa;
     entity.frequencia_atual = totalPresencas;

@@ -21,7 +21,7 @@ export default function MainLayout(){
         )}
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
         <main
-          style={{ flex: 1, overflow: "hidden" }}
+          style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}
           onClick={() => isOpen && setIsOpen(false)}
         >
             <Outlet />

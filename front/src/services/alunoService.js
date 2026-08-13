@@ -14,11 +14,30 @@ export async function criarAlunoExistente(usuarioId, faixa, grau_faixa, frequenc
   }
 }
 
+async function buscarTudo(fn, limite = 100) {
+  const primeira = await fn(1, limite);
+  const lista = Array.isArray(primeira) ? primeira : (primeira?.data ?? []);
+  const total =
+    primeira?.meta?.total ??
+    (Array.isArray(primeira) ? lista.length : lista.length);
+  const paginas = Math.ceil(total / limite);
+
+  if (paginas <= 1) return lista;
+
+  const demais = await Promise.all(
+    Array.from({ length: paginas - 1 }, (_, i) => fn(i + 2, limite))
+  );
+  return demais.reduce((acc, res) => {
+    const dados = Array.isArray(res) ? res : (res?.data ?? []);
+    return acc.concat(dados);
+  }, lista);
+}
+
 export async function listarAlunosCompleto() {
-  const usersResponse = await api.get("user");
-  const alunosResponse = await api.get("aluno");
-  const users = usersResponse.data?.data ?? usersResponse.data;
-  const alunos = alunosResponse.data?.data ?? alunosResponse.data;
+  const [users, alunos] = await Promise.all([
+    buscarTudo((page, limit) => api.get("user", { params: { page, limit } }).then((r) => r.data)),
+    buscarTudo((page, limit) => api.get("aluno", { params: { page, limit } }).then((r) => r.data)),
+  ]);
   return alunos.map(aluno => ({ ...aluno, usuario: users.find(user => user.id === aluno.usuarioId) }));
 }
 
@@ -26,6 +45,11 @@ export async function BuscarAlunoCompletoPorUserId(userId) {
   const userData = await buscarUser(userId);
   const alunoData = await BuscaAlunoPorUserId(userId);
   return { ...userData, ...alunoData };
+}
+
+export async function buscarMeuPerfilAluno() {
+  const response = await api.get("aluno/meu-perfil");
+  return response.data;
 }
 
 export async function BuscaAlunoPorUserId(userId) {

@@ -456,12 +456,34 @@ export class FrequenciaRepository {
     }
   }
 
+  // Verifica se o aluno pertence ao usuário logado (perfil do próprio aluno).
+  async alunoPertenceAoUsuario(
+    alunoId: string,
+    usuarioId: string,
+  ): Promise<boolean> {
+    try {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { id: alunoId, usuarioId },
+        select: { id: true },
+      });
+      return !!aluno;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao verificar aluno no banco de dados',
+      );
+    }
+  }
+
   // FrequenciaProf
   async registrarTreino(
     dto: CreateFrequenciaProfDto,
   ): Promise<FrequenciaProfEntity> {
     try {
       const treino = await this.prisma.frequenciaProf.create({ data: dto });
+
+      // Notifica os alunos da turma sobre o treino marcado
+      await this.notificarAlunosDoTreino(dto.professor_id, dto.turma_id, dto.data);
+
       return this.toEntityProf(treino);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -474,6 +496,42 @@ export class FrequenciaRepository {
         'Erro ao registrar treino no banco de dados',
       );
     }
+  }
+
+  // Cria notificações para todos os alunos ativos da turma quando
+  // um treino é marcado pelo professor.
+  private async notificarAlunosDoTreino(
+    professorId: string,
+    turmaId: string,
+    dataTreino: Date,
+  ): Promise<void> {
+    const [turma, vinculos] = await Promise.all([
+      this.prisma.turma.findUnique({
+        where: { id: turmaId },
+        select: { nome: true },
+      }),
+      this.prisma.alunoTurma.findMany({
+        where: { turma_id: turmaId, frequente: 'S' },
+        select: { aluno_id: true },
+      }),
+    ]);
+
+    if (vinculos.length === 0) return;
+
+    const dataFormatada = dataTreino.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    const mensagem = `Treino marcado para o dia ${dataFormatada} na turma ${turma?.nome ?? ''}`;
+
+    await this.prisma.notificacao.createMany({
+      data: vinculos.map((v) => ({
+        professor_id: professorId,
+        aluno_id: v.aluno_id,
+        mensagem,
+      })),
+    });
   }
 
   async atualizarTreino(
@@ -526,6 +584,30 @@ export class FrequenciaRepository {
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar treinos no banco de dados',
+      );
+    }
+  }
+
+  async listarTreinosPorTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaProfEntity[]; total: number }> {
+    try {
+      const where = { turma_id: turmaId };
+      const [treinos, total] = await Promise.all([
+        this.prisma.frequenciaProf.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaProf.count({ where }),
+      ]);
+      return { data: treinos.map((t) => this.toEntityProf(t)), total };
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao listar treinos da turma no banco de dados',
       );
     }
   }

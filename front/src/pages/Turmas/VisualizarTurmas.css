@@ -1,5 +1,5 @@
 .turmas-container {
-  min-height: 100vh;
+  min-height: 100%;
   background-color: #f5f5f5;
   padding: 40px;
 }
@@ -64,9 +64,10 @@
 }
 
 .turmas-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 40px;
+  align-items: stretch;
 }
 
 .turma-card {
@@ -74,8 +75,9 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.08);
-  width: 410px;
-  max-width: 410px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   transition: 0.2s;
 }
 
@@ -86,7 +88,7 @@
 .turma-banner {
   background: linear-gradient(135deg, #111111, #2a2a2a);
   height: 150px;
-  width: 410px;
+  width: 100%;
   padding: 24px;
   color: white;
 
@@ -124,11 +126,15 @@
 .turma-title-row {
   flex: 1;
   display: flex;
+  min-width: 0;
 }
 
 .turma-title h3 {
   font-size: 24px;
   margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .turma-status-row {
@@ -153,6 +159,7 @@
 
 .turma-content {
   padding: 22px;
+  flex: 1;
 }
 
 .dias-container {
@@ -168,6 +175,7 @@
   justify-content: flex-end;
 
   border-top: 1px solid #ececec;
+  margin-top: auto;
 }
 
 .menu-btn {

@@ -33,7 +33,7 @@ export class NotificacaoController {
   @Get()
   @UseGuards(PermissionsGuard)
   @Permissions('notification.read')
-  @ApiOperation({ summary: 'Listar notificações do professor logado' })
+  @ApiOperation({ summary: 'Listar notificações do usuário logado' })
   @ApiResponse({ status: 200, type: [NotificacaoEntity] })
   async listar(
     @CurrentUser() usuario: JwtPayload,
@@ -41,8 +41,9 @@ export class NotificacaoController {
   ): Promise<PaginatedResult<NotificacaoEntity>> {
     const page = pagination.page ?? 1;
     const limit = pagination.limit ?? 10;
-    return this.service.listarPorProfessor(
+    return this.service.listarParaUsuario(
       usuario.sub,
+      usuario.roles ?? [],
       (page - 1) * limit,
       limit,
     );
@@ -52,13 +53,13 @@ export class NotificacaoController {
   @UseGuards(PermissionsGuard)
   @Permissions('notification.read')
   @ApiOperation({
-    summary: 'Contar notificações não lidas do professor logado',
+    summary: 'Contar notificações não lidas do usuário logado',
   })
   @ApiResponse({ status: 200, type: NotificacaoCountEntity })
   async contarNaoLidas(
     @CurrentUser() usuario: JwtPayload,
   ): Promise<NotificacaoCountEntity> {
-    return this.service.contarNaoLidas(usuario.sub);
+    return this.service.contarNaoLidas(usuario.sub, usuario.roles ?? []);
   }
 
   @Patch(':id/lida')
@@ -71,6 +72,6 @@ export class NotificacaoController {
     @Param('id') id: string,
     @CurrentUser() usuario: JwtPayload,
   ): Promise<NotificacaoEntity> {
-    return this.service.marcarComoLida(id, usuario.sub);
+    return this.service.marcarComoLida(id, usuario.sub, usuario.roles ?? []);
   }
 }

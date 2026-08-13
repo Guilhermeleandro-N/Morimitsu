@@ -1,0 +1,202 @@
+.treinos-container {
+  min-height: 100%;
+  background-color: #f5f5f5;
+  padding: 40px;
+}
+
+.treinos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.treinos-header h1 {
+  font-size: 32px;
+  margin-bottom: 6px;
+  color: #111;
+}
+
+.treinos-header p {
+  color: #666;
+}
+
+.treinos-empty {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  color: #888;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.treinos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 40px;
+  align-items: stretch;
+}
+
+.treino-card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.treino-card-header {
+  background: linear-gradient(135deg, #111111, #2a2a2a);
+  padding: 20px 22px;
+  color: white;
+  min-height: 108px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.treino-card-header h3 {
+  font-size: 20px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.treino-professor {
+  font-size: 13px;
+  color: #a0a0a0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.treino-professor-nome {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.treino-info {
+  padding: 18px 22px 12px;
+}
+
+.treino-horario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* AGENDA SEMANAL */
+.treino-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 8px 22px 18px;
+}
+
+.dia-semana {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 0;
+  border-radius: 10px;
+  background: #f2f2f2;
+  color: #aaa;
+}
+
+.dia-nome {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dia-ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c41e1e;
+}
+
+.dia-semana.ativo {
+  background: #ffe6e6;
+  color: #c41e1e;
+}
+
+.dia-semana.ativo .dia-ponto {
+  background: #c41e1e;
+}
+
+.dia-semana.hoje {
+  outline: 2px solid #1976d2;
+  outline-offset: -2px;
+}
+
+.dia-semana.dia-atual {
+  background: #c41e1e;
+  color: white;
+}
+
+.dia-semana.dia-atual .dia-ponto {
+  background: white;
+}
+
+/* PRÓXIMO TREINO */
+.proximo-treino {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: auto 22px 22px;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #111111, #2a2a2a);
+  color: white;
+}
+
+.proximo-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #c41e1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.proximo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.proximo-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #bdbdbd;
+}
+
+.proximo-data {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.proximo-desc {
+  font-size: 12px;
+  color: #d8d8d8;
+}
+
+.proximo-treino.sem-dias {
+  justify-content: center;
+  text-align: center;
+  color: #d8d8d8;
+}
