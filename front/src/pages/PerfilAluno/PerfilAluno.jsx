@@ -239,13 +239,15 @@ const PerfilAluno = () => {
               </div>
             </div>
 
-            <h3 className="student-name">
-              {dadosAluno.nome || "Aluno"}
-            </h3>
-
+<h3
+  className="perfil-aluno-student-name"
+  title={dadosAluno.nome || "Aluno"}
+>
+  {dadosAluno.nome || "Aluno"}
+</h3>
             <RoleGuard allowedRoutes={["admin"]}>
               <button
-                className={`status-badge ${String(
+                className={`perfil-aluno-status-badge ${String(
                   dadosAluno.status || ""
                 ).toLowerCase()}`}
                 onClick={handleToggleStatus}
@@ -256,7 +258,7 @@ const PerfilAluno = () => {
             </RoleGuard>
             {user && !user.roles.includes("admin") && (
               <span
-                className={`status-badge ${String(
+                className={`perfil-aluno-status-badge ${String(
                   dadosAluno.status || ""
                 ).toLowerCase()}`}
               >

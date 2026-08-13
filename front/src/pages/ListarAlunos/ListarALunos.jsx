@@ -81,6 +81,9 @@ const ListarAluno = () => {
       case "laranja": return "faixa laranja";
       case "verde": return "faixa verde";
       case "azul": return "faixa azul";
+      case "roxa": return "faixa roxa";
+      case "marrom": return "faixa marrom";
+      case "preta": return "faixa preta";
       default: return "faixa";
     }
   }

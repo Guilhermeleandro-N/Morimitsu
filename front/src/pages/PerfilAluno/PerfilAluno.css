@@ -125,42 +125,53 @@
   font-weight: 500;
 }
 
-.student-name {
+.perfil-aluno-student-name {
   text-align: center;
   font-size: 28px;
   margin-bottom: 12px;
   color: #1a1a1a;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.status-badge {
-  display: block;
-  width: fit-content;
-  margin: 0 auto 30px;
-  padding: 6px 16px;
+.perfil-aluno-status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 80px;
+  height: 34px;
+
+  margin: 12px auto 12px;
+  padding: 0 16px;
+
   border-radius: 999px;
+
   font-size: 13px;
   font-weight: 600;
+  line-height: 1;
+
   text-transform: capitalize;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
-.status-badge.ativo,
-.status-badge.enabled {
+.perfil-aluno-status-badge.ativo,
+.perfil-aluno-status-badge.enabled {
   background-color: #16a34a;
   color: white;
 }
 
-.status-badge.inativo,
-.status-badge.disabled {
+.perfil-aluno-status-badge.inativo,
+.perfil-aluno-status-badge.disabled {
   background-color: #e5e5e5;
   color: #777;
 }
 
-.status-badge.desligado,
-.status-badge.dismissed {
+.perfil-aluno-status-badge.desligado,
+.perfil-aluno-status-badge.dismissed {
   background-color: #dc2626;
   color: white;
 }
