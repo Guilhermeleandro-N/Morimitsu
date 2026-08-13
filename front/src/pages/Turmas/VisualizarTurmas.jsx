@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useContext } from "react";
 
 import "./VisualizarTurmas.css";
 
@@ -18,7 +18,10 @@ import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 
 import { useNavigate } from "react-router-dom";
 
+import { AuthContext } from "../../context/AuthContext";
+
 function VisualizarTurmas() {
+  const { user } = useContext(AuthContext);
   const [menuAberto, setMenuAberto] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editarModalOpen, setEditarModalOpen] = useState(false);
@@ -126,7 +129,13 @@ function VisualizarTurmas() {
           <div
             className="turma-card"
             key={turma.id}
-            onClick={() =>
+            onClick={() => {
+              const ehGestor =
+                user &&
+                (user.roles || []).some((r) =>
+                  ["admin", "professor"].includes(r)
+                );
+              if (!ehGestor) return;
               navigate("/alunosTurma", {
                 state: {
                   turmaId: turma.id,
@@ -135,14 +144,15 @@ function VisualizarTurmas() {
                   turmaHorarioFim: turma.horario_fim,
                   turmaStatus: turma.status,
                 },
-              })
-            }
+              });
+            }}
+            style={user && !(user.roles || []).some((r) => ["admin", "professor"].includes(r)) ? { cursor: "default" } : undefined}
           >
             <div className="turma-banner">
               <div>
                 <div className="turma-title-row">
                   <div className="turma-title">
-                    <h3>{turma.nome}</h3>
+                    <h3 title={turma.nome}>{turma.nome}</h3>
                   </div>
                 </div>
                 <div className="turma-status-row">
@@ -170,6 +180,7 @@ function VisualizarTurmas() {
             </div>
 
             <div className="turma-footer">
+              <RoleGuard allowedRoutes={["admin", "professor"]}>
               <div className="menu-container">
                 <button
                   className="menu-btn"
@@ -216,6 +227,7 @@ function VisualizarTurmas() {
                   </div>
                 )}
               </div>
+              </RoleGuard>
             </div>
           </div>
         ))}

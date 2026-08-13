@@ -19,6 +19,7 @@ import PerfilProfessor from "../pages/PerfilProfessor/PerfilProfessor";
 import PainelProfessor from "../pages/PainelProfessor/PainelProfessor";
 import EditarProfessor from "../pages/EditarProfessor/EditarProfessor";
 import TurmasArquivadas from "../pages/TurmasArquivadas/TurmasArquivadas";
+import MeusTreinos from "../pages/MeusTreinos/MeusTreinos";
 
 const TODOS_PERFIS = ["admin", "professor", "aluno"];
 const PROFESSOR = ["admin", "professor"];
@@ -42,10 +43,7 @@ export default function AppRoutes() {
         <Route
           path="/turmas"
           element={
-            <ProtectedRoute
-              rolesPermitidas={TODOS_PERFIS}
-              permissoesNecessarias={["screen.turma.listar"]}
-            >
+            <ProtectedRoute rolesPermitidas={TODOS_PERFIS}>
               <VisualizarTurmas />
             </ProtectedRoute>
           }
@@ -181,6 +179,18 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute rolesPermitidas={["admin"]}>
               <ConcederPermissoes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/meusTreinos"
+          element={
+            <ProtectedRoute
+              rolesPermitidas={TODOS_PERFIS}
+              permissoesNecessarias={["screen.treino.visualizar"]}
+            >
+              <MeusTreinos />
             </ProtectedRoute>
           }
         />

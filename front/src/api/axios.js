@@ -21,21 +21,25 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (
-            error.response.status === 401 &&
-            !originalRequest._retry
+            error.response?.status === 401 &&
+            !originalRequest?._retry
         ){
             originalRequest._retry = true;
 
-            const newToken = await authService.refreshAccessToken();
+            try {
+                const newToken = await authService.refreshAccessToken();
 
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-            return api(originalRequest);
-
+                if (newToken) {
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    return api(originalRequest);
+                }
+            } catch (refreshError) {
+                authService.clearTokens();
+                return Promise.reject(refreshError);
+            }
         }
         
         return Promise.reject(error);
-
     }
 );
 

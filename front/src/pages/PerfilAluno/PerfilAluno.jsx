@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useContext } from 'react';
 import {
   BuscarAlunoCompletoPorUserId,
+  buscarMeuPerfilAluno,
   graduarAluno
 } from '../../services/alunoService';
 
@@ -141,8 +142,14 @@ const PerfilAluno = () => {
 
     try {
 
-      const response =
-        await BuscarAlunoCompletoPorUserId(userId);
+      const ehProprioPerfil =
+        user &&
+        user.userId === userId &&
+        (user.roles || []).includes("aluno");
+
+      const response = ehProprioPerfil
+        ? await buscarMeuPerfilAluno()
+        : await BuscarAlunoCompletoPorUserId(userId);
 
       setAlunoData(response);
 
@@ -348,15 +355,17 @@ const PerfilAluno = () => {
         {item.status_presenca}
       </span>
 
-      <button
-        className={`presence-button ${
-          item.status_presenca === "PRESENTE"
-            ? "present"
-            : "absent"
-        }`}
-        onClick={() => togglePresenca(item)}
-        title="Alterar presença"
-      />
+      <RoleGuard allowedRoutes={["admin", "professor"]}>
+        <button
+          className={`presence-button ${
+            item.status_presenca === "PRESENTE"
+              ? "present"
+              : "absent"
+          }`}
+          onClick={() => togglePresenca(item)}
+          title="Alterar presença"
+        />
+      </RoleGuard>
 
     </div>
   </td>
