@@ -19,22 +19,18 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   async function login(email, senha) {
-    try {
-      const response = await api.post("auth/login", {
-        email,
-        senha,
-      });
+    const response = await api.post("auth/login", {
+      email,
+      senha,
+    });
 
-      const data = response.data;
+    const data = response.data;
 
-      authService.setTokens(data.token, data.refreshToken);
+    authService.setTokens(data.token, data.refreshToken);
 
-      setUser(data);
+    setUser(data);
 
-      return response;
-    } catch (error) {
-      return error;
-    }
+    return response;
   }
 
   async function logout() {

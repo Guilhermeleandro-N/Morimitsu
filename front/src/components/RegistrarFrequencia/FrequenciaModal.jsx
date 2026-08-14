@@ -4,6 +4,8 @@ import React, {
   useEffect
 } from "react";
 
+import useToast from "../Toast/useToast";
+
 import "./FrequenciaModal.css";
 
 import {
@@ -55,6 +57,9 @@ const FrequenciaModal = ({
 
   const [salvando, setSalvando] =
     useState(false);
+
+  const { mostrar } =
+    useToast();
 
 
   /*
@@ -215,6 +220,10 @@ const FrequenciaModal = ({
    * Salva a frequência.
    */
   async function handleSalvar() {
+
+    if (salvando) {
+      return;
+    }
 
     try {
 
@@ -380,8 +389,13 @@ const FrequenciaModal = ({
       );
 
 
-      alert(
-        "Frequência registrada com sucesso!"
+      /*
+       * Exibe a mensagem de sucesso flutuante
+       * e fecha o modal após alguns segundos.
+       */
+      mostrar(
+        "Frequência registrada com sucesso!",
+        "success"
       );
 
 
@@ -399,10 +413,11 @@ const FrequenciaModal = ({
       }
 
 
-      /*
-       * Fecha o modal.
-       */
-      onClose();
+      setTimeout(() => {
+
+        onClose();
+
+      }, 2500);
 
 
     } catch (error) {

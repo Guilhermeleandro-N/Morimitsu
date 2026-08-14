@@ -27,40 +27,6 @@
     font-size: 15px;
 }
 
-.painel-toast {
-    position: fixed;
-    top: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    padding: 14px 24px;
-    border-radius: 10px;
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    animation: painel-toast-in 0.3s ease;
-}
-
-.painel-toast.success {
-    background-color: #16a34a;
-}
-
-.painel-toast.error {
-    background-color: #dc2626;
-}
-
-@keyframes painel-toast-in {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
 .painel-grid {
     display: flex;
     flex-direction: column;

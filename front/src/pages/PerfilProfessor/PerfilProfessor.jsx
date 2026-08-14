@@ -5,10 +5,9 @@ import { useEffect, useState, useContext } from "react";
 
 import { buscarProfessorEUsuario } from "../../services/professorService";
 import { atualizarStatusUsuario } from "../../services/userService";
-import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import {
-  listarFrequenciasAluno,
-  editarFrequencia,
+  listarTreinosPorProfessor,
+  editarTreino,
 } from "../../services/frequenciaService";
 import { listarTurmas } from "../../services/turmaService";
 import RoleGuard from "../../routes/RoleGuard";
@@ -21,38 +20,15 @@ const PerfilProfessor = () => {
   const userId = location.state?.id;
 
   const [professorData, setProfessorData] = useState(null);
-  const [alunoData, setAlunoData] = useState(null);
   const [primeiraLetra, setPrimeiraLetra] = useState("");
   const [historico, setHistorico] = useState([]);
   const [nomesTurmas, setNomesTurmas] = useState({});
   const [presencas, setPresencas] = useState(0);
 
-  async function togglePresenca(item) {
-    const novoStatus =
-      item.status_presenca === "PRESENTE" ? "AUSENTE" : "PRESENTE";
-    setHistorico((prev) =>
-      prev.map((freq) =>
-        freq.id === item.id ? { ...freq, status_presenca: novoStatus } : freq,
-      ),
-    );
+  async function buscarTreinos(professorId) {
     try {
-      await editarFrequencia(item.id, { status_presenca: novoStatus });
-    } catch (error) {
-      console.error(error);
-      setHistorico((prev) =>
-        prev.map((freq) =>
-          freq.id === item.id
-            ? { ...freq, status_presenca: item.status_presenca }
-            : freq,
-        ),
-      );
-    }
-  }
-
-  async function buscarFrequencias(alunoId) {
-    try {
-      const [frequencias, turmas] = await Promise.all([
-        listarFrequenciasAluno(alunoId),
+      const [treinos, turmas] = await Promise.all([
+        listarTreinosPorProfessor(professorId),
         listarTurmas(),
       ]);
       const mapaTurmas = {};
@@ -60,9 +36,43 @@ const PerfilProfessor = () => {
         mapaTurmas[t.id] = t.nome;
       });
       setNomesTurmas(mapaTurmas);
-      setHistorico(frequencias);
+      setHistorico(Array.isArray(treinos) ? treinos : []);
+      setPresencas(Array.isArray(treinos) ? treinos.length : 0);
     } catch (error) {
-      console.error("Erro ao buscar frequências:", error);
+      console.error("Erro ao buscar treinos:", error);
+      setHistorico([]);
+      setPresencas(0);
+    }
+  }
+
+  function statusPresenca(statusAula) {
+    switch (statusAula) {
+      case "CANCELADA":
+        return "AUSENTE";
+      case "REMARCADA":
+        return "REMARCADA";
+      default:
+        return "PRESENTE";
+    }
+  }
+
+  async function togglePresenca(item) {
+    const novoStatus =
+      item.status_aula === "REALIZADA" ? "CANCELADA" : "REALIZADA";
+    setHistorico((prev) =>
+      prev.map((t) =>
+        t.id === item.id ? { ...t, status_aula: novoStatus } : t,
+      ),
+    );
+    try {
+      await editarTreino(item.id, { status_aula: novoStatus });
+    } catch (error) {
+      console.error(error);
+      setHistorico((prev) =>
+        prev.map((t) =>
+          t.id === item.id ? { ...t, status_aula: item.status_aula } : t,
+        ),
+      );
     }
   }
 
@@ -91,15 +101,11 @@ const PerfilProfessor = () => {
           .charAt(0)
           .toUpperCase(),
       );
-      try {
-        const aluno = await BuscarAlunoCompletoPorUserId(userId);
-        setAlunoData(aluno);
-        setPresencas(
-          aluno.total_presencas ?? aluno.frequencia_atual ?? 0
-        );
-        await buscarFrequencias(aluno.id);
-      } catch {
+      if (professor.id) {
+        await buscarTreinos(professor.id);
+      } else {
         setHistorico([]);
+        setPresencas(0);
       }
     } catch (error) {
       console.error(error);
@@ -118,19 +124,6 @@ const PerfilProfessor = () => {
       setProfessorData((prev) => ({ ...prev, status: novoStatus }));
     } catch (error) {
       console.error("Erro ao alterar status:", error);
-    }
-  }
-
-  function statusLabel(s) {
-    switch (s) {
-      case "ENABLED":
-        return "Ativo";
-      case "DISABLED":
-        return "Inativo";
-      case "DISMISSED":
-        return "Desligado";
-      default:
-        return "Ativo";
     }
   }
 
@@ -164,18 +157,22 @@ const PerfilProfessor = () => {
           <h3 className="student-name">{dados.nome || "Professor"}</h3>
           <RoleGuard allowedRoutes={["admin"]}>
             <button
-              className={`status-badge ${String(dados.status || "enabled").toLowerCase()}`}
+              className={`perfil-aluno-status-badge ${String(
+                dados.status || "",
+              ).toLowerCase()}`}
               onClick={handleToggleStatus}
               style={{ cursor: "pointer", border: "none" }}
             >
-              {statusLabel(dados.status)}
+              {dados.status === "ENABLED" ? "Ativo" : "Inativo"}
             </button>
           </RoleGuard>
           {user && !user.roles.includes("admin") && (
             <span
-              className={`status-badge ${String(dados.status || "enabled").toLowerCase()}`}
+              className={`perfil-aluno-status-badge ${String(
+                dados.status || "",
+              ).toLowerCase()}`}
             >
-              {statusLabel(dados.status)}
+              {dados.status === "ENABLED" ? "Ativo" : "Inativo"}
             </span>
           )}
           <div className="personal-details">
@@ -200,7 +197,7 @@ const PerfilProfessor = () => {
 
         <section className="content-card">
           <div className="history-header">
-            <h3>Histórico de Frequências</h3>
+            <h3>Histórico Recente</h3>
             <div className="presence-total">
               <span>Presenças:</span>
               <strong>{presencas}</strong>
@@ -224,24 +221,18 @@ const PerfilProfessor = () => {
                     <td>{formatarDataBR(item.data)}</td>
                     <td>
                       <div className="presence-status">
-                        <span>{item.status_presenca}</span>
-                        <RoleGuard allowedRoutes={["admin", "professor"]}>
-                          <button
-                            className={`presence-button ${item.status_presenca === "PRESENTE" ? "present" : "absent"}`}
-                            onClick={() => togglePresenca(item)}
-                            title="Alterar presença"
-                          />
-                        </RoleGuard>
+                        <span>{statusPresenca(item.status_aula)}</span>
+                        <button
+                          className={`presence-button ${item.status_aula === "REALIZADA" ? "present" : "absent"}`}
+                          onClick={() => togglePresenca(item)}
+                          title="Alterar presença"
+                        />
                       </div>
                     </td>
                     <td>
-                      {new Date(item.horario_inicio).toLocaleTimeString(
-                        "pt-BR",
-                      )}
+                      {new Date(item.data).toLocaleTimeString("pt-BR")}
                     </td>
-                    <td>
-                      {new Date(item.horario_fim).toLocaleTimeString("pt-BR")}
-                    </td>
+                    <td>--</td>
                     <td>{nomesTurmas[item.turma_id] || "--"}</td>
                   </tr>
                 ))

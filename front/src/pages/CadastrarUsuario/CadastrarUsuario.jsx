@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { criarUser } from "../../services/userService";
 import addUserIcon from "../../assets/addUser.png";
+import useToast from "../../components/Toast/useToast";
 import "./CadastrarUsuario.css";
 
 function CadastrarUsuario() {
   const navigate = useNavigate();
+  const { mostrar } = useToast();
 
   const [form, setForm] = useState({
     nome: "",
@@ -15,24 +17,12 @@ function CadastrarUsuario() {
     data_nascimento: "",
   });
 
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
-  const [showToast, setShowToast] = useState(false);
-
-  function showMessage(msg, type) {
-    setMessage(msg);
-    setMessageType(type);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  }
-
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setShowToast(false);
 
     try {
       const response = await criarUser(
@@ -44,7 +34,7 @@ function CadastrarUsuario() {
       );
 
       if (response && response.id) {
-        showMessage("✔ Usuário cadastrado com sucesso!", "success");
+        mostrar("Usuário cadastrado com sucesso!", "success");
         setForm({
           nome: "",
           email: "",
@@ -54,12 +44,12 @@ function CadastrarUsuario() {
         });
         setTimeout(() => navigate("/login"), 2500);
       } else {
-        showMessage("✖ Erro ao cadastrar usuário. Tente novamente.", "error");
+        mostrar("Erro ao cadastrar usuário. Tente novamente.", "error");
       }
     } catch (error) {
       const msg =
-        error?.response?.data?.message || "✖ Erro ao conectar com o servidor.";
-      showMessage(msg, "error");
+        error?.response?.data?.message || "Erro ao conectar com o servidor.";
+      mostrar(msg, "error");
     }
   }
 
@@ -156,14 +146,6 @@ function CadastrarUsuario() {
             </button>
           </div>
 
-          {showToast && (
-            <div className={`toast ${messageType}`}>
-              <span className="toast-icon">
-                {messageType === "success" ? "✔" : "✖"}
-              </span>
-              {message}
-            </div>
-          )}
         </form>
       </div>
     </div>

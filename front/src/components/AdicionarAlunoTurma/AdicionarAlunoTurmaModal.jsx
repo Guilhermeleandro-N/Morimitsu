@@ -9,6 +9,8 @@ import {
   listarAlunosDaTurma,
 } from "../../services/turmaService";
 
+import useToast from "../Toast/useToast";
+
 import "./AdicionarAlunoTurmaModal.css";
 
 function AdicionarAlunoTurmaModal({
@@ -17,6 +19,8 @@ function AdicionarAlunoTurmaModal({
   onClose,
   onAlunoAdicionado,
 }) {
+  const { mostrar } = useToast();
+
   const [modo, setModo] =
     useState("aluno");
 
@@ -78,8 +82,9 @@ function AdicionarAlunoTurmaModal({
     if (
       alunosSelecionados.length === 0
     ) {
-      alert(
-        "Selecione pelo menos um aluno."
+      mostrar(
+        "Selecione pelo menos um aluno.",
+        "error"
       );
       return;
     }
@@ -96,8 +101,9 @@ function AdicionarAlunoTurmaModal({
         )
       );
 
-      alert(
-        "Aluno(s) adicionado(s) com sucesso!"
+      mostrar(
+        "Aluno(s) adicionado(s) com sucesso!",
+        "success"
       );
 
       if (onAlunoAdicionado) {
@@ -111,8 +117,9 @@ function AdicionarAlunoTurmaModal({
         error
       );
 
-      alert(
-        "Erro ao adicionar aluno."
+      mostrar(
+        "Erro ao adicionar aluno.",
+        "error"
       );
     }
   }
@@ -121,8 +128,9 @@ function AdicionarAlunoTurmaModal({
     if (
       professoresSelecionados.length === 0
     ) {
-      alert(
-        "Selecione pelo menos um professor."
+      mostrar(
+        "Selecione pelo menos um professor.",
+        "error"
       );
       return;
     }
@@ -138,8 +146,9 @@ function AdicionarAlunoTurmaModal({
         )
       );
 
-      alert(
-        "Professor(es) adicionado(s) com sucesso!"
+      mostrar(
+        "Professor(es) adicionado(s) com sucesso!",
+        "success"
       );
 
       if (onAlunoAdicionado) {
@@ -153,8 +162,9 @@ function AdicionarAlunoTurmaModal({
         error
       );
 
-      alert(
-        "Erro ao adicionar professor."
+      mostrar(
+        "Erro ao adicionar professor.",
+        "error"
       );
     }
   }

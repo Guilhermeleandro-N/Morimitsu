@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { atualizarProfessor } from "../../services/professorService";
-import { atualizarStatusUsuario } from "../../services/userService";
 import api from "../../api/axios";
 import addUser from "../../assets/addUser.png";
+import useToast from "../../components/Toast/useToast";
 import "./EditarProfessor.css";
 
 const EditarProfessor = () => {
@@ -11,22 +11,22 @@ const EditarProfessor = () => {
   const navigate = useNavigate();
   const professorData = location.state;
 
+  const [form, setForm] = useState({
+    nome: professorData?.nome || "",
+    email: professorData?.email || "",
+    telefone: professorData?.telefone || "",
+    data_nascimento: professorData?.data_nascimento
+      ? String(professorData.data_nascimento).split("T")[0]
+      : "",
+    faixa: professorData?.faixa || "",
+    grau: professorData?.grau ?? 0,
+  });
+
+  const { mostrar } = useToast();
+
   if (!professorData) {
     return <h2>Professor não encontrado</h2>;
   }
-
-  const [form, setForm] = useState({
-    nome: professorData.nome || "",
-    email: professorData.email || "",
-    telefone: professorData.telefone || "",
-    data_nascimento: professorData.data_nascimento
-      ? String(professorData.data_nascimento).split("T")[0]
-      : "",
-    faixa: professorData.faixa || "",
-    grau: professorData.grau ?? 0,
-  });
-
-  const [message, setMessage] = useState("");
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -49,11 +49,11 @@ const EditarProfessor = () => {
         grau: parseInt(form.grau),
       });
 
-      setMessage("Professor atualizado com sucesso");
-      setTimeout(() => navigate(-1), 1500);
+      mostrar("Professor atualizado com sucesso!", "success");
+      setTimeout(() => navigate(-1), 2500);
     } catch (error) {
       console.error(error);
-      setMessage("Erro ao atualizar professor.");
+      mostrar("Erro ao atualizar professor.", "error");
     }
   }
 
@@ -165,7 +165,6 @@ const EditarProfessor = () => {
               </button>
             </div>
 
-            {message && <p className="message">{message}</p>}
           </div>
         </form>
       </div>

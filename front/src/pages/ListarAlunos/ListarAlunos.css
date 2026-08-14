@@ -111,6 +111,11 @@
   white-space: nowrap;
 }
 
+.tabela-alunos th:nth-child(n + 2),
+.tabela-alunos td:nth-child(n + 2) {
+  text-align: center;
+}
+
 .nome-aluno {
   font-weight: 500;
 }
@@ -231,7 +236,9 @@
 .perfil-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  margin: 0 auto;
 
   border: none;
 

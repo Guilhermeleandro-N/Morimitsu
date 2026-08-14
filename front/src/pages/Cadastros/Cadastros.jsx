@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import api from "../../api/axios";
 import { criarUser } from "../../services/userService";
+import useToast from "../../components/Toast/useToast";
 import { criarAlunoExistente } from "../../services/alunoService";
 import { criarProfessor } from "../../services/professorService";
-import { listarPerfisDoUsuario } from "../../services/authorizationService";
+import {
+  listarPerfisDoUsuario,
+  listarUsuarios,
+} from "../../services/authorizationService";
 import "./Cadastros.css";
 
 const FAIXAS = [
@@ -33,10 +36,11 @@ function Cadastros() {
   const [faixa, setFaixa] = useState("");
   const [grau, setGrau] = useState("");
   const [frequencia, setFrequencia] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
 
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
   const [salvando, setSalvando] = useState(false);
+
+  const { mostrar } = useToast();
 
   // Modo "Novo usuário"
   const [novoUsuario, setNovoUsuario] = useState(false);
@@ -64,10 +68,7 @@ function Cadastros() {
 
   async function carregarUsuarios() {
     try {
-      const response = await api.get("user");
-      const body = response.data;
-      // API retorna { data: [...], meta: { total, page, ... } }
-      const lista = body?.data ?? body?.users ?? body;
+      const lista = await listarUsuarios();
       const array = Array.isArray(lista) ? lista : [];
 
       // Filtra administradores — admin não pode ser cadastrado como aluno/professor
@@ -123,7 +124,6 @@ function Cadastros() {
     setBusca(usr.nome);
     setDropdownAberto(false);
     setSugestoes([]);
-    setMessage("");
   }
 
   function limparFormulario() {
@@ -132,7 +132,7 @@ function Cadastros() {
     setFaixa("");
     setGrau("");
     setFrequencia("");
-    setMessage("");
+    setDataNascimento("");
     setNovoUsuario(false);
     setNovoNome("");
     setNovoEmail("");
@@ -142,7 +142,6 @@ function Cadastros() {
 
   function handleModoToggle(novoModo) {
     setModo(novoModo);
-    setMessage("");
     setNovoUsuario(false);
     setUsuarioSelecionado(null);
     setBusca("");
@@ -150,15 +149,13 @@ function Cadastros() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setMessage("");
 
     let usuarioId;
 
     if (novoUsuario) {
       // Valida campos do novo usuário
       if (!novoNome.trim() || !novoEmail.trim() || !novoSenha.trim()) {
-        setMessage("Preencha nome, e-mail e senha do novo usuário.");
-        setMessageType("error");
+        mostrar("Preencha nome, e-mail e senha do novo usuário.", "error");
         return;
       }
 
@@ -170,29 +167,27 @@ function Cadastros() {
           novoEmail.trim(),
           novoSenha,
           novoTelefone.trim(),
+          dataNascimento,
         );
 
         if (!userResponse || !userResponse.id) {
           const msg =
             userResponse?.message ||
             "Erro ao criar usuário. Verifique os dados.";
-          setMessage(msg);
-          setMessageType("error");
+          mostrar(msg, "error");
           setSalvando(false);
           return;
         }
 
         usuarioId = userResponse.id;
-      } catch (error) {
-        setMessage("Erro ao criar usuário. Tente novamente.");
-        setMessageType("error");
+      } catch {
+        mostrar("Erro ao criar usuário. Tente novamente.", "error");
         setSalvando(false);
         return;
       }
     } else {
       if (!usuarioSelecionado) {
-        setMessage('Selecione um usuário ou ative "Novo usuário".');
-        setMessageType("error");
+        mostrar('Selecione um usuário ou ative "Novo usuário".', "error");
         return;
       }
       usuarioId = usuarioSelecionado.id;
@@ -208,9 +203,15 @@ function Cadastros() {
           faixa,
           parseInt(grau) || 0,
           parseInt(frequencia) || 0,
+          dataNascimento,
         );
       } else {
-        await criarProfessor(usuarioId, faixa, parseInt(grau) || 0);
+        await criarProfessor(
+          usuarioId,
+          faixa,
+          parseInt(grau) || 0,
+          dataNascimento,
+        );
       }
 
       const msgSucesso = isAlunoMode
@@ -218,14 +219,12 @@ function Cadastros() {
         : "Professor cadastrado com sucesso!";
 
       limparFormulario();
-      setMessage(msgSucesso);
-      setMessageType("success");
+      mostrar(msgSucesso, "success");
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
         "Erro ao cadastrar. Verifique os dados.";
-      setMessage(msg);
-      setMessageType("error");
+      mostrar(msg, "error");
     } finally {
       setSalvando(false);
     }
@@ -338,12 +337,8 @@ function Cadastros() {
             )}
           </div>
 
-          {/* E-mail | Senha — mesmo tamanho do nome */}
-          <div
-            className={
-              novoUsuario ? "form__group" : "form__group form__group--full"
-            }
-          >
+          {/* E-mail */}
+          <div className="form__group form__group--full">
             <label htmlFor={novoUsuario ? "novoEmail" : "email"}>E-mail</label>
             {novoUsuario ? (
               <input
@@ -365,7 +360,7 @@ function Cadastros() {
             )}
           </div>
 
-          {/* Senha — ao lado do e-mail ao cadastrar o usuário junto */}
+          {/* Senha | Faixa Atual */}
           {novoUsuario && (
             <div className="form__group">
               <label htmlFor="novoSenha">Senha</label>
@@ -380,7 +375,6 @@ function Cadastros() {
             </div>
           )}
 
-          {/* Faixa | Grau */}
           <div className="form__group">
             <label htmlFor="faixa">
               {isAlunoMode ? "Faixa Atual" : "Faixa"}
@@ -408,6 +402,7 @@ function Cadastros() {
             )}
           </div>
 
+          {/* Grau Atual | Telefone */}
           <div className="form__group">
             <label htmlFor="grau">{isAlunoMode ? "Grau Atual" : "Grau"}</label>
             <input
@@ -422,7 +417,6 @@ function Cadastros() {
             />
           </div>
 
-          {/* Telefone | Frequência Atual */}
           <div className="form__group">
             <label htmlFor={novoUsuario ? "novoTelefone" : "telefone"}>
               Telefone
@@ -446,6 +440,7 @@ function Cadastros() {
             )}
           </div>
 
+          {/* Frequência | Data de Nascimento */}
           {isAlunoMode && (
             <div className="form__group">
               <label htmlFor="frequencia">Frequência Atual</label>
@@ -457,6 +452,18 @@ function Cadastros() {
                 value={frequencia}
                 onChange={(e) => setFrequencia(e.target.value)}
                 required
+              />
+            </div>
+          )}
+
+          {novoUsuario && (
+            <div className="form__group">
+              <label htmlFor="dataNascimento">Data de Nascimento</label>
+              <input
+                type="date"
+                id="dataNascimento"
+                value={dataNascimento}
+                onChange={(e) => setDataNascimento(e.target.value)}
               />
             </div>
           )}
@@ -478,10 +485,9 @@ function Cadastros() {
               {salvando ? "Salvando..." : "Salvar"}
             </button>
           </div>
-
-          {message && <p className={`message ${messageType}`}>{message}</p>}
         </form>
       </div>
+
     </div>
   );
 }

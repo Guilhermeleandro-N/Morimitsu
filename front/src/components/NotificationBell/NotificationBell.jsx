@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { FaBell } from "react-icons/fa";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaBell, FaFilter } from "react-icons/fa";
 import {
   listarNotificacoes,
   contarNotificacoesNaoLidas,
   marcarNotificacaoComoLida,
 } from "../../services/notificacaoService";
+import { buscarDashboardProfessor } from "../../services/professorService";
 import "./NotificationBell.css";
 
 function formatarData(data) {
@@ -16,18 +18,83 @@ function formatarData(data) {
   });
 }
 
+const FILTROS = ["TODAS", "ALUNO", "TURMA"];
+
 function NotificationBell() {
+  const navigate = useNavigate();
   const [aberto, setAberto] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [naoLidas, setNaoLidas] = useState(0);
   const [carregando, setCarregando] = useState(false);
+  const [filtro, setFiltro] = useState("TODAS");
+  const [painelAvisos, setPainelAvisos] = useState([]);
   const ref = useRef(null);
+
+  function proximoFiltro() {
+    const idx = FILTROS.indexOf(filtro);
+    setFiltro(FILTROS[(idx + 1) % FILTROS.length]);
+  }
+
+  async function carregarAvisosPainel() {
+    try {
+      const data = await buscarDashboardProfessor();
+      const avisos = [];
+      (data?.proximos_graduacao || []).forEach((g) => {
+        avisos.push({
+          id: `graduacao-${g.aluno_id}`,
+          mensagem:
+            g.frequencias_restantes === 0
+              ? `O aluno ${g.nome} já deve ser graduado`
+              : `Falta ${g.frequencias_restantes} frequência${
+                  g.frequencias_restantes === 1 ? "" : "s"
+                } para o aluno ${g.nome} se graduar`,
+          tipo: "graduacao",
+          lida: true,
+          created_at: new Date().toISOString(),
+        });
+      });
+      (data?.proximos_aniversario || []).forEach((a) => {
+        avisos.push({
+          id: `aniversario-${a.aluno_id}`,
+          mensagem:
+            a.dias_restantes === 0
+              ? `Hoje é o aniversário de ${a.nome}!`
+              : `O aniversário de ${a.nome} é em ${a.dias_restantes} dia${
+                  a.dias_restantes === 1 ? "" : "s"
+                }!`,
+          tipo: "aniversario",
+          lida: true,
+          created_at: new Date().toISOString(),
+        });
+      });
+      setPainelAvisos(avisos);
+    } catch (error) {
+      console.error("Erro ao carregar avisos do painel:", error);
+      setPainelAvisos([]);
+    }
+  }
+
+  useEffect(() => {
+    if (filtro === "ALUNO") {
+      carregarAvisosPainel();
+    }
+  }, [filtro]);
+
+  const notificacoesFiltradas = useMemo(() => {
+    if (filtro === "ALUNO") {
+      return painelAvisos;
+    }
+    if (filtro === "TURMA") {
+      return notificacoes.filter((n) => n.tipo === "treino");
+    }
+    return notificacoes;
+  }, [notificacoes, painelAvisos, filtro]);
 
   async function carregar() {
     try {
       setCarregando(true);
       const [lista, count] = await Promise.all([
-        listarNotificacoes(1, 20),
+        listarNotificacoes(),
         contarNotificacoesNaoLidas(),
       ]);
       setNotificacoes(Array.isArray(lista) ? lista : []);
@@ -65,6 +132,18 @@ function NotificationBell() {
     }
   }
 
+  async function handleItemClick(n) {
+    if (!n.lida) {
+      await handleMarcarLida(n.id);
+    }
+    setAberto(false);
+    if (n.tipo === "graduacao" || n.tipo === "aniversario") {
+      navigate("/painelProfessor");
+    } else {
+      navigate("/meusTreinos");
+    }
+  }
+
   return (
     <div className="notification-bell" ref={ref}>
       <button
@@ -84,22 +163,45 @@ function NotificationBell() {
         <div className="bell-dropdown">
           <div className="bell-header">
             <h3>Notificações</h3>
-            <span className="bell-count">
-              {naoLidas} não lida{naoLidas !== 1 ? "s" : ""}
-            </span>
+            <div className="bell-header-right">
+              <button
+                className={`filter-btn ${filtro !== "TODAS" ? "ativo" : ""}`}
+                onClick={proximoFiltro}
+                title={
+                  filtro === "ALUNO"
+                    ? "Filtrando: alunos"
+                    : filtro === "TURMA"
+                      ? "Filtrando: turmas"
+                      : "Filtrar notificações"
+                }
+              >
+                <FaFilter size={13} />
+                {filtro === "ALUNO" && <span>Alunos</span>}
+                {filtro === "TURMA" && <span>Turmas</span>}
+              </button>
+              <span className="bell-count">
+                {naoLidas} não lida{naoLidas !== 1 ? "s" : ""}
+              </span>
+            </div>
           </div>
 
           <div className="bell-list">
-            {carregando && notificacoes.length === 0 ? (
+            {carregando && notificacoesFiltradas.length === 0 ? (
               <p className="bell-empty">Carregando...</p>
-            ) : notificacoes.length === 0 ? (
-              <p className="bell-empty">Nenhuma notificação.</p>
+            ) : notificacoesFiltradas.length === 0 ? (
+              <p className="bell-empty">
+                {filtro === "ALUNO"
+                  ? "Nenhuma notificação de alunos."
+                  : filtro === "TURMA"
+                    ? "Nenhuma notificação de turmas."
+                    : "Nenhuma notificação."}
+              </p>
             ) : (
-              notificacoes.map((n) => (
+              notificacoesFiltradas.map((n) => (
                 <div
                   key={n.id}
                   className={`bell-item ${n.lida ? "lida" : "nao-lida"}`}
-                  onClick={() => !n.lida && handleMarcarLida(n.id)}
+                  onClick={() => handleItemClick(n)}
                 >
                   <div className="bell-item-content">
                     <p className="bell-mensagem">{n.mensagem}</p>

@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { atualizarAluno } from "../../services/alunoService";
 
 import addUser from "../../assets/addUser.png";
+import useToast from "../../components/Toast/useToast";
 import "./EditarAluno.css";
 
 const EditarAluno = () => {
@@ -12,24 +13,24 @@ const EditarAluno = () => {
 
   const alunoData = location.state;
 
-  // Proteção caso entre direto na rota
-  if (!alunoData) {
-    return <h2>Aluno não encontrado</h2>;
-  }
-
   const [form, setForm] = useState({
-    nome: alunoData.nome || "",
-    email: alunoData.email || "",
-    faixa: alunoData.faixa || "",
-    telefone: alunoData.telefone || "",
-    grau: alunoData.grau_faixa || "",
-    frequencia: alunoData.frequencia_atual || "",
-    data_nascimento: alunoData.data_nascimento
+    nome: alunoData?.nome || "",
+    email: alunoData?.email || "",
+    faixa: alunoData?.faixa || "",
+    telefone: alunoData?.telefone || "",
+    grau: alunoData?.grau_faixa || "",
+    frequencia: alunoData?.frequencia_atual || "",
+    data_nascimento: alunoData?.data_nascimento
       ? String(alunoData.data_nascimento).split("T")[0]
       : "",
   });
 
-  const [message, setMessage] = useState("");
+  const { mostrar } = useToast();
+
+  // Proteção caso entre direto na rota
+  if (!alunoData) {
+    return <h2>Aluno não encontrado</h2>;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -48,17 +49,17 @@ const EditarAluno = () => {
       );
 
       if (response.status === 200) {
-        setMessage("Aluno atualizado com sucesso");
+        mostrar("Aluno atualizado com sucesso!", "success");
 
         setTimeout(() => {
           navigate(-1);
-        }, 1500);
+        }, 2500);
       } else {
-        setMessage("Erro ao atualizar aluno");
+        mostrar("Erro ao atualizar aluno.", "error");
       }
     } catch (error) {
       console.log(error);
-      setMessage("Erro ao conectar com o servidor.");
+      mostrar("Erro ao conectar com o servidor.", "error");
     }
   }
 
@@ -210,7 +211,6 @@ const EditarAluno = () => {
               </button>
             </div>
 
-            {message && <p className="message">{message}</p>}
           </div>
         </form>
       </div>

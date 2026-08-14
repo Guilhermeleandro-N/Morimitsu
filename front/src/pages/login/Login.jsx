@@ -17,21 +17,24 @@ const Login = () => {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const response = await login(email, senha);
-      console.log("----------------");
-      console.log("----------------");
-      if (response.status >= 200 && response.status < 300) {
-        navigate("/");
-      } else {
-        setMessage(response.message);
-      }
+      await login(email, senha);
+      navigate("/");
     } catch (error) {
-      setMessage(error.message || "Erro ao conectar com o servidor.");
+      if (!error.response) {
+        setMessage(
+          "Não foi possível conectar ao servidor. Verifique se o backend está ativo.",
+        );
+      } else {
+        setMessage(
+          error.response?.data?.message ||
+            "E-mail ou senha inválidos. Tente novamente.",
+        );
+      }
     }
   }
 
   return (
-    <main className="container">
+    <main className="login-container">
       <div className="login-cards">
         <img src={logo} alt="" />
         <h1>Morimitsu</h1>

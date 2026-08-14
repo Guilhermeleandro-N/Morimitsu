@@ -262,7 +262,7 @@ const PerfilAluno = () => {
                   dadosAluno.status || ""
                 ).toLowerCase()}`}
               >
-                {dadosAluno.status || "--"}
+                {dadosAluno.status === "ENABLED" ? "Ativo" : "Inativo"}
               </span>
             )}
 
