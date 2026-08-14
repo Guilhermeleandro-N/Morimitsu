@@ -390,7 +390,7 @@ function AdicionarAlunoTurmaModal({
             className="btn-sair"
             onClick={onClose}
           >
-            Sair
+            Cancelar
           </button>
 
           {modo === "aluno" ? (

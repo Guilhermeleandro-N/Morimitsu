@@ -118,22 +118,29 @@ function TurmasArquivadas() {
           {turmas.map((turma) => (
             <div className="turma-card arquivada-card" key={turma.id}>
               <div className="turma-banner">
-                <div>
+                <div className="turma-header-content">
                   <div className="turma-title-row">
-                    <h3>{turma.nome}</h3>
-                    <span className="status-badge status-arquivada"></span>
+                    <div className="turma-title">
+                      <h3>{turma.nome}</h3>
+                    </div>
+                    <div className="turma-status-row">
+                      <span className="status-badge status-arquivada"></span>
+                    </div>
                   </div>
-                  <span>
-                    {formatarHorario(turma.horario_inicio)}
-                    {" - "}
-                    {formatarHorario(turma.horario_fim)}
+
+                  <div className="turma-meta">
+                    <span className="turma-horario">
+                      {formatarHorario(turma.horario_inicio)}
+                      {" - "}
+                      {formatarHorario(turma.horario_fim)}
+                    </span>
+
                     {turma.professores?.length > 0 && (
                       <span className="turma-professor">
-                        {" • Prof.: "}
-                        {turma.professores.join(", ")}
+                        Prof.: {turma.professores.join(", ")}
                       </span>
                     )}
-                  </span>
+                  </div>
                 </div>
               </div>
 
