@@ -29,7 +29,7 @@ import {
 import {
   AuthContext
 } from "../../context/AuthContext";
-
+import { useToast } from "../../context/ToastContext";
 
 const FrequenciaModal = ({
   turmaId,
@@ -39,7 +39,7 @@ const FrequenciaModal = ({
 
   const { user } =
     useContext(AuthContext);
-
+  const { addToast } = useToast();
 
   const [alunos, setAlunos] =
     useState([]);
@@ -144,9 +144,7 @@ const FrequenciaModal = ({
         error
       );
 
-      alert(
-        "Erro ao carregar os alunos da turma."
-      );
+      addToast("Erro ao carregar os alunos da turma.", "error");
 
     } finally {
 
@@ -220,9 +218,7 @@ const FrequenciaModal = ({
 
       if (!user) {
 
-        alert(
-          "Usuário não está logado."
-        );
+        addToast("Usuário não está logado.", "error");
 
         return;
 
@@ -231,9 +227,7 @@ const FrequenciaModal = ({
 
       if (!turmaId) {
 
-        alert(
-          "Turma não identificada."
-        );
+        addToast("Turma não identificada.", "error");
 
         return;
 
@@ -380,9 +374,7 @@ const FrequenciaModal = ({
       );
 
 
-      alert(
-        "Frequência registrada com sucesso!"
-      );
+      addToast("Frequência registrada com sucesso!", "success");
 
 
       /*
@@ -413,9 +405,7 @@ const FrequenciaModal = ({
         error
       );
 
-      alert(
-        "Erro ao registrar frequência."
-      );
+      addToast("Erro ao registrar frequência.", "error");
 
     } finally {
 

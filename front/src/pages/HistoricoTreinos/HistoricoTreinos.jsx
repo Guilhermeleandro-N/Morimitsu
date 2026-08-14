@@ -6,6 +6,8 @@ import { listarFrequenciasTurma } from "../../services/frequenciaService";
 import { FaArrowLeft, FaCalendarCheck, FaChevronRight } from "react-icons/fa";
 import "./HistoricoTreinos.css";
 import { editarFrequencia } from "../../services/frequenciaService";
+import { useToast } from "../../context/ToastContext";
+
 function HistoricoTreinos() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,6 +19,7 @@ function HistoricoTreinos() {
   const [treinos, setTreinos] = useState([]);
   const [treinoSelecionado, setTreinoSelecionado] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (!turmaId) return;
@@ -97,8 +100,7 @@ return {
   } catch (error) {
 
     console.error(error);
-
-    alert("Erro ao atualizar frequência.");
+    addToast("Erro ao atualizar frequência.", "error");
 
   }
 

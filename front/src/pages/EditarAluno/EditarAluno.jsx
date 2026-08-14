@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { atualizarAluno } from "../../services/alunoService";
+import { useToast } from "../../context/ToastContext";
 
 import addUser from "../../assets/addUser.png";
 import "./EditarAluno.css";
@@ -29,7 +30,7 @@ const EditarAluno = () => {
       : "",
   });
 
-  const [message, setMessage] = useState("");
+  const { addToast } = useToast();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -48,17 +49,17 @@ const EditarAluno = () => {
       );
 
       if (response.status === 200) {
-        setMessage("Aluno atualizado com sucesso");
+        addToast("Aluno atualizado com sucesso!", "success");
 
         setTimeout(() => {
           navigate(-1);
         }, 1500);
       } else {
-        setMessage("Erro ao atualizar aluno");
+        addToast("Erro ao atualizar aluno.", "error");
       }
     } catch (error) {
       console.log(error);
-      setMessage("Erro ao conectar com o servidor.");
+      addToast("Erro ao conectar com o servidor.", "error");
     }
   }
 
@@ -209,8 +210,6 @@ const EditarAluno = () => {
                 Salvar Alterações
               </button>
             </div>
-
-            {message && <p className="message">{message}</p>}
           </div>
         </form>
       </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./CriarTurmaModal.css";
 
 import { criarTurma } from "../../services/turmaService";
+import { useToast } from "../../context/ToastContext";
 
 function CriarTurmaModal({ onClose, onCreate }) {
 
@@ -19,7 +20,7 @@ function CriarTurmaModal({ onClose, onCreate }) {
     domingo: false,
   });
 
-  const [message, setMessage] = useState("");
+  const { addToast } = useToast();
 
   function handleChange(e) {
 
@@ -76,7 +77,7 @@ function CriarTurmaModal({ onClose, onCreate }) {
         response?.status === 200
       ) {
 
-        setMessage("Turma criada com sucesso");
+        addToast("Turma criada com sucesso!", "success");
 
         if (onCreate) {
           onCreate(response.data);
@@ -88,14 +89,14 @@ function CriarTurmaModal({ onClose, onCreate }) {
 
       } else {
 
-        setMessage("Erro ao criar turma");
+        addToast("Erro ao criar turma.", "error");
 
       }
 
     } catch (error) {
 
       console.log(error);
-      setMessage("Erro ao conectar com servidor");
+      addToast("Erro ao conectar com o servidor.", "error");
 
     }
 
@@ -256,12 +257,6 @@ function CriarTurmaModal({ onClose, onCreate }) {
           </div>
 
         </div>
-
-        {message && (
-          <p className="message">
-            {message}
-          </p>
-        )}
 
         <div className="modal-buttons">
 

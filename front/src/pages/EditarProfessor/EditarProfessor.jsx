@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { atualizarProfessor } from "../../services/professorService";
 import { atualizarStatusUsuario } from "../../services/userService";
 import api from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 import addUser from "../../assets/addUser.png";
 import "./EditarProfessor.css";
 
@@ -26,7 +27,7 @@ const EditarProfessor = () => {
     grau: professorData.grau ?? 0,
   });
 
-  const [message, setMessage] = useState("");
+  const { addToast } = useToast();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -49,11 +50,11 @@ const EditarProfessor = () => {
         grau: parseInt(form.grau),
       });
 
-      setMessage("Professor atualizado com sucesso");
+      addToast("Professor atualizado com sucesso!", "success");
       setTimeout(() => navigate(-1), 1500);
     } catch (error) {
       console.error(error);
-      setMessage("Erro ao atualizar professor.");
+      addToast("Erro ao atualizar professor.", "error");
     }
   }
 
@@ -164,8 +165,6 @@ const EditarProfessor = () => {
                 Salvar Alterações
               </button>
             </div>
-
-            {message && <p className="message">{message}</p>}
           </div>
         </form>
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useToast } from "../../context/ToastContext";
 import { listarAlunosCompleto } from "../../services/alunoService";
 import { listarProfessores } from "../../services/professorService";
 
@@ -40,6 +41,7 @@ function AdicionarAlunoTurmaModal({
   const [buscaProfessor,
     setBuscaProfessor] =
     useState("");
+  const { addToast } = useToast();
 
   useEffect(() => {
     async function carregar() {
@@ -78,9 +80,7 @@ function AdicionarAlunoTurmaModal({
     if (
       alunosSelecionados.length === 0
     ) {
-      alert(
-        "Selecione pelo menos um aluno."
-      );
+      addToast("Selecione pelo menos um aluno.", "error");
       return;
     }
 
@@ -96,9 +96,7 @@ function AdicionarAlunoTurmaModal({
         )
       );
 
-      alert(
-        "Aluno(s) adicionado(s) com sucesso!"
-      );
+      addToast("Aluno(s) adicionado(s) com sucesso!", "success");
 
       if (onAlunoAdicionado) {
         await onAlunoAdicionado();
@@ -111,9 +109,7 @@ function AdicionarAlunoTurmaModal({
         error
       );
 
-      alert(
-        "Erro ao adicionar aluno."
-      );
+      addToast("Erro ao adicionar aluno.", "error");
     }
   }
 
@@ -121,9 +117,7 @@ function AdicionarAlunoTurmaModal({
     if (
       professoresSelecionados.length === 0
     ) {
-      alert(
-        "Selecione pelo menos um professor."
-      );
+      addToast("Selecione pelo menos um professor.", "error");
       return;
     }
 
@@ -138,9 +132,7 @@ function AdicionarAlunoTurmaModal({
         )
       );
 
-      alert(
-        "Professor(es) adicionado(s) com sucesso!"
-      );
+      addToast("Professor(es) adicionado(s) com sucesso!", "success");
 
       if (onAlunoAdicionado) {
         await onAlunoAdicionado();
@@ -153,9 +145,7 @@ function AdicionarAlunoTurmaModal({
         error
       );
 
-      alert(
-        "Erro ao adicionar professor."
-      );
+      addToast("Erro ao adicionar professor.", "error");
     }
   }
 

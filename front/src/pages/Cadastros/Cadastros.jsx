@@ -5,6 +5,7 @@ import { criarUser } from "../../services/userService";
 import { criarAlunoExistente } from "../../services/alunoService";
 import { criarProfessor } from "../../services/professorService";
 import { listarPerfisDoUsuario } from "../../services/authorizationService";
+import { useToast } from "../../context/ToastContext";
 import "./Cadastros.css";
 
 const FAIXAS = [
@@ -34,9 +35,8 @@ function Cadastros() {
   const [grau, setGrau] = useState("");
   const [frequencia, setFrequencia] = useState("");
 
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const { addToast } = useToast();
 
   // Modo "Novo usuário"
   const [novoUsuario, setNovoUsuario] = useState(false);
@@ -123,7 +123,6 @@ function Cadastros() {
     setBusca(usr.nome);
     setDropdownAberto(false);
     setSugestoes([]);
-    setMessage("");
   }
 
   function limparFormulario() {
@@ -132,7 +131,6 @@ function Cadastros() {
     setFaixa("");
     setGrau("");
     setFrequencia("");
-    setMessage("");
     setNovoUsuario(false);
     setNovoNome("");
     setNovoEmail("");
@@ -142,7 +140,6 @@ function Cadastros() {
 
   function handleModoToggle(novoModo) {
     setModo(novoModo);
-    setMessage("");
     setNovoUsuario(false);
     setUsuarioSelecionado(null);
     setBusca("");
@@ -150,15 +147,13 @@ function Cadastros() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setMessage("");
 
     let usuarioId;
 
     if (novoUsuario) {
       // Valida campos do novo usuário
       if (!novoNome.trim() || !novoEmail.trim() || !novoSenha.trim()) {
-        setMessage("Preencha nome, e-mail e senha do novo usuário.");
-        setMessageType("error");
+        addToast("Preencha nome, e-mail e senha do novo usuário.", "error");
         return;
       }
 
@@ -176,23 +171,20 @@ function Cadastros() {
           const msg =
             userResponse?.message ||
             "Erro ao criar usuário. Verifique os dados.";
-          setMessage(msg);
-          setMessageType("error");
+          addToast(msg, "error");
           setSalvando(false);
           return;
         }
 
         usuarioId = userResponse.id;
       } catch (error) {
-        setMessage("Erro ao criar usuário. Tente novamente.");
-        setMessageType("error");
+        addToast("Erro ao criar usuário. Tente novamente.", "error");
         setSalvando(false);
         return;
       }
     } else {
       if (!usuarioSelecionado) {
-        setMessage('Selecione um usuário ou ative "Novo usuário".');
-        setMessageType("error");
+        addToast('Selecione um usuário ou ative "Novo usuário".', "error");
         return;
       }
       usuarioId = usuarioSelecionado.id;
@@ -218,14 +210,12 @@ function Cadastros() {
         : "Professor cadastrado com sucesso!";
 
       limparFormulario();
-      setMessage(msgSucesso);
-      setMessageType("success");
+      addToast(msgSucesso, "success");
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
         "Erro ao cadastrar. Verifique os dados.";
-      setMessage(msg);
-      setMessageType("error");
+      addToast(msg, "error");
     } finally {
       setSalvando(false);
     }
@@ -479,7 +469,6 @@ function Cadastros() {
             </button>
           </div>
 
-          {message && <p className={`message ${messageType}`}>{message}</p>}
         </form>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
+import { useToast } from "../../context/ToastContext";
 import logo from "../../assets/morimitsu.png";
 import "./EsqueciSenha.css";
 
@@ -10,44 +11,37 @@ function EsqueciSenha() {
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmacao, setConfirmacao] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState("");
-  const [tipoMensagem, setTipoMensagem] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const { addToast } = useToast();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setMessage("");
-    setTipoMensagem("");
 
     if (!email) {
-      setMessage("Informe seu email.");
-      setTipoMensagem("error");
+      addToast("Informe seu email.", "error");
       return;
     }
 
     if (!novaSenha || !confirmacao) {
-      setMessage("Preencha a nova senha e a confirmação.");
-      setTipoMensagem("error");
+      addToast("Preencha a nova senha e a confirmação.", "error");
       return;
     }
 
     if (novaSenha !== confirmacao) {
-      setMessage("As senhas não coincidem.");
-      setTipoMensagem("error");
+      addToast("As senhas não coincidem.", "error");
       return;
     }
 
     setCarregando(true);
     try {
       await authService.resetarSenha(email, novaSenha);
-      setMessage("Senha redefinida com sucesso! Faça login com a nova senha.");
-      setTipoMensagem("success");
+      addToast("Senha redefinida com sucesso! Faça login com a nova senha.", "success");
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
-      setMessage(
-        error?.response?.data?.message || "Erro ao redefinir a senha."
+      addToast(
+        error?.response?.data?.message || "Erro ao redefinir a senha.",
+        "error"
       );
-      setTipoMensagem("error");
     } finally {
       setCarregando(false);
     }
@@ -111,9 +105,6 @@ function EsqueciSenha() {
             {carregando ? "Redefinindo..." : "Redefinir senha"}
           </button>
         </form>
-        {message && (
-          <p className={`form-error ${tipoMensagem}`}>{message}</p>
-        )}
         <a
           className="forgot-password"
           onClick={() => navigate("/login")}

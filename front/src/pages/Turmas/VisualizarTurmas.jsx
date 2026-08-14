@@ -19,9 +19,11 @@ import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 
 function VisualizarTurmas() {
   const { user } = useContext(AuthContext);
+  const { addToast } = useToast();
   const [menuAberto, setMenuAberto] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editarModalOpen, setEditarModalOpen] = useState(false);
@@ -95,7 +97,7 @@ function VisualizarTurmas() {
       setMenuAberto(null);
     } catch (error) {
       console.error("Erro ao excluir turma:", error);
-      alert("Erro ao excluir turma.");
+      addToast("Erro ao excluir turma.", "error");
     } finally {
       setConfirmExcluirOpen(false);
       setTurmaParaExcluir(null);
