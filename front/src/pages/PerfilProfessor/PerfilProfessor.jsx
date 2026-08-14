@@ -1,5 +1,5 @@
 import React from "react";
-import "./PerfilProfessor.css";
+import "../PerfilAluno/PerfilAluno.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 
@@ -161,21 +161,27 @@ const PerfilProfessor = () => {
           <div className="avatar-container">
             <div className="avatar-placeholder">{primeiraLetra}</div>
           </div>
-          <h3 className="student-name">{dados.nome || "Professor"}</h3>
+          <h3 className="perfil-aluno-student-name">
+            {dados.nome || "Professor"}
+          </h3>
           <RoleGuard allowedRoutes={["admin"]}>
             <button
-              className={`status-badge ${String(dados.status || "enabled").toLowerCase()}`}
+              className={`perfil-aluno-status-badge ${String(
+                dados.status || "ENABLED"
+              ).toLowerCase()}`}
               onClick={handleToggleStatus}
               style={{ cursor: "pointer", border: "none" }}
             >
-              {statusLabel(dados.status)}
+              {dados.status === "ENABLED" ? "Ativo" : "Inativo"}
             </button>
           </RoleGuard>
           {user && !user.roles.includes("admin") && (
             <span
-              className={`status-badge ${String(dados.status || "enabled").toLowerCase()}`}
+              className={`perfil-aluno-status-badge ${String(
+                dados.status || "ENABLED"
+              ).toLowerCase()}`}
             >
-              {statusLabel(dados.status)}
+              {dados.status === "ENABLED" ? "Ativo" : "Inativo"}
             </span>
           )}
           <div className="personal-details">
