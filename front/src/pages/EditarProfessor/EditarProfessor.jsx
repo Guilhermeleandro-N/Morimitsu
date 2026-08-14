@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { atualizarProfessor } from "../../services/professorService";
 import api from "../../api/axios";
+import { useToast } from "../../context/ToastContext";
 import addUser from "../../assets/addUser.png";
 import useToast from "../../components/Toast/useToast";
 import "./EditarProfessor.css";
@@ -28,6 +29,19 @@ const EditarProfessor = () => {
     return <h2>Professor não encontrado</h2>;
   }
 
+  const [form, setForm] = useState({
+    nome: professorData.nome || "",
+    email: professorData.email || "",
+    telefone: professorData.telefone || "",
+    data_nascimento: professorData.data_nascimento
+      ? String(professorData.data_nascimento).split("T")[0]
+      : "",
+    faixa: professorData.faixa || "",
+    grau: professorData.grau ?? 0,
+  });
+
+  const { addToast } = useToast();
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -49,11 +63,11 @@ const EditarProfessor = () => {
         grau: parseInt(form.grau),
       });
 
-      mostrar("Professor atualizado com sucesso!", "success");
-      setTimeout(() => navigate(-1), 2500);
+      addToast("Professor atualizado com sucesso!", "success");
+      setTimeout(() => navigate(-1), 1500);
     } catch (error) {
       console.error(error);
-      mostrar("Erro ao atualizar professor.", "error");
+      addToast("Erro ao atualizar professor.", "error");
     }
   }
 
@@ -164,7 +178,6 @@ const EditarProfessor = () => {
                 Salvar Alterações
               </button>
             </div>
-
           </div>
         </form>
       </div>

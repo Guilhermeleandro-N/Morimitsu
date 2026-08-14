@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { criarUser } from "../../services/userService";
+import { useToast } from "../../context/ToastContext";
 import addUserIcon from "../../assets/addUser.png";
 import useToast from "../../components/Toast/useToast";
 import "./CadastrarUsuario.css";
 
 function CadastrarUsuario() {
   const navigate = useNavigate();
-  const { mostrar } = useToast();
+  const { addToast } = useToast();
 
   const [form, setForm] = useState({
     nome: "",
@@ -34,7 +35,7 @@ function CadastrarUsuario() {
       );
 
       if (response && response.id) {
-        mostrar("Usuário cadastrado com sucesso!", "success");
+        addToast("Usuário cadastrado com sucesso!", "success");
         setForm({
           nome: "",
           email: "",
@@ -44,12 +45,12 @@ function CadastrarUsuario() {
         });
         setTimeout(() => navigate("/login"), 2500);
       } else {
-        mostrar("Erro ao cadastrar usuário. Tente novamente.", "error");
+        addToast("Erro ao cadastrar usuário. Tente novamente.", "error");
       }
     } catch (error) {
       const msg =
         error?.response?.data?.message || "Erro ao conectar com o servidor.";
-      mostrar(msg, "error");
+      addToast(msg, "error");
     }
   }
 
@@ -145,7 +146,6 @@ function CadastrarUsuario() {
               Cadastrar
             </button>
           </div>
-
         </form>
       </div>
     </div>

@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import "./CriarTurmaModal.css";
 
 import { criarTurma } from "../../services/turmaService";
-import useToast from "../Toast/useToast";
+import { useToast } from "../../context/ToastContext";
 
 function CriarTurmaModal({ onClose, onCreate }) {
-
   const { mostrar } = useToast();
 
   const [formData, setFormData] = useState({
@@ -22,21 +21,18 @@ function CriarTurmaModal({ onClose, onCreate }) {
     domingo: false,
   });
 
-  function handleChange(e) {
+  const { addToast } = useToast();
 
+  function handleChange(e) {
     const { name, value, type, checked } = e.target;
 
     setFormData({
       ...formData,
-      [name]: type === "checkbox"
-        ? checked
-        : value,
+      [name]: type === "checkbox" ? checked : value,
     });
-
   }
 
   function criarDataHora(hora) {
-
     if (!hora) return null;
 
     const hoje = new Date();
@@ -49,15 +45,58 @@ function CriarTurmaModal({ onClose, onCreate }) {
     hoje.setUTCMilliseconds(0);
 
     return hoje;
+  }
 
+  function validarFormulario() {
+    const nome = formData.nome.trim();
+    const inicio = formData.horario_inicio;
+    const fim = formData.horario_fim;
+    const diasSelecionados = [
+      formData.segunda,
+      formData.terca,
+      formData.quarta,
+      formData.quinta,
+      formData.sexta,
+      formData.sabado,
+      formData.domingo,
+    ].some(Boolean);
+
+    if (!nome) {
+      addToast("Preencha o nome da turma.", "error");
+      return false;
+    }
+
+    if (!inicio || !fim) {
+      addToast("Informe o horário de início e fim da turma.", "error");
+      return false;
+    }
+
+    if (!diasSelecionados) {
+      addToast("Selecione ao menos um dia da semana.", "error");
+      return false;
+    }
+
+    const inicioEmMinutos =
+      Number(inicio.split(":")[0]) * 60 + Number(inicio.split(":")[1]);
+    const fimEmMinutos =
+      Number(fim.split(":")[0]) * 60 + Number(fim.split(":")[1]);
+
+    if (fimEmMinutos <= inicioEmMinutos) {
+      addToast("O horário de fim deve ser maior que o de início.", "error");
+      return false;
+    }
+
+    return true;
   }
 
   async function handleSubmit() {
+    if (!validarFormulario()) {
+      return;
+    }
 
     try {
-
       const response = await criarTurma(
-        formData.nome,
+        formData.nome.trim(),
 
         criarDataHora(formData.horario_inicio),
 
@@ -69,15 +108,11 @@ function CriarTurmaModal({ onClose, onCreate }) {
         formData.quinta,
         formData.sexta,
         formData.sabado,
-        formData.domingo
+        formData.domingo,
       );
 
-      if (
-        response?.status === 201 ||
-        response?.status === 200
-      ) {
-
-        mostrar("Turma criada com sucesso!", "success");
+      if (response?.status === 201 || response?.status === 200) {
+        addToast("Turma criada com sucesso!", "success");
 
         if (onCreate) {
           onCreate(response.data);
@@ -86,35 +121,27 @@ function CriarTurmaModal({ onClose, onCreate }) {
         setTimeout(() => {
           onClose();
         }, 2500);
-
       } else {
-
-        mostrar("Erro ao criar turma.", "error");
-
+        addToast("Erro ao criar turma.", "error");
       }
-
     } catch (error) {
-
       console.log(error);
-      mostrar("Erro ao conectar com o servidor.", "error");
-
+      addToast("Erro ao conectar com o servidor.", "error");
     }
-
   }
 
   return (
     <div className="modal-overlay">
-
       <div className="modal-container">
-
         <h2>Criar nova turma</h2>
 
         <div className="modal-form">
-
           {/* NOME */}
           <div className="input-group full-width">
-
-            <label>Nome da turma</label>
+            <label>
+              Nome da turma
+              <span className="required-mark">*</span>
+            </label>
 
             <input
               type="text"
@@ -122,45 +149,50 @@ function CriarTurmaModal({ onClose, onCreate }) {
               placeholder="Ex: Turma Quinta à noite"
               value={formData.nome}
               onChange={handleChange}
+              required
             />
-
           </div>
 
           {/* HORÁRIO INÍCIO */}
           <div className="input-group">
-
-            <label>Horário início</label>
+            <label>
+              Horário início
+              <span className="required-mark">*</span>
+            </label>
 
             <input
               type="time"
               name="horario_inicio"
               value={formData.horario_inicio}
               onChange={handleChange}
+              required
             />
-
           </div>
 
           {/* HORÁRIO FIM */}
           <div className="input-group">
-
-            <label>Horário fim</label>
+            <label>
+              Horário fim
+              <span className="required-mark">*</span>
+            </label>
 
             <input
               type="time"
               name="horario_fim"
               value={formData.horario_fim}
               onChange={handleChange}
+              required
             />
-
           </div>
 
           {/* DIAS DA SEMANA */}
           <div className="input-group full-width">
-
-            <label>Dias da semana</label>
+            <label>
+              Dias da semana
+              <span className="required-mark">*</span>
+            </label>
 
             <div className="week-buttons">
-
               <button
                 type="button"
                 className={formData.segunda ? "active-day" : ""}
@@ -251,33 +283,20 @@ function CriarTurmaModal({ onClose, onCreate }) {
               >
                 DOM
               </button>
-
             </div>
-
           </div>
-
         </div>
 
         <div className="modal-buttons">
-
-          <button
-            className="btn-sair"
-            onClick={onClose}
-          >
+          <button className="btn-sair" onClick={onClose}>
             Sair
           </button>
 
-          <button
-            className="btn-salvar"
-            onClick={handleSubmit}
-          >
+          <button className="btn-salvar" onClick={handleSubmit}>
             Criar Turma
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

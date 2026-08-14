@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
+import { useToast } from "../../context/ToastContext";
 import logo from "../../assets/morimitsu.png";
 import useToast from "../../components/Toast/useToast";
 import "./EsqueciSenha.css";
@@ -13,34 +14,38 @@ function EsqueciSenha() {
   const [confirmacao, setConfirmacao] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const { addToast } = useToast();
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     if (!email) {
-      mostrar("Informe seu email.", "error");
+      addToast("Informe seu email.", "error");
       return;
     }
 
     if (!novaSenha || !confirmacao) {
-      mostrar("Preencha a nova senha e a confirmação.", "error");
+      addToast("Preencha a nova senha e a confirmação.", "error");
       return;
     }
 
     if (novaSenha !== confirmacao) {
-      mostrar("As senhas não coincidem.", "error");
+      addToast("As senhas não coincidem.", "error");
       return;
     }
 
     setCarregando(true);
     try {
       await authService.resetarSenha(email, novaSenha);
-      mostrar("Senha redefinida com sucesso!", "success");
-      setTimeout(() => navigate("/login"), 2500);
+      addToast(
+        "Senha redefinida com sucesso! Faça login com a nova senha.",
+        "success",
+      );
+      setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
-      mostrar(
+      addToast(
         error?.response?.data?.message || "Erro ao redefinir a senha.",
-        "error"
+        "error",
       );
     } finally {
       setCarregando(false);

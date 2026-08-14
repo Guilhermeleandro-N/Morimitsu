@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { atualizarAluno } from "../../services/alunoService";
+import { useToast } from "../../context/ToastContext";
 
 import addUser from "../../assets/addUser.png";
 import useToast from "../../components/Toast/useToast";
@@ -25,12 +26,7 @@ const EditarAluno = () => {
       : "",
   });
 
-  const { mostrar } = useToast();
-
-  // Proteção caso entre direto na rota
-  if (!alunoData) {
-    return <h2>Aluno não encontrado</h2>;
-  }
+  const { addToast } = useToast();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -49,17 +45,17 @@ const EditarAluno = () => {
       );
 
       if (response.status === 200) {
-        mostrar("Aluno atualizado com sucesso!", "success");
+        addToast("Aluno atualizado com sucesso!", "success");
 
         setTimeout(() => {
           navigate(-1);
         }, 2500);
       } else {
-        mostrar("Erro ao atualizar aluno.", "error");
+        addToast("Erro ao atualizar aluno.", "error");
       }
     } catch (error) {
       console.log(error);
-      mostrar("Erro ao conectar com o servidor.", "error");
+      addToast("Erro ao conectar com o servidor.", "error");
     }
   }
 
@@ -210,7 +206,6 @@ const EditarAluno = () => {
                 Salvar Alterações
               </button>
             </div>
-
           </div>
         </form>
       </div>

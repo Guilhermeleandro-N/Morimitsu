@@ -12,7 +12,7 @@ import { listarPerfisDoUsuario } from "../../services/authorizationService";
 
 import { FaEye, FaTrash, FaArchive } from "react-icons/fa";
 
-import "./ListarProfessores.css";
+import "../ListarAlunos/ListarAlunos.css";
 
 function ListarProfessores() {
   const navigate = useNavigate();
@@ -107,6 +107,20 @@ function ListarProfessores() {
     }
   }
 
+  function getFaixaClass(faixa) {
+    switch (faixa?.toLowerCase()) {
+      case "branca": return "faixa branca";
+      case "amarela": return "faixa amarela";
+      case "laranja": return "faixa laranja";
+      case "verde": return "faixa verde";
+      case "azul": return "faixa azul";
+      case "roxa": return "faixa roxa";
+      case "marrom": return "faixa marrom";
+      case "preta": return "faixa preta";
+      default: return "faixa";
+    }
+  }
+
   return (
     <div className="listar-container">
       <div className="page-header">
@@ -153,11 +167,15 @@ function ListarProfessores() {
             <tbody>
               {professoresFiltrados.map((professor) => (
                 <tr key={professor.id}>
-                  <td>{professor.nome}</td>
+                  <td className="nome-aluno">{professor.nome}</td>
 
-                  <td>{professor.faixa}</td>
+                  <td>
+                    <span className={getFaixaClass(professor.faixa)}>
+                      {professor.faixa || "—"}
+                    </span>
+                  </td>
 
-                  <td>{professor.grau}</td>
+                  <td>{professor.grau ?? 0}</td>
 
                   <td>{professor.frequencia ?? 0}</td>
 

@@ -144,9 +144,14 @@
 }
 
 .status-badge {
-  height: 18px;
-  padding-right: 4px;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
   border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+  flex-shrink: 0;
 }
 
 .status-badge.status-ativo {

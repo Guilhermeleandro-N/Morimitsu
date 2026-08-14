@@ -1,16 +1,17 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/morimitsu.png";
 import "./Login.css";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
   const { user } = useContext(AuthContext);
+  const { addToast } = useToast();
 
   console.log(user);
 
@@ -68,7 +69,6 @@ const Login = () => {
           </div>
           <button type="submit">Entrar</button>
         </form>
-        {message && <p className="form-error">{message}</p>}
       </div>
       <a
         className="forgot-password"

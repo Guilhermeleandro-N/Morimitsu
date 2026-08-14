@@ -1,5 +1,5 @@
 import React from "react";
-import "./PerfilProfessor.css";
+import "../PerfilAluno/PerfilAluno.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 
@@ -97,9 +97,7 @@ const PerfilProfessor = () => {
         grau: professor.grau ?? usuario.grau ?? 0,
       });
       setPrimeiraLetra(
-        (professor.nome || usuario.nome || "")
-          .charAt(0)
-          .toUpperCase(),
+        (professor.nome || usuario.nome || "").charAt(0).toUpperCase(),
       );
       if (professor.id) {
         await buscarTreinos(professor.id);
@@ -154,11 +152,13 @@ const PerfilProfessor = () => {
           <div className="avatar-container">
             <div className="avatar-placeholder">{primeiraLetra}</div>
           </div>
-          <h3 className="student-name">{dados.nome || "Professor"}</h3>
+          <h3 className="perfil-aluno-student-name">
+            {dados.nome || "Professor"}
+          </h3>
           <RoleGuard allowedRoutes={["admin"]}>
             <button
               className={`perfil-aluno-status-badge ${String(
-                dados.status || "",
+                dados.status || "ENABLED",
               ).toLowerCase()}`}
               onClick={handleToggleStatus}
               style={{ cursor: "pointer", border: "none" }}
@@ -169,7 +169,7 @@ const PerfilProfessor = () => {
           {user && !user.roles.includes("admin") && (
             <span
               className={`perfil-aluno-status-badge ${String(
-                dados.status || "",
+                dados.status || "ENABLED",
               ).toLowerCase()}`}
             >
               {dados.status === "ENABLED" ? "Ativo" : "Inativo"}
@@ -229,9 +229,7 @@ const PerfilProfessor = () => {
                         />
                       </div>
                     </td>
-                    <td>
-                      {new Date(item.data).toLocaleTimeString("pt-BR")}
-                    </td>
+                    <td>{new Date(item.data).toLocaleTimeString("pt-BR")}</td>
                     <td>--</td>
                     <td>{nomesTurmas[item.turma_id] || "--"}</td>
                   </tr>

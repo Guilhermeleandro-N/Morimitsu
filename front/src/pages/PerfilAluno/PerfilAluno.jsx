@@ -18,11 +18,13 @@ import {
 } from "../../services/frequenciaService";
 import RoleGuard from '../../routes/RoleGuard';
 import { AuthContext } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import GraduarAlunoModal from "../../components/GraduarAluno/GraduarAlunoModal.jsx";
 
 const PerfilAluno = () => {
 
   const { user } = useContext(AuthContext);
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.id;
@@ -74,7 +76,7 @@ const PerfilAluno = () => {
         )
       );
 
-      alert("Erro ao atualizar frequência.");
+      addToast("Erro ao atualizar frequência.", "error");
 
     }
 
@@ -169,7 +171,7 @@ const PerfilAluno = () => {
 
   async function handleGraduarAluno(dados) {
     if (!alunoData?.id) {
-      alert("Dados do aluno não carregados. Aguarde.");
+      addToast("Dados do aluno não carregados. Aguarde.", "error");
       return;
     }
     try {
@@ -178,13 +180,15 @@ const PerfilAluno = () => {
         dados.faixa,
         dados.grau_faixa
       );
+      addToast("Aluno graduado com sucesso!", "success");
       await buscarAluno();
       setModalGraduacaoOpen(false);
     } catch (error) {
       console.error(error);
-      alert(
+      addToast(
         error?.response?.data?.message ||
-        "Erro ao graduar aluno."
+        "Erro ao graduar aluno.",
+        "error"
       );
     }
   }

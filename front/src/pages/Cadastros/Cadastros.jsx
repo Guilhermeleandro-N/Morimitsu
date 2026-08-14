@@ -4,10 +4,8 @@ import { criarUser } from "../../services/userService";
 import useToast from "../../components/Toast/useToast";
 import { criarAlunoExistente } from "../../services/alunoService";
 import { criarProfessor } from "../../services/professorService";
-import {
-  listarPerfisDoUsuario,
-  listarUsuarios,
-} from "../../services/authorizationService";
+import { listarPerfisDoUsuario } from "../../services/authorizationService";
+import { useToast } from "../../context/ToastContext";
 import "./Cadastros.css";
 
 const FAIXAS = [
@@ -39,6 +37,7 @@ function Cadastros() {
   const [dataNascimento, setDataNascimento] = useState("");
 
   const [salvando, setSalvando] = useState(false);
+  const { addToast } = useToast();
 
   const { mostrar } = useToast();
 
@@ -132,7 +131,6 @@ function Cadastros() {
     setFaixa("");
     setGrau("");
     setFrequencia("");
-    setDataNascimento("");
     setNovoUsuario(false);
     setNovoNome("");
     setNovoEmail("");
@@ -155,7 +153,7 @@ function Cadastros() {
     if (novoUsuario) {
       // Valida campos do novo usuário
       if (!novoNome.trim() || !novoEmail.trim() || !novoSenha.trim()) {
-        mostrar("Preencha nome, e-mail e senha do novo usuário.", "error");
+        addToast("Preencha nome, e-mail e senha do novo usuário.", "error");
         return;
       }
 
@@ -174,20 +172,20 @@ function Cadastros() {
           const msg =
             userResponse?.message ||
             "Erro ao criar usuário. Verifique os dados.";
-          mostrar(msg, "error");
+          addToast(msg, "error");
           setSalvando(false);
           return;
         }
 
         usuarioId = userResponse.id;
-      } catch {
-        mostrar("Erro ao criar usuário. Tente novamente.", "error");
+      } catch (error) {
+        addToast("Erro ao criar usuário. Tente novamente.", "error");
         setSalvando(false);
         return;
       }
     } else {
       if (!usuarioSelecionado) {
-        mostrar('Selecione um usuário ou ative "Novo usuário".', "error");
+        addToast('Selecione um usuário ou ative "Novo usuário".', "error");
         return;
       }
       usuarioId = usuarioSelecionado.id;
@@ -219,12 +217,12 @@ function Cadastros() {
         : "Professor cadastrado com sucesso!";
 
       limparFormulario();
-      mostrar(msgSucesso, "success");
+      addToast(msgSucesso, "success");
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
         "Erro ao cadastrar. Verifique os dados.";
-      mostrar(msg, "error");
+      addToast(msg, "error");
     } finally {
       setSalvando(false);
     }
@@ -487,7 +485,6 @@ function Cadastros() {
           </div>
         </form>
       </div>
-
     </div>
   );
 }
