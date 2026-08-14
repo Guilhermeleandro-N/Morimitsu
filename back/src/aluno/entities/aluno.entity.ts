@@ -50,4 +50,7 @@ export class AlunoEntity {
     description: 'Status do vínculo na turma (S=ativo, N=inativo)',
   })
   frequente?: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  arquivado_at?: Date | null;
 }
