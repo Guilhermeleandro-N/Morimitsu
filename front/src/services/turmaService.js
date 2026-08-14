@@ -198,6 +198,16 @@ export async function atualizarStatusAlunoNaTurma(turmaId, alunoId, frequente) {
   }
 }
 
+export async function atualizarArquivadoAlunoNaTurma(turmaId, alunoId, arquivado) {
+  try {
+    const response = await api.patch(`/turma/${turmaId}/aluno/${alunoId}`, { arquivado });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao arquivar/reativar aluno na turma:", error);
+    throw error;
+  }
+}
+
 export async function listarProfessoresDaTurma(
   turmaId
 ) {

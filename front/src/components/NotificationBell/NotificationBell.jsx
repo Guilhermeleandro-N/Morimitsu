@@ -74,12 +74,6 @@ function NotificationBell() {
     }
   }
 
-  useEffect(() => {
-    if (filtro === "ALUNO") {
-      carregarAvisosPainel();
-    }
-  }, [filtro]);
-
   const notificacoesFiltradas = useMemo(() => {
     if (filtro === "ALUNO") {
       return painelAvisos;
@@ -87,7 +81,7 @@ function NotificationBell() {
     if (filtro === "TURMA") {
       return notificacoes.filter((n) => n.tipo === "treino");
     }
-    return notificacoes;
+    return [...notificacoes, ...painelAvisos];
   }, [notificacoes, painelAvisos, filtro]);
 
   async function carregar() {
@@ -99,6 +93,7 @@ function NotificationBell() {
       ]);
       setNotificacoes(Array.isArray(lista) ? lista : []);
       setNaoLidas(count);
+      await carregarAvisosPainel();
     } catch (error) {
       console.error("Erro ao carregar notificações:", error);
     } finally {
