@@ -21,13 +21,22 @@ function Sidebar({ isOpen, setIsOpen }) {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const closeSidebar = () => setIsOpen(false);
+
+  const handleNavigate = (path, options) => {
+    closeSidebar();
+    navigate(path, options);
+  };
+
   const handleLogout = () => {
+    closeSidebar();
     logout();
     navigate("login");
   };
 
   function abrirMeuPerfil() {
     if (!user) return;
+    closeSidebar();
     const roles = user.roles || [];
     if (roles.includes("professor")) {
       navigate("/perfilProfessor", { state: { id: user.userId } });
@@ -60,40 +69,24 @@ function Sidebar({ isOpen, setIsOpen }) {
       <nav>
         <RoleGuard allowedRoutes={["admin", "professor"]}>
           <ul className="nav-section">
-            <li
-              onClick={() => {
-                navigate("listarAluno");
-              }}
-            >
+            <li onClick={() => handleNavigate("/listarAluno")}>
               <Users size={22} className="menu-icon" />
               <span>Lista de Alunos</span>
             </li>
 
             <RoleGuard allowedRoutes={["admin"]}>
-              <li
-                onClick={() => {
-                  navigate("/listarProfessores");
-                }}
-              >
+              <li onClick={() => handleNavigate("/listarProfessores")}>
                 <GraduationCap size={22} className="menu-icon" />
                 <span>Lista de Professores</span>
               </li>
             </RoleGuard>
 
-            <li
-              onClick={() => {
-                navigate("/painelProfessor");
-              }}
-            >
+            <li onClick={() => handleNavigate("/painelProfessor")}>
               <LayoutDashboard size={22} className="menu-icon" />
               <span>Painel</span>
             </li>
 
-            <li
-              onClick={() => {
-                navigate("cadastros");
-              }}
-            >
+            <li onClick={() => handleNavigate("/cadastros")}>
               <UserRoundPlus size={22} className="menu-icon" />
               <span>Cadastros</span>
             </li>
@@ -104,11 +97,7 @@ function Sidebar({ isOpen, setIsOpen }) {
 
         <ul className="nav-section">
           <RoleGuard allowedRoutes={["admin", "professor", "aluno"]}>
-            <li
-              onClick={() => {
-                navigate("Turmas");
-              }}
-            >
+            <li onClick={() => handleNavigate("/Turmas")}>
               <GraduationCap size={22} className="menu-icon" />
               <span>Minhas Turmas</span>
             </li>
@@ -118,22 +107,14 @@ function Sidebar({ isOpen, setIsOpen }) {
             allowedRoutes={["admin", "professor", "aluno"]}
             permissoes={["screen.treino.visualizar"]}
           >
-            <li
-              onClick={() => {
-                navigate("/meusTreinos");
-              }}
-            >
+            <li onClick={() => handleNavigate("/meusTreinos")}>
               <CalendarClock size={22} className="menu-icon" />
               <span>Meus Treinos</span>
             </li>
           </RoleGuard>
 
           <RoleGuard allowedRoutes={["admin", "professor"]}>
-            <li
-              onClick={() => {
-                navigate("/turmasArquivadas");
-              }}
-            >
+            <li onClick={() => handleNavigate("/turmasArquivadas")}>
               <Archive size={22} className="menu-icon" />
               <span>Turmas Arquivadas</span>
             </li>
@@ -151,11 +132,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           </RoleGuard>
 
           <RoleGuard allowedRoutes={["admin"]}>
-            <li
-              onClick={() => {
-                navigate("/concederPermissoes");
-              }}
-            >
+            <li onClick={() => handleNavigate("/concederPermissoes")}>
               <ShieldCheck size={22} className="menu-icon" />
               <span>Conceder Permissões</span>
             </li>

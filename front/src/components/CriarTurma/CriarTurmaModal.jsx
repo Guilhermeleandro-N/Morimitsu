@@ -52,12 +52,56 @@ function CriarTurmaModal({ onClose, onCreate }) {
 
   }
 
+  function validarFormulario() {
+    const nome = formData.nome.trim();
+    const inicio = formData.horario_inicio;
+    const fim = formData.horario_fim;
+    const diasSelecionados = [
+      formData.segunda,
+      formData.terca,
+      formData.quarta,
+      formData.quinta,
+      formData.sexta,
+      formData.sabado,
+      formData.domingo,
+    ].some(Boolean);
+
+    if (!nome) {
+      addToast("Preencha o nome da turma.", "error");
+      return false;
+    }
+
+    if (!inicio || !fim) {
+      addToast("Informe o horário de início e fim da turma.", "error");
+      return false;
+    }
+
+    if (!diasSelecionados) {
+      addToast("Selecione ao menos um dia da semana.", "error");
+      return false;
+    }
+
+    const inicioEmMinutos = Number(inicio.split(":")[0]) * 60 + Number(inicio.split(":")[1]);
+    const fimEmMinutos = Number(fim.split(":")[0]) * 60 + Number(fim.split(":")[1]);
+
+    if (fimEmMinutos <= inicioEmMinutos) {
+      addToast("O horário de fim deve ser maior que o de início.", "error");
+      return false;
+    }
+
+    return true;
+  }
+
   async function handleSubmit() {
+
+    if (!validarFormulario()) {
+      return;
+    }
 
     try {
 
       const response = await criarTurma(
-        formData.nome,
+        formData.nome.trim(),
 
         criarDataHora(formData.horario_inicio),
 
@@ -114,7 +158,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
           {/* NOME */}
           <div className="input-group full-width">
 
-            <label>Nome da turma</label>
+            <label>
+              Nome da turma
+              <span className="required-mark">*</span>
+            </label>
 
             <input
               type="text"
@@ -122,6 +169,7 @@ function CriarTurmaModal({ onClose, onCreate }) {
               placeholder="Ex: Turma Quinta à noite"
               value={formData.nome}
               onChange={handleChange}
+              required
             />
 
           </div>
@@ -129,13 +177,17 @@ function CriarTurmaModal({ onClose, onCreate }) {
           {/* HORÁRIO INÍCIO */}
           <div className="input-group">
 
-            <label>Horário início</label>
+            <label>
+              Horário início
+              <span className="required-mark">*</span>
+            </label>
 
             <input
               type="time"
               name="horario_inicio"
               value={formData.horario_inicio}
               onChange={handleChange}
+              required
             />
 
           </div>
@@ -143,13 +195,17 @@ function CriarTurmaModal({ onClose, onCreate }) {
           {/* HORÁRIO FIM */}
           <div className="input-group">
 
-            <label>Horário fim</label>
+            <label>
+              Horário fim
+              <span className="required-mark">*</span>
+            </label>
 
             <input
               type="time"
               name="horario_fim"
               value={formData.horario_fim}
               onChange={handleChange}
+              required
             />
 
           </div>
@@ -157,7 +213,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
           {/* DIAS DA SEMANA */}
           <div className="input-group full-width">
 
-            <label>Dias da semana</label>
+            <label>
+              Dias da semana
+              <span className="required-mark">*</span>
+            </label>
 
             <div className="week-buttons">
 
