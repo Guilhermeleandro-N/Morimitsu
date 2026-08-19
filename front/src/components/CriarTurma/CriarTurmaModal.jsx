@@ -5,7 +5,6 @@ import { criarTurma } from "../../services/turmaService";
 import { useToast } from "../../context/ToastContext";
 
 function CriarTurmaModal({ onClose, onCreate }) {
-
   const [formData, setFormData] = useState({
     nome: "",
     horario_inicio: "",
@@ -23,20 +22,15 @@ function CriarTurmaModal({ onClose, onCreate }) {
   const { addToast } = useToast();
 
   function handleChange(e) {
-
     const { name, value, type, checked } = e.target;
 
     setFormData({
       ...formData,
-      [name]: type === "checkbox"
-        ? checked
-        : value,
+      [name]: type === "checkbox" ? checked : value,
     });
-
   }
 
   function criarDataHora(hora) {
-
     if (!hora) return null;
 
     const hoje = new Date();
@@ -49,7 +43,6 @@ function CriarTurmaModal({ onClose, onCreate }) {
     hoje.setUTCMilliseconds(0);
 
     return hoje;
-
   }
 
   function validarFormulario() {
@@ -81,8 +74,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
       return false;
     }
 
-    const inicioEmMinutos = Number(inicio.split(":")[0]) * 60 + Number(inicio.split(":")[1]);
-    const fimEmMinutos = Number(fim.split(":")[0]) * 60 + Number(fim.split(":")[1]);
+    const inicioEmMinutos =
+      Number(inicio.split(":")[0]) * 60 + Number(inicio.split(":")[1]);
+    const fimEmMinutos =
+      Number(fim.split(":")[0]) * 60 + Number(fim.split(":")[1]);
 
     if (fimEmMinutos <= inicioEmMinutos) {
       addToast("O horário de fim deve ser maior que o de início.", "error");
@@ -93,13 +88,11 @@ function CriarTurmaModal({ onClose, onCreate }) {
   }
 
   async function handleSubmit() {
-
     if (!validarFormulario()) {
       return;
     }
 
     try {
-
       const response = await criarTurma(
         formData.nome.trim(),
 
@@ -113,14 +106,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
         formData.quinta,
         formData.sexta,
         formData.sabado,
-        formData.domingo
+        formData.domingo,
       );
 
-      if (
-        response?.status === 201 ||
-        response?.status === 200
-      ) {
-
+      if (response?.status === 201 || response?.status === 200) {
         addToast("Turma criada com sucesso!", "success");
 
         if (onCreate) {
@@ -129,35 +118,24 @@ function CriarTurmaModal({ onClose, onCreate }) {
 
         setTimeout(() => {
           onClose();
-        }, 1000);
-
+        }, 2500);
       } else {
-
         addToast("Erro ao criar turma.", "error");
-
       }
-
     } catch (error) {
-
       console.log(error);
       addToast("Erro ao conectar com o servidor.", "error");
-
     }
-
   }
 
   return (
     <div className="modal-overlay">
-
       <div className="modal-container">
-
         <h2>Criar nova turma</h2>
 
         <div className="modal-form">
-
           {/* NOME */}
           <div className="input-group full-width">
-
             <label>
               Nome da turma
               <span className="required-mark">*</span>
@@ -171,12 +149,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
               onChange={handleChange}
               required
             />
-
           </div>
 
           {/* HORÁRIO INÍCIO */}
           <div className="input-group">
-
             <label>
               Horário início
               <span className="required-mark">*</span>
@@ -189,12 +165,10 @@ function CriarTurmaModal({ onClose, onCreate }) {
               onChange={handleChange}
               required
             />
-
           </div>
 
           {/* HORÁRIO FIM */}
           <div className="input-group">
-
             <label>
               Horário fim
               <span className="required-mark">*</span>
@@ -207,19 +181,16 @@ function CriarTurmaModal({ onClose, onCreate }) {
               onChange={handleChange}
               required
             />
-
           </div>
 
           {/* DIAS DA SEMANA */}
           <div className="input-group full-width">
-
             <label>
               Dias da semana
               <span className="required-mark">*</span>
             </label>
 
             <div className="week-buttons">
-
               <button
                 type="button"
                 className={formData.segunda ? "active-day" : ""}
@@ -310,33 +281,20 @@ function CriarTurmaModal({ onClose, onCreate }) {
               >
                 DOM
               </button>
-
             </div>
-
           </div>
-
         </div>
 
         <div className="modal-buttons">
-
-          <button
-            className="btn-sair"
-            onClick={onClose}
-          >
+          <button className="btn-sair" onClick={onClose}>
             Sair
           </button>
 
-          <button
-            className="btn-salvar"
-            onClick={handleSubmit}
-          >
+          <button className="btn-salvar" onClick={handleSubmit}>
             Criar Turma
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }

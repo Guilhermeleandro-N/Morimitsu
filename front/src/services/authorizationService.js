@@ -82,10 +82,30 @@ export async function removerPerfil(userId, perfilId) {
   }
 }
 
-export async function listarUsuarios() {
+export async function listarUsuarios(limite = 100) {
   try {
-    const response = await api.get("user");
-    return response.data?.data ?? response.data;
+    const primeira = await api.get("user", { params: { page: 1, limit: limite } });
+    const body = primeira.data;
+    const lista = Array.isArray(body) ? body : (body?.data ?? []);
+    const totalPages = Array.isArray(body)
+      ? 1
+      : (body?.meta?.totalPages ??
+        Math.ceil((body?.meta?.total ?? lista.length) / limite));
+
+    if (totalPages <= 1) return lista;
+
+    const demais = await Promise.all(
+      Array.from({ length: totalPages - 1 }, (_, i) =>
+        api
+          .get("user", { params: { page: i + 2, limit: limite } })
+          .then((r) => {
+            const b = r.data;
+            return Array.isArray(b) ? b : (b?.data ?? []);
+          })
+      )
+    );
+
+    return demais.reduce((acc, dados) => acc.concat(dados), lista);
   } catch (error) {
     console.error("Erro ao listar usuários:", error);
     throw error;

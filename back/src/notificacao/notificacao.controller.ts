@@ -74,4 +74,15 @@ export class NotificacaoController {
   ): Promise<NotificacaoEntity> {
     return this.service.marcarComoLida(id, usuario.sub, usuario.roles ?? []);
   }
+
+  @Patch('marcar-todas-lidas')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(PermissionsGuard)
+  @Permissions('notification.read')
+  @ApiOperation({ summary: 'Marcar todas as notificações como lidas' })
+  async marcarTodasComoLidas(
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<{ atualizadas: number }> {
+    return this.service.marcarTodasComoLidas(usuario.sub, usuario.roles ?? []);
+  }
 }

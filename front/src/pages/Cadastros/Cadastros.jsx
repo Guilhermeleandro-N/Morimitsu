@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import api from "../../api/axios";
 import { criarUser } from "../../services/userService";
-import { criarAlunoExistente } from "../../services/alunoService";
+import { criarAlunoExistente, BuscaAlunoPorUserId } from "../../services/alunoService";
 import { criarProfessor } from "../../services/professorService";
-import { listarPerfisDoUsuario } from "../../services/authorizationService";
+import { listarPerfisDoUsuario, listarUsuarios } from "../../services/authorizationService";
 import { useToast } from "../../context/ToastContext";
 import "./Cadastros.css";
 
@@ -34,6 +33,7 @@ function Cadastros() {
   const [faixa, setFaixa] = useState("");
   const [grau, setGrau] = useState("");
   const [frequencia, setFrequencia] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
 
   const [salvando, setSalvando] = useState(false);
   const { addToast } = useToast();
@@ -64,10 +64,7 @@ function Cadastros() {
 
   async function carregarUsuarios() {
     try {
-      const response = await api.get("user");
-      const body = response.data;
-      // API retorna { data: [...], meta: { total, page, ... } }
-      const lista = body?.data ?? body?.users ?? body;
+      const lista = await listarUsuarios();
       const array = Array.isArray(lista) ? lista : [];
 
       // Filtra administradores — admin não pode ser cadastrado como aluno/professor
@@ -118,11 +115,27 @@ function Cadastros() {
     }, 300);
   }
 
-  function selecionarUsuario(usr) {
+  async function selecionarUsuario(usr) {
     setUsuarioSelecionado(usr);
     setBusca(usr.nome);
     setDropdownAberto(false);
     setSugestoes([]);
+    try {
+      const aluno = await BuscaAlunoPorUserId(usr.id);
+      if (aluno?.id) {
+        setFaixa((aluno.faixa || "").toUpperCase());
+        setGrau(aluno.grau_faixa ?? "");
+        setFrequencia(aluno.frequencia_atual ?? "");
+      } else {
+        setFaixa("");
+        setGrau("");
+        setFrequencia("");
+      }
+    } catch {
+      setFaixa("");
+      setGrau("");
+      setFrequencia("");
+    }
   }
 
   function limparFormulario() {
@@ -165,6 +178,7 @@ function Cadastros() {
           novoEmail.trim(),
           novoSenha,
           novoTelefone.trim(),
+          dataNascimento,
         );
 
         if (!userResponse || !userResponse.id) {
@@ -177,7 +191,7 @@ function Cadastros() {
         }
 
         usuarioId = userResponse.id;
-      } catch (error) {
+      } catch {
         addToast("Erro ao criar usuário. Tente novamente.", "error");
         setSalvando(false);
         return;
@@ -200,9 +214,15 @@ function Cadastros() {
           faixa,
           parseInt(grau) || 0,
           parseInt(frequencia) || 0,
+          dataNascimento,
         );
       } else {
-        await criarProfessor(usuarioId, faixa, parseInt(grau) || 0);
+        await criarProfessor(
+          usuarioId,
+          faixa,
+          parseInt(grau) || 0,
+          dataNascimento,
+        );
       }
 
       const msgSucesso = isAlunoMode
@@ -328,12 +348,8 @@ function Cadastros() {
             )}
           </div>
 
-          {/* E-mail | Senha — mesmo tamanho do nome */}
-          <div
-            className={
-              novoUsuario ? "form__group" : "form__group form__group--full"
-            }
-          >
+          {/* E-mail */}
+          <div className="form__group form__group--full">
             <label htmlFor={novoUsuario ? "novoEmail" : "email"}>E-mail</label>
             {novoUsuario ? (
               <input
@@ -355,7 +371,7 @@ function Cadastros() {
             )}
           </div>
 
-          {/* Senha — ao lado do e-mail ao cadastrar o usuário junto */}
+          {/* Senha | Faixa Atual */}
           {novoUsuario && (
             <div className="form__group">
               <label htmlFor="novoSenha">Senha</label>
@@ -370,7 +386,6 @@ function Cadastros() {
             </div>
           )}
 
-          {/* Faixa | Grau */}
           <div className="form__group">
             <label htmlFor="faixa">
               {isAlunoMode ? "Faixa Atual" : "Faixa"}
@@ -383,7 +398,7 @@ function Cadastros() {
             >
               <option value="">Selecione</option>
               {FAIXAS.map((f) => (
-                <option key={f.nome} value={f.nome}>
+                <option key={f.nome} value={f.nome.toUpperCase()}>
                   {f.nome}
                 </option>
               ))}
@@ -392,12 +407,15 @@ function Cadastros() {
               <span
                 className="faixa-cor"
                 style={{
-                  backgroundColor: FAIXAS.find((f) => f.nome === faixa)?.cor,
+                  backgroundColor: FAIXAS.find(
+                    (f) => f.nome.toUpperCase() === faixa
+                  )?.cor,
                 }}
               />
             )}
           </div>
 
+          {/* Grau Atual | Telefone */}
           <div className="form__group">
             <label htmlFor="grau">{isAlunoMode ? "Grau Atual" : "Grau"}</label>
             <input
@@ -412,7 +430,6 @@ function Cadastros() {
             />
           </div>
 
-          {/* Telefone | Frequência Atual */}
           <div className="form__group">
             <label htmlFor={novoUsuario ? "novoTelefone" : "telefone"}>
               Telefone
@@ -436,6 +453,7 @@ function Cadastros() {
             )}
           </div>
 
+          {/* Frequência | Data de Nascimento */}
           {isAlunoMode && (
             <div className="form__group">
               <label htmlFor="frequencia">Frequência Atual</label>
@@ -447,6 +465,18 @@ function Cadastros() {
                 value={frequencia}
                 onChange={(e) => setFrequencia(e.target.value)}
                 required
+              />
+            </div>
+          )}
+
+          {novoUsuario && (
+            <div className="form__group">
+              <label htmlFor="dataNascimento">Data de Nascimento</label>
+              <input
+                type="date"
+                id="dataNascimento"
+                value={dataNascimento}
+                onChange={(e) => setDataNascimento(e.target.value)}
               />
             </div>
           )}
@@ -468,7 +498,6 @@ function Cadastros() {
               {salvando ? "Salvando..." : "Salvar"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

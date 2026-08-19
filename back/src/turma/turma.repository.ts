@@ -285,11 +285,16 @@ export class TurmaRepository {
     dto: UpdateAlunoTurmaDto,
   ): Promise<void> {
     try {
+      const data: { frequente?: string; arquivado_at?: Date | null } = {};
+      if (dto.frequente !== undefined) data.frequente = dto.frequente;
+      if (dto.arquivado !== undefined) {
+        data.arquivado_at = dto.arquivado ? new Date() : null;
+      }
       await this.prisma.alunoTurma.update({
         where: {
           aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId },
         },
-        data: { frequente: dto.frequente },
+        data,
       });
     } catch (e) {
       if (
@@ -356,6 +361,7 @@ export class TurmaRepository {
           entity.faixa = v.aluno.faixa;
           entity.usuarioId = v.aluno.usuarioId;
           entity.frequente = v.frequente;
+          entity.arquivado_at = v.arquivado_at;
           return entity;
         }),
         total,

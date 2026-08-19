@@ -14,6 +14,9 @@ export class NotificacaoEntity {
   mensagem!: string;
 
   @ApiProperty()
+  tipo!: string;
+
+  @ApiProperty()
   lida!: boolean;
 
   @ApiProperty()

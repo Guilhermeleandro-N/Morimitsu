@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { atualizarAluno } from "../../services/alunoService";
+import { atualizarAluno, BuscaAlunoPorUserId } from "../../services/alunoService";
 import { useToast } from "../../context/ToastContext";
 
 import addUser from "../../assets/addUser.png";
@@ -13,24 +13,39 @@ const EditarAluno = () => {
 
   const alunoData = location.state;
 
-  // Proteção caso entre direto na rota
-  if (!alunoData) {
-    return <h2>Aluno não encontrado</h2>;
-  }
-
   const [form, setForm] = useState({
-    nome: alunoData.nome || "",
-    email: alunoData.email || "",
-    faixa: alunoData.faixa || "",
-    telefone: alunoData.telefone || "",
-    grau: alunoData.grau_faixa || "",
-    frequencia: alunoData.frequencia_atual || "",
-    data_nascimento: alunoData.data_nascimento
+    nome: alunoData?.nome || "",
+    email: alunoData?.email || "",
+    faixa: (alunoData?.faixa || "").toString().trim().toUpperCase(),
+    telefone: alunoData?.telefone || "",
+    grau: alunoData?.grau_faixa ?? "",
+    frequencia: alunoData?.frequencia_atual || "",
+    data_nascimento: alunoData?.data_nascimento
       ? String(alunoData.data_nascimento).split("T")[0]
       : "",
   });
 
   const { addToast } = useToast();
+
+  useEffect(() => {
+    async function carregarFaixaGrau() {
+      if (!alunoData?.usuarioId) return;
+      try {
+        const aluno = await BuscaAlunoPorUserId(alunoData.usuarioId);
+        if (aluno?.id) {
+          setForm((prev) => ({
+            ...prev,
+            faixa: (aluno.faixa || "").toString().trim().toUpperCase(),
+            grau: aluno.grau_faixa ?? prev.grau,
+            frequencia: aluno.frequencia_atual ?? prev.frequencia,
+          }));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar faixa do aluno:", error);
+      }
+    }
+    carregarFaixaGrau();
+  }, [alunoData?.usuarioId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -53,7 +68,7 @@ const EditarAluno = () => {
 
         setTimeout(() => {
           navigate(-1);
-        }, 1500);
+        }, 2500);
       } else {
         addToast("Erro ao atualizar aluno.", "error");
       }
@@ -170,15 +185,15 @@ const EditarAluno = () => {
                 onChange={handleChange}
               >
                 <option value="">Selecione</option>
-                <option value="branca">Branca</option>
-                <option value="cinza">Cinza</option>
-                <option value="amarela">Amarela</option>
-                <option value="laranja">Laranja</option>
-                <option value="verde">Verde</option>
-                <option value="azul">Azul</option>
-                <option value="roxa">Roxa</option>
-                <option value="marrom">Marrom</option>
-                <option value="preta">Preta</option>
+                <option value="BRANCA">Branca</option>
+                <option value="CINZA">Cinza</option>
+                <option value="AMARELA">Amarela</option>
+                <option value="LARANJA">Laranja</option>
+                <option value="VERDE">Verde</option>
+                <option value="AZUL">Azul</option>
+                <option value="ROXA">Roxa</option>
+                <option value="MARROM">Marrom</option>
+                <option value="PRETA">Preta</option>
               </select>
             </div>
 

@@ -61,6 +61,38 @@
   border-bottom: 1px solid #ececec;
 }
 
+.bell-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #777;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filter-btn:hover {
+  border-color: #c41e1e;
+  color: #c41e1e;
+}
+
+.filter-btn.ativo {
+  background: #c41e1e;
+  border-color: #c41e1e;
+  color: #fff;
+}
+
 .bell-header h3 {
   font-size: 16px;
   margin: 0;
@@ -99,11 +131,16 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.4;
-  color: #333;
+  color: #555;
+  font-weight: 400;
+}
+
+.bell-item.nao-lida {
+  background: #fff7f7;
 }
 
 .bell-item.nao-lida .bell-mensagem {
-  font-weight: 600;
+  font-weight: 700;
   color: #111;
 }
 

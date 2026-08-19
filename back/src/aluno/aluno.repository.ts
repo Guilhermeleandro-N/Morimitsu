@@ -153,6 +153,7 @@ export class AlunoRepository {
         data: vinculos.map((v) => {
           const entity = this.toEntity(v.aluno);
           entity.frequente = v.frequente;
+          entity.arquivado_at = v.arquivado_at;
           return entity;
         }),
         total,

@@ -35,12 +35,15 @@ function EsqueciSenha() {
     setCarregando(true);
     try {
       await authService.resetarSenha(email, novaSenha);
-      addToast("Senha redefinida com sucesso! Faça login com a nova senha.", "success");
+      addToast(
+        "Senha redefinida com sucesso! Faça login com a nova senha.",
+        "success",
+      );
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       addToast(
         error?.response?.data?.message || "Erro ao redefinir a senha.",
-        "error"
+        "error",
       );
     } finally {
       setCarregando(false);

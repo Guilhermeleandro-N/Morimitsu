@@ -145,6 +145,7 @@ model AlunoTurma {
   turma_id   String
   frequente  String          @default("N")
   frequencia_atual Int      @default(0)
+  arquivado_at DateTime?
   aluno      Aluno           @relation(fields: [aluno_id], references: [id])
   turma      Turma           @relation(fields: [turma_id], references: [id])
 
@@ -184,6 +185,7 @@ model Notificacao {
   professor_id String
   aluno_id     String
   mensagem     String
+  tipo         String    @default("GENERICA")
   lida         Boolean   @default(false)
   created_at   DateTime  @default(now())
   professor    Professor @relation(fields: [professor_id], references: [id])

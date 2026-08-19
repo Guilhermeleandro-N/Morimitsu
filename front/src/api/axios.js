@@ -22,6 +22,7 @@ api.interceptors.response.use(
 
         if (
             error.response?.status === 401 &&
+            originalRequest?.url !== "auth/login" &&
             !originalRequest?._retry
         ){
             originalRequest._retry = true;
@@ -35,6 +36,8 @@ api.interceptors.response.use(
                 }
             } catch (refreshError) {
                 authService.clearTokens();
+                localStorage.removeItem("user");
+                window.dispatchEvent(new Event("session-expired"));
                 return Promise.reject(refreshError);
             }
         }

@@ -91,6 +91,24 @@ export class NotificacaoRepository {
     }
   }
 
+  async marcarTodasComoLidas(
+    usuarioId: string,
+    roles: string[],
+  ): Promise<number> {
+    try {
+      const where = await this.montarFiltro(usuarioId, roles);
+      const resultado = await this.prisma.notificacao.updateMany({
+        where: { ...where, lida: false },
+        data: { lida: true },
+      });
+      return resultado.count;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao marcar notificações como lidas no banco de dados',
+      );
+    }
+  }
+
   // Filtra as notificações conforme o perfil do usuário logado.
   private async montarFiltro(
     usuarioId: string,
@@ -160,6 +178,7 @@ export class NotificacaoRepository {
     professor_id: string;
     aluno_id: string;
     mensagem: string;
+    tipo: string;
     lida: boolean;
     created_at: Date;
   }): NotificacaoEntity {
@@ -168,6 +187,7 @@ export class NotificacaoRepository {
     entity.professor_id = n.professor_id;
     entity.aluno_id = n.aluno_id;
     entity.mensagem = n.mensagem;
+    entity.tipo = n.tipo ?? 'GENERICA';
     entity.lida = n.lida;
     entity.created_at = n.created_at;
     return entity;

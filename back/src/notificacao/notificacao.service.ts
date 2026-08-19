@@ -37,4 +37,15 @@ export class NotificacaoService {
     const count = await this.repository.contarNaoLidas(usuarioId, roles);
     return { count };
   }
+
+  async marcarTodasComoLidas(
+    usuarioId: string,
+    roles: string[],
+  ): Promise<{ atualizadas: number }> {
+    const atualizadas = await this.repository.marcarTodasComoLidas(
+      usuarioId,
+      roles,
+    );
+    return { atualizadas };
+  }
 }

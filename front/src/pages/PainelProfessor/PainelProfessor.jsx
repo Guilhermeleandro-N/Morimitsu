@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { buscarDashboardProfessor } from "../../services/professorService";
 import { graduarProximoNivel } from "../../services/alunoService";
 import { FaGraduationCap, FaBirthdayCake } from "react-icons/fa";
+import { useToast } from "../../context/ToastContext";
 import "./PainelProfessor.css";
 
 function PainelProfessor() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [graduando, setGraduando] = useState(null);
-  const [toast, setToast] = useState(null);
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   async function carregarDashboard() {
@@ -23,11 +24,6 @@ function PainelProfessor() {
     }
   }
 
-  function mostrarToast(mensagem, tipo = "success") {
-    setToast({ mensagem, tipo });
-    setTimeout(() => setToast(null), 3000);
-  }
-
   useEffect(() => {
     carregarDashboard();
   }, []);
@@ -38,9 +34,9 @@ function PainelProfessor() {
     try {
       await graduarProximoNivel(item.aluno_id, item.turma_id);
       await carregarDashboard();
-      mostrarToast(`${item.nome} graduado(a) com sucesso!`, "success");
+      addToast(`${item.nome} graduado(a) com sucesso!`, "success");
     } catch (error) {
-      mostrarToast(
+      addToast(
         error?.response?.data?.message || "Erro ao graduar aluno.",
         "error"
       );
@@ -62,11 +58,6 @@ function PainelProfessor() {
 
   return (
     <div className="painel-container">
-      {toast && (
-        <div className={`painel-toast ${toast.tipo}`}>
-          {toast.mensagem}
-        </div>
-      )}
       <div className="painel-header">
         <h1>Painel do Professor</h1>
         <p>Visão geral dos alunos das suas turmas</p>

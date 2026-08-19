@@ -80,6 +80,26 @@ export async function listarTreinosPorTurma(turmaId) {
   }
 }
 
+export async function listarTreinosPorProfessor(professorId) {
+  try {
+    const response = await api.get(`/frequencia/treino/professor/${professorId}`);
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.error("Erro ao listar treinos do professor:", error);
+    throw error;
+  }
+}
+
+export async function editarTreino(treinoId, dados) {
+  try {
+    const response = await api.patch(`/frequencia/treino/${treinoId}`, dados);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao editar treino:", error);
+    throw error;
+  }
+}
+
 export async function relatorioTreino(turmaId, alunosPresentes) {
   try {
     const response = await api.post("frequencia/turma/relatorio", {

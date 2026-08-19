@@ -145,7 +145,6 @@ function CadastrarUsuario() {
               Cadastrar
             </button>
           </div>
-
         </form>
       </div>
     </div>
