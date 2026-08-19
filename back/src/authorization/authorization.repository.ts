@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Permission } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PROGRESSAO_FAIXAS } from '../common/faixas.constants';
+
+const INDICE_ROXA = PROGRESSAO_FAIXAS.indexOf('ROXA');
 
 @Injectable()
 export class AuthorizationRepository {
@@ -140,6 +143,20 @@ export class AuthorizationRepository {
   }
 
   async atribuirPerfil(userId: string, perfilId: string) {
+    if (perfilId === 'perfil-professor') {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { usuarioId: userId },
+        select: { faixa: true },
+      });
+      if (aluno) {
+        const indiceFaixa = PROGRESSAO_FAIXAS.indexOf(aluno.faixa);
+        if (indiceFaixa < INDICE_ROXA) {
+          throw new BadRequestException(
+            `Aluno precisa ser no mínimo faixa ROXA para ser promovido a professor. Faixa atual: ${aluno.faixa}`,
+          );
+        }
+      }
+    }
     return this.prisma.userPerfil.upsert({
       where: {
         usuario_id_perfil_id: {
