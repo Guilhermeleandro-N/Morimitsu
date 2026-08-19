@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { listarAlunosCompleto } from "../../services/alunoService";
 import { listarProfessores } from "../../services/professorService";
+import { listarPerfisDoUsuario } from "../../services/authorizationService";
 
 import {
   adicionarAlunoNaTurma,
   adicionarProfessorTurma,
   listarAlunosDaTurma,
 } from "../../services/turmaService";
-
-import useToast from "../Toast/useToast";
 
 import "./AdicionarAlunoTurmaModal.css";
 
@@ -20,7 +19,7 @@ function AdicionarAlunoTurmaModal({
   onClose,
   onAlunoAdicionado,
 }) {
-  const { mostrar } = useToast();
+  const { addToast } = useToast();
 
   const [modo, setModo] = useState("aluno");
 
@@ -35,7 +34,6 @@ function AdicionarAlunoTurmaModal({
   const [busca, setBusca] = useState("");
 
   const [buscaProfessor, setBuscaProfessor] = useState("");
-  const { addToast } = useToast();
 
   useEffect(() => {
     async function carregar() {
@@ -53,7 +51,22 @@ function AdicionarAlunoTurmaModal({
 
         const professoresResponse = await listarProfessores();
 
-        setProfessores(professoresResponse);
+        const professoresSemAdmin = [];
+        for (const professor of professoresResponse) {
+          if (!professor.usuarioId) {
+            professoresSemAdmin.push(professor);
+            continue;
+          }
+          try {
+            const perfis = await listarPerfisDoUsuario(professor.usuarioId);
+            const isAdmin = perfis.some((p) => p.nome?.toLowerCase() === "admin");
+            if (!isAdmin) professoresSemAdmin.push(professor);
+          } catch {
+            professoresSemAdmin.push(professor);
+          }
+        }
+
+        setProfessores(professoresSemAdmin);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       }

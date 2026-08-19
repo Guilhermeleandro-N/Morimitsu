@@ -78,8 +78,48 @@
 
 .tabela-alunos {
   width: 100%;
-
+  table-layout: fixed;
   border-collapse: collapse;
+}
+
+.tabela-alunos th:nth-child(1),
+.tabela-alunos td:nth-child(1) {
+  width: 22%;
+}
+
+.tabela-alunos th:nth-child(2),
+.tabela-alunos td:nth-child(2) {
+  width: 12%;
+}
+
+.tabela-alunos th:nth-child(3),
+.tabela-alunos td:nth-child(3) {
+  width: 8%;
+}
+
+.tabela-alunos th:nth-child(4),
+.tabela-alunos td:nth-child(4) {
+  width: 12%;
+}
+
+.tabela-alunos th:nth-child(5),
+.tabela-alunos td:nth-child(5) {
+  width: 14%;
+}
+
+.tabela-alunos th:nth-child(6),
+.tabela-alunos td:nth-child(6) {
+  width: 10%;
+}
+
+.tabela-alunos th:nth-child(7),
+.tabela-alunos td:nth-child(7) {
+  width: 10%;
+}
+
+.tabela-alunos th:nth-child(8),
+.tabela-alunos td:nth-child(8) {
+  width: 12%;
 }
 
 .tabela-alunos thead tr {

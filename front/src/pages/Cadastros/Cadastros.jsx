@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { criarUser } from "../../services/userService";
-import useToast from "../../components/Toast/useToast";
-import { criarAlunoExistente } from "../../services/alunoService";
+import { criarAlunoExistente, BuscaAlunoPorUserId } from "../../services/alunoService";
 import { criarProfessor } from "../../services/professorService";
-import { listarPerfisDoUsuario } from "../../services/authorizationService";
+import { listarPerfisDoUsuario, listarUsuarios } from "../../services/authorizationService";
 import { useToast } from "../../context/ToastContext";
 import "./Cadastros.css";
 
@@ -38,8 +37,6 @@ function Cadastros() {
 
   const [salvando, setSalvando] = useState(false);
   const { addToast } = useToast();
-
-  const { mostrar } = useToast();
 
   // Modo "Novo usuário"
   const [novoUsuario, setNovoUsuario] = useState(false);
@@ -118,11 +115,27 @@ function Cadastros() {
     }, 300);
   }
 
-  function selecionarUsuario(usr) {
+  async function selecionarUsuario(usr) {
     setUsuarioSelecionado(usr);
     setBusca(usr.nome);
     setDropdownAberto(false);
     setSugestoes([]);
+    try {
+      const aluno = await BuscaAlunoPorUserId(usr.id);
+      if (aluno?.id) {
+        setFaixa((aluno.faixa || "").toUpperCase());
+        setGrau(aluno.grau_faixa ?? "");
+        setFrequencia(aluno.frequencia_atual ?? "");
+      } else {
+        setFaixa("");
+        setGrau("");
+        setFrequencia("");
+      }
+    } catch {
+      setFaixa("");
+      setGrau("");
+      setFrequencia("");
+    }
   }
 
   function limparFormulario() {
@@ -178,7 +191,7 @@ function Cadastros() {
         }
 
         usuarioId = userResponse.id;
-      } catch (error) {
+      } catch {
         addToast("Erro ao criar usuário. Tente novamente.", "error");
         setSalvando(false);
         return;
@@ -385,7 +398,7 @@ function Cadastros() {
             >
               <option value="">Selecione</option>
               {FAIXAS.map((f) => (
-                <option key={f.nome} value={f.nome}>
+                <option key={f.nome} value={f.nome.toUpperCase()}>
                   {f.nome}
                 </option>
               ))}
@@ -394,7 +407,9 @@ function Cadastros() {
               <span
                 className="faixa-cor"
                 style={{
-                  backgroundColor: FAIXAS.find((f) => f.nome === faixa)?.cor,
+                  backgroundColor: FAIXAS.find(
+                    (f) => f.nome.toUpperCase() === faixa
+                  )?.cor,
                 }}
               />
             )}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBell, FaFilter } from "react-icons/fa";
 import {
@@ -7,6 +7,7 @@ import {
   marcarNotificacaoComoLida,
 } from "../../services/notificacaoService";
 import { buscarDashboardProfessor } from "../../services/professorService";
+import { AuthContext } from "../../context/AuthContext";
 import "./NotificationBell.css";
 
 function formatarData(data) {
@@ -22,6 +23,11 @@ const FILTROS = ["TODAS", "ALUNO", "TURMA"];
 
 function NotificationBell() {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const ehProfessor = (user?.roles || []).some((r) =>
+    ["admin", "professor"].includes(r)
+  );
+  const ehAluno = (user?.roles || []).includes("aluno");
   const [aberto, setAberto] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [naoLidas, setNaoLidas] = useState(0);
@@ -42,6 +48,7 @@ function NotificationBell() {
       (data?.proximos_graduacao || []).forEach((g) => {
         avisos.push({
           id: `graduacao-${g.aluno_id}`,
+          aluno_id: g.aluno_id,
           mensagem:
             g.frequencias_restantes === 0
               ? `O aluno ${g.nome} já deve ser graduado`
@@ -49,13 +56,14 @@ function NotificationBell() {
                   g.frequencias_restantes === 1 ? "" : "s"
                 } para o aluno ${g.nome} se graduar`,
           tipo: "graduacao",
-          lida: true,
+          lida: false,
           created_at: new Date().toISOString(),
         });
       });
       (data?.proximos_aniversario || []).forEach((a) => {
         avisos.push({
           id: `aniversario-${a.aluno_id}`,
+          aluno_id: a.aluno_id,
           mensagem:
             a.dias_restantes === 0
               ? `Hoje é o aniversário de ${a.nome}!`
@@ -63,7 +71,7 @@ function NotificationBell() {
                   a.dias_restantes === 1 ? "" : "s"
                 }!`,
           tipo: "aniversario",
-          lida: true,
+          lida: false,
           created_at: new Date().toISOString(),
         });
       });
@@ -81,7 +89,20 @@ function NotificationBell() {
     if (filtro === "TURMA") {
       return notificacoes.filter((n) => n.tipo === "treino");
     }
-    return [...notificacoes, ...painelAvisos];
+
+    const chavesAvisos = new Set(
+      painelAvisos.map((a) => `${a.tipo}-${a.aluno_id}`)
+    );
+    const notificacoesAluno = notificacoes.filter(
+      (n) =>
+        n.tipo !== "treino" &&
+        !chavesAvisos.has(`${n.tipo}-${n.aluno_id}`)
+    );
+    const notificacoesTreino = notificacoes.filter(
+      (n) => n.tipo === "treino"
+    );
+
+    return [...painelAvisos, ...notificacoesAluno, ...notificacoesTreino];
   }, [notificacoes, painelAvisos, filtro]);
 
   async function carregar() {
@@ -93,7 +114,9 @@ function NotificationBell() {
       ]);
       setNotificacoes(Array.isArray(lista) ? lista : []);
       setNaoLidas(count);
-      await carregarAvisosPainel();
+      if (ehProfessor) {
+        await carregarAvisosPainel();
+      }
     } catch (error) {
       console.error("Erro ao carregar notificações:", error);
     } finally {
@@ -116,6 +139,12 @@ function NotificationBell() {
   }, []);
 
   async function handleMarcarLida(id) {
+    if (id.startsWith("graduacao-") || id.startsWith("aniversario-")) {
+      setPainelAvisos((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, lida: true } : n))
+      );
+      return;
+    }
     try {
       await marcarNotificacaoComoLida(id);
       setNotificacoes((prev) =>
@@ -132,7 +161,14 @@ function NotificationBell() {
       await handleMarcarLida(n.id);
     }
     setAberto(false);
-    if (n.tipo === "graduacao" || n.tipo === "aniversario") {
+    if (n.tipo === "graduacao") {
+      const vemDoFiltroAlunos = n.id.startsWith("graduacao-");
+      if (ehAluno && !vemDoFiltroAlunos) {
+        navigate("/perfilAluno", { state: { id: user?.userId } });
+      } else {
+        navigate("/painelProfessor");
+      }
+    } else if (n.tipo === "aniversario") {
       navigate("/painelProfessor");
     } else {
       navigate("/meusTreinos");

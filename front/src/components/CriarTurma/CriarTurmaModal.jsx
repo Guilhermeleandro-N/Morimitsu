@@ -5,8 +5,6 @@ import { criarTurma } from "../../services/turmaService";
 import { useToast } from "../../context/ToastContext";
 
 function CriarTurmaModal({ onClose, onCreate }) {
-  const { mostrar } = useToast();
-
   const [formData, setFormData] = useState({
     nome: "",
     horario_inicio: "",

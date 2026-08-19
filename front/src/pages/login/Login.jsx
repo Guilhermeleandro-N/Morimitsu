@@ -10,25 +10,31 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
-  const { user } = useContext(AuthContext);
   const { addToast } = useToast();
-
-  console.log(user);
 
   async function handleSubmit(e) {
     e.preventDefault();
     try {
       await login(email, senha);
+      addToast("Login realizado com sucesso!", "success");
       navigate("/");
     } catch (error) {
       if (!error.response) {
-        setMessage(
+        addToast(
           "Não foi possível conectar ao servidor. Verifique se o backend está ativo.",
+          "error",
+        );
+      } else if (error.response?.status === 401) {
+        addToast("E-mail ou senha inválidos. Tente novamente.", "error");
+      } else if (error.response?.status >= 500) {
+        addToast(
+          "Erro interno no servidor. Tente novamente mais tarde.",
+          "error",
         );
       } else {
-        setMessage(
-          error.response?.data?.message ||
-            "E-mail ou senha inválidos. Tente novamente.",
+        addToast(
+          error.response?.data?.message || "Erro ao fazer login.",
+          "error",
         );
       }
     }

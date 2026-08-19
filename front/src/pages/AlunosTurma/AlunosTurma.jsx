@@ -10,7 +10,8 @@ import {
   FaArchive,
   FaUserPlus,
   FaClipboardCheck,
-  FaHistory
+  FaHistory,
+  FaArrowLeft
 } from "react-icons/fa";
 
 import "./AlunosTurma.css";
@@ -270,13 +271,27 @@ function AlunosTurma() {
 
       <div className="page-header">
 
-        <div>
+        <div className="page-header-left">
 
-          <h1>Lista de Alunos</h1>
+          <button
+            className="back-btn"
+            onClick={() =>
+              navigate("/turmas")
+            }
+            title="Voltar para turmas"
+          >
+            <FaArrowLeft />
+          </button>
 
-          <p>
-            Gerenciar alunos da turma {turmaNome}
-          </p>
+          <div>
+
+            <h1>Lista de Alunos</h1>
+
+            <p>
+              Gerenciar alunos da turma {turmaNome}
+            </p>
+
+          </div>
 
         </div>
         <RoleGuard allowedRoutes={["admin", "professor"]}>

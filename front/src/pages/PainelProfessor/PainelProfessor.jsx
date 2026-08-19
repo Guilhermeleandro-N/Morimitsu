@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { buscarDashboardProfessor } from "../../services/professorService";
 import { graduarProximoNivel } from "../../services/alunoService";
 import { FaGraduationCap, FaBirthdayCake } from "react-icons/fa";
-import useToast from "../../components/Toast/useToast";
+import { useToast } from "../../context/ToastContext";
 import "./PainelProfessor.css";
 
 function PainelProfessor() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [graduando, setGraduando] = useState(null);
-  const { mostrar } = useToast();
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   async function carregarDashboard() {
@@ -34,9 +34,9 @@ function PainelProfessor() {
     try {
       await graduarProximoNivel(item.aluno_id, item.turma_id);
       await carregarDashboard();
-      mostrar(`${item.nome} graduado(a) com sucesso!`, "success");
+      addToast(`${item.nome} graduado(a) com sucesso!`, "success");
     } catch (error) {
-      mostrar(
+      addToast(
         error?.response?.data?.message || "Erro ao graduar aluno.",
         "error"
       );

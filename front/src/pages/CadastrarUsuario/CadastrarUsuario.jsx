@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { criarUser } from "../../services/userService";
 import { useToast } from "../../context/ToastContext";
 import addUserIcon from "../../assets/addUser.png";
-import useToast from "../../components/Toast/useToast";
 import "./CadastrarUsuario.css";
 
 function CadastrarUsuario() {

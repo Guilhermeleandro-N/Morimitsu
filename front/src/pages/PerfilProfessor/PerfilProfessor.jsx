@@ -134,7 +134,7 @@ const PerfilProfessor = () => {
           <h1>Perfil do Professor</h1>
           <p>Visualize os dados do professor</p>
         </div>
-        <RoleGuard allowedRoutes={["admin", "professor"]}>
+        <RoleGuard allowedRoutes={["admin"]}>
           <button
             className="btn-edit"
             onClick={() =>

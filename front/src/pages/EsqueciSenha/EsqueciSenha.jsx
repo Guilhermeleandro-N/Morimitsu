@@ -3,12 +3,10 @@ import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import { useToast } from "../../context/ToastContext";
 import logo from "../../assets/morimitsu.png";
-import useToast from "../../components/Toast/useToast";
 import "./EsqueciSenha.css";
 
 function EsqueciSenha() {
   const navigate = useNavigate();
-  const { mostrar } = useToast();
   const [email, setEmail] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmacao, setConfirmacao] = useState("");

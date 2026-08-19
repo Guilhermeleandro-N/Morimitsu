@@ -9,6 +9,7 @@ import {
   listarPermissoesDoUsuario,
   definirPermissaoDoUsuario,
 } from "../../services/authorizationService";
+import { useToast } from "../../context/ToastContext";
 
 const TABS = {
   ALUNO: { nome: "ALUNO", label: "Aluno" },
@@ -29,6 +30,7 @@ const CATEGORIAS = [
 ];
 
 function ConcederPermissoes() {
+  const { addToast } = useToast();
   const [usuarios, setUsuarios] = useState([]);
   const [busca, setBusca] = useState("");
   const [usuarioSelecionado, setUsuarioSelecionado] = useState(null);
@@ -170,6 +172,10 @@ function ConcederPermissoes() {
       if (perfilAtivo) {
         await removerPerfil(usuarioSelecionado.id, perfilAtivo.id);
         setPerfisUsuario((prev) => prev.filter((p) => p.id !== perfilAtivo.id));
+        addToast(
+          `Perfil base de ${TABS[tipoUsuario]?.label} removido com sucesso.`,
+          "success"
+        );
       } else {
         // Busca o perfil pelo nome
         const todosPerfis = await listarPerfis();
@@ -179,12 +185,21 @@ function ConcederPermissoes() {
         if (perfilParaAtribuir) {
           await atribuirPerfil(usuarioSelecionado.id, perfilParaAtribuir.id);
           setPerfisUsuario((prev) => [...prev, perfilParaAtribuir]);
+          addToast(
+            `Perfil base de ${TABS[tipoUsuario]?.label} atribuído com sucesso.`,
+            "success"
+          );
         }
       }
       const perms = await listarPermissoesDoUsuario(usuarioSelecionado.id);
       setPermissoesUsuario(perms);
     } catch (error) {
       console.error("Erro ao alternar perfil:", error);
+      addToast(
+        error?.response?.data?.message ||
+          "Erro ao alternar perfil do usuário.",
+        "error"
+      );
     }
   }
 

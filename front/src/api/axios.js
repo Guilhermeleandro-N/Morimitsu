@@ -36,6 +36,8 @@ api.interceptors.response.use(
                 }
             } catch (refreshError) {
                 authService.clearTokens();
+                localStorage.removeItem("user");
+                window.dispatchEvent(new Event("session-expired"));
                 return Promise.reject(refreshError);
             }
         }

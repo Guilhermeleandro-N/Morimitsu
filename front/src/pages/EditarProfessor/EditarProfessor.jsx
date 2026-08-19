@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { atualizarProfessor } from "../../services/professorService";
+import {
+  atualizarProfessor,
+  buscarProfessorEUsuario,
+} from "../../services/professorService";
 import api from "../../api/axios";
 import { useToast } from "../../context/ToastContext";
 import addUser from "../../assets/addUser.png";
-import useToast from "../../components/Toast/useToast";
 import "./EditarProfessor.css";
 
 const EditarProfessor = () => {
@@ -19,28 +21,36 @@ const EditarProfessor = () => {
     data_nascimento: professorData?.data_nascimento
       ? String(professorData.data_nascimento).split("T")[0]
       : "",
-    faixa: professorData?.faixa || "",
+    faixa: (professorData?.faixa || "").toString().trim().toUpperCase(),
     grau: professorData?.grau ?? 0,
   });
 
-  const { mostrar } = useToast();
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    async function carregarFaixaGrau() {
+      if (!professorData?.usuarioId) return;
+      try {
+        const { professor } = await buscarProfessorEUsuario(
+          professorData.usuarioId
+        );
+        if (professor?.id) {
+          setForm((prev) => ({
+            ...prev,
+            faixa: (professor.faixa || "").toString().trim().toUpperCase(),
+            grau: professor.grau ?? prev.grau,
+          }));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar faixa do professor:", error);
+      }
+    }
+    carregarFaixaGrau();
+  }, [professorData?.usuarioId]);
 
   if (!professorData) {
     return <h2>Professor não encontrado</h2>;
   }
-
-  const [form, setForm] = useState({
-    nome: professorData.nome || "",
-    email: professorData.email || "",
-    telefone: professorData.telefone || "",
-    data_nascimento: professorData.data_nascimento
-      ? String(professorData.data_nascimento).split("T")[0]
-      : "",
-    faixa: professorData.faixa || "",
-    grau: professorData.grau ?? 0,
-  });
-
-  const { addToast } = useToast();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -154,15 +164,15 @@ const EditarProfessor = () => {
                 onChange={handleChange}
               >
                 <option value="">Selecione</option>
-                <option value="branca">Branca</option>
-                <option value="cinza">Cinza</option>
-                <option value="amarela">Amarela</option>
-                <option value="laranja">Laranja</option>
-                <option value="verde">Verde</option>
-                <option value="azul">Azul</option>
-                <option value="roxa">Roxa</option>
-                <option value="marrom">Marrom</option>
-                <option value="preta">Preta</option>
+                <option value="BRANCA">Branca</option>
+                <option value="CINZA">Cinza</option>
+                <option value="AMARELA">Amarela</option>
+                <option value="LARANJA">Laranja</option>
+                <option value="VERDE">Verde</option>
+                <option value="AZUL">Azul</option>
+                <option value="ROXA">Roxa</option>
+                <option value="MARROM">Marrom</option>
+                <option value="PRETA">Preta</option>
               </select>
             </div>
 
