@@ -1,58 +1,74 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Login from "../pages/login/Login";
-import Home from "../pages/Home/Home";
-import CadastrarAluno from "../pages/CadastrarAluno/CadastrarAluno";
+import EsqueciSenha from "../pages/EsqueciSenha/EsqueciSenha";
+import Cadastros from "../pages/Cadastros/Cadastros";
 import EditarAluno from "../pages/EditarAluno/EditarAluno";
 import VisualizarTurmas from "../pages/Turmas/VisualizarTurmas";
 import PerfilAluno from "../pages/PerfilAluno/PerfilAluno";
 import ProtectedRoute from "./ProtectedRoutes";
+import RedirectPorPerfil from "./RedirectPorPerfil";
 import ListarAluno from "../pages/ListarAlunos/ListarALunos";
 import AlunosTurma from "../pages/AlunosTurma/AlunosTurma";
 import HistoricoTreinos from "../pages/HistoricoTreinos/HistoricoTreinos";
+import CadastrarUsuario from "../pages/CadastrarUsuario/CadastrarUsuario";
+import ListarProfessores from "../pages/ListarProfessores/ListarProfessores";
+import ConcederPermissoes from "../pages/ConcederPermissoes/ConcederPermissoes";
+import PerfilProfessor from "../pages/PerfilProfessor/PerfilProfessor";
+import PainelProfessor from "../pages/PainelProfessor/PainelProfessor";
+import EditarProfessor from "../pages/EditarProfessor/EditarProfessor";
+import TurmasArquivadas from "../pages/TurmasArquivadas/TurmasArquivadas";
+import MeusTreinos from "../pages/MeusTreinos/MeusTreinos";
+
+const TODOS_PERFIS = ["admin", "professor", "aluno"];
+const PROFESSOR = ["admin", "professor"];
+
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/esqueciSenha" element={<EsqueciSenha />} />
+      <Route path="/cadastrarUsuario" element={<CadastrarUsuario />} />
+
       <Route
         element={
-          <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
+          <ProtectedRoute rolesPermitidas={TODOS_PERFIS}>
             <MainLayout />
           </ProtectedRoute>
         }
       >
+        <Route index element={<RedirectPorPerfil />} />
+
         <Route
-          path="/"
+          path="/turmas"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
+            <ProtectedRoute rolesPermitidas={TODOS_PERFIS}>
               <VisualizarTurmas />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/cadastrarAluno"
+          path="/cadastros"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <CadastrarAluno />
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.aluno.criar"]}
+            >
+              <Cadastros />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route
           path="/editarAluno"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.aluno.perfil"]}
+            >
               <EditarAluno />
-            </ProtectedRoute>
-          }
-        ></Route>
-        <Route
-          path="/turmas"
-          element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <VisualizarTurmas />
             </ProtectedRoute>
           }
         />
@@ -60,36 +76,121 @@ export default function AppRoutes() {
         <Route
           path="/perfilAluno"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor", "aluno"]}>
+            <ProtectedRoute
+              rolesPermitidas={TODOS_PERFIS}
+              permissoesNecessarias={["screen.perfil"]}
+            >
               <PerfilAluno />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route
-          path="/teste"
+          path="/turmasArquivadas"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
-              <Home />
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.turma.listar"]}
+            >
+              <TurmasArquivadas />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
         <Route
           path="/listarAluno"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.aluno.listar"]}
+            >
               <ListarAluno />
             </ProtectedRoute>
           }
-        ></Route>
+        />
 
-        <Route path="/alunosTurma" element={<AlunosTurma />} />
+        <Route
+          path="/alunosTurma"
+          element={
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.aluno.listar"]}
+            >
+              <AlunosTurma />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/historicoTreinos"
           element={
-            <ProtectedRoute rolesPermitidas={["admin", "professor"]}>
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.treino.visualizar"]}
+            >
               <HistoricoTreinos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/listarProfessores"
+          element={
+            <ProtectedRoute rolesPermitidas={["admin"]}>
+              <ListarProfessores />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/perfilProfessor"
+          element={
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.professor.perfil"]}
+            >
+              <PerfilProfessor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/painelProfessor"
+          element={
+            <ProtectedRoute
+              rolesPermitidas={PROFESSOR}
+              permissoesNecessarias={["screen.dashboard"]}
+            >
+              <PainelProfessor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/editarProfessor"
+          element={
+            <ProtectedRoute rolesPermitidas={["admin"]}>
+              <EditarProfessor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/concederPermissoes"
+          element={
+            <ProtectedRoute rolesPermitidas={["admin"]}>
+              <ConcederPermissoes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/meusTreinos"
+          element={
+            <ProtectedRoute
+              rolesPermitidas={TODOS_PERFIS}
+              permissoesNecessarias={["screen.treino.visualizar"]}
+            >
+              <MeusTreinos />
             </ProtectedRoute>
           }
         />

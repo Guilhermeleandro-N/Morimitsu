@@ -1,129 +1,125 @@
 import React, { useState } from "react";
-import { listarProfessoresDaTurma } from "../../services/turmaService";
 
-function TesteListarProfessoresTurma() {
+import { editarFrequencia } from "../../services/frequenciaService";
 
-  const [turmaId, setTurmaId] =
-    useState("");
+function Home() {
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState("");
+  const [resultado, setResultado] = useState(null);
 
-  const [resultado, setResultado] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  async function buscarProfessores() {
-
+  async function testarEdicao() {
     try {
-
       setLoading(true);
+      setErro("");
 
-      const response =
-        await listarProfessoresDaTurma(
-          turmaId
-        );
-
-      console.log(
-        "Professores da turma:",
-        response
+      const response = await editarFrequencia(
+        "be5cc94b-2775-4056-9b6a-80540a571b0f",
+        {
+          status_presenca: "AUSENTE",
+        }
       );
 
+      console.log(response);
       setResultado(response);
 
     } catch (error) {
+      console.error(error);
 
-      console.error(
-        error.response?.data || error
-      );
-
-      setResultado(
-        error.response?.data ||
-        error.message
+      setErro(
+        error.response?.data?.message ||
+        "Erro ao editar frequência."
       );
 
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
   return (
-
     <div
       style={{
-        maxWidth: "800px",
-        margin: "0 auto",
         padding: "30px",
+        maxWidth: "900px",
+        margin: "0 auto",
       }}
     >
+      <h1>Teste - Editar Frequência</h1>
 
-      <h1>
-        Teste - Professores da Turma
-      </h1>
+      <p>
+        Frequência que será editada:
+      </p>
 
-      <input
-        type="text"
-        placeholder="Digite o ID da turma"
-        value={turmaId}
-        onChange={(e) =>
-          setTurmaId(
-            e.target.value
-          )
-        }
+      <pre
         style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "15px",
-          boxSizing: "border-box",
+          background: "#f4f4f4",
+          padding: "15px",
+          borderRadius: "8px",
+          overflowX: "auto",
         }}
-      />
+      >
+{JSON.stringify(
+{
+  id: "be5cc94b-2775-4056-9b6a-80540a571b0f",
+  aluno_id: "ac8717df-3e4f-4e82-9802-3bbde30eb59b",
+  professor_id: "6199ce05-34db-44d2-b1a2-1c2215d6574d",
+  turma_id: "7a00c359-dad7-4a8e-8bbf-2da7da6a84ff",
+  data: "2026-07-27T12:53:46.013Z",
+  horario_inicio: "2026-07-27T10:53:46.013Z",
+  horario_fim: "2026-07-27T12:53:46.013Z",
+  status_presenca: "PRESENTE",
+},
+null,
+2
+)}
+      </pre>
 
       <button
-        onClick={
-          buscarProfessores
-        }
+        onClick={testarEdicao}
+        disabled={loading}
+        style={{
+          padding: "10px 20px",
+          cursor: "pointer",
+          marginTop: "20px",
+        }}
       >
-        Buscar Professores
+        {loading
+          ? "Editando..."
+          : "Alterar para AUSENTE"}
       </button>
 
-      <hr />
-
-      <h2>
-        Resultado
-      </h2>
-
-      {loading ? (
-
-        <p>
-          Carregando...
-        </p>
-
-      ) : (
-
-        <pre
+      {erro && (
+        <p
           style={{
-            background: "#f5f5f5",
-            padding: "20px",
-            borderRadius: "8px",
-            overflowX: "auto",
-            minHeight: "250px",
+            color: "red",
+            marginTop: "20px",
           }}
         >
-          {JSON.stringify(
-            resultado,
-            null,
-            2
-          )}
-        </pre>
-
+          {erro}
+        </p>
       )}
 
+      {resultado && (
+        <div
+          style={{
+            marginTop: "30px",
+          }}
+        >
+          <h2>Resposta da API</h2>
+
+          <pre
+            style={{
+              background: "#f4f4f4",
+              padding: "15px",
+              borderRadius: "8px",
+              overflowX: "auto",
+            }}
+          >
+            {JSON.stringify(resultado, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
-
   );
-
 }
 
-export default TesteListarProfessoresTurma;
+export default Home;

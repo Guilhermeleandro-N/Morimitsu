@@ -1,0 +1,135 @@
+.register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f5;
+  min-height: 100vh;
+}
+
+.register__container {
+  background: white;
+  padding: 40px 70px 50px 70px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 1300px;
+  min-height: 70vh;
+}
+
+.register__header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding-left: 0;
+}
+
+.register__icons {
+  display: none;
+}
+.register__title {
+  font-size: 26px;
+  color: #1a1a1a;
+  font-weight: 700;
+  margin: 0;
+}
+
+.register__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.form__group--full {
+  grid-column: span 2;
+}
+
+.form__group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.form__group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 14px;
+  height: 56px;
+  box-sizing: border-box;
+}
+
+.form__group input:focus {
+  outline: none;
+  border-color: #d32f2f;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
+}
+
+.form__group input:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.form__actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-primary,
+.btn-secondary {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  flex: 1;
+  text-align: center;
+  transition: background 0.3s;
+  font-size: 14px;
+  height: 56px;
+}
+
+.btn-primary {
+  background-color: #d32f2f;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #b71c1c;
+}
+.btn-secondary {
+  background-color: #e8e8e8;
+  color: #555;
+}
+.btn-secondary:hover {
+  background-color: #d5d5d5;
+}
+
+.message {
+  grid-column: span 2;
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.message.success {
+  background-color: #f5f5f5;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.message.error {
+  background-color: #f5f5f5;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}

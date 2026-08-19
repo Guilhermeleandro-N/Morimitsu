@@ -1,16 +1,30 @@
 import React from 'react';
 import "./PerfilAluno.css";
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import {
   BuscarAlunoCompletoPorUserId,
+  buscarMeuPerfilAluno,
   graduarAluno
 } from '../../services/alunoService';
+
+import { atualizarStatusUsuario } from '../../services/userService';
+
+import { listarTurmas } from "../../services/turmaService";
+
+import {
+  listarFrequenciasAluno,
+  editarFrequencia
+} from "../../services/frequenciaService";
 import RoleGuard from '../../routes/RoleGuard';
+import { AuthContext } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import GraduarAlunoModal from "../../components/GraduarAluno/GraduarAlunoModal.jsx";
 
 const PerfilAluno = () => {
 
+  const { user } = useContext(AuthContext);
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const userId = location.state?.id;
@@ -18,6 +32,99 @@ const PerfilAluno = () => {
   const [alunoData, setAlunoData] = useState(null);
   const [primeiraLetra, setPrimeiraLetra] = useState("");
   const [modalGraduacaoOpen, setModalGraduacaoOpen] = useState(false);
+  const [historico, setHistorico] = useState([]);
+  const [nomesTurmas, setNomesTurmas] = useState({});
+
+  async function togglePresenca(item) {
+
+    const novoStatus =
+      item.status_presenca === "PRESENTE"
+        ? "AUSENTE"
+        : "PRESENTE";
+
+    // Atualiza a interface imediatamente
+    setHistorico((historicoAtual) =>
+      historicoAtual.map((freq) =>
+        freq.id === item.id
+          ? {
+              ...freq,
+              status_presenca: novoStatus,
+            }
+          : freq
+      )
+    );
+
+    try {
+
+      await editarFrequencia(item.id, {
+        status_presenca: novoStatus,
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      // Volta ao valor anterior caso dê erro
+      setHistorico((historicoAtual) =>
+        historicoAtual.map((freq) =>
+          freq.id === item.id
+            ? {
+                ...freq,
+                status_presenca: item.status_presenca,
+              }
+            : freq
+        )
+      );
+
+      addToast("Erro ao atualizar frequência.", "error");
+
+    }
+
+  }
+
+  async function buscarFrequencias(alunoId) {
+
+    try {
+
+      const [
+        frequencias,
+        turmas
+      ] = await Promise.all([
+        listarFrequenciasAluno(alunoId),
+        listarTurmas()
+      ]);
+
+      const mapaTurmas = {};
+
+      turmas.forEach((turma) => {
+        mapaTurmas[turma.id] = turma.nome;
+      });
+
+      setNomesTurmas(mapaTurmas);
+
+      setHistorico(frequencias);
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao buscar frequências:",
+        error
+      );
+
+    }
+
+  }
+
+  async function handleToggleStatus() {
+    const statusAtual = alunoData?.status || "ENABLED";
+    const novoStatus = statusAtual === "ENABLED" ? "DISABLED" : "ENABLED";
+    try {
+      await atualizarStatusUsuario(userId, novoStatus);
+      setAlunoData((prev) => ({ ...prev, status: novoStatus }));
+    } catch (error) {
+      console.error("Erro ao alterar status:", error);
+    }
+  }
 
   function formatarDataBR(data) {
     if (!data) return "--";
@@ -31,44 +138,57 @@ const PerfilAluno = () => {
 
     return data;
   }
-
   async function buscarAluno() {
+
     if (!userId) return;
 
     try {
-      const response = await BuscarAlunoCompletoPorUserId(userId);
+
+      const ehProprioPerfil =
+        user &&
+        user.userId === userId &&
+        (user.roles || []).includes("aluno");
+
+      const response = ehProprioPerfil
+        ? await buscarMeuPerfilAluno()
+        : await BuscarAlunoCompletoPorUserId(userId);
 
       setAlunoData(response);
-      setPrimeiraLetra(response?.nome?.charAt(0) ?? "");
 
-      console.log(response);
+      setPrimeiraLetra(
+        response?.nome?.charAt(0) ?? ""
+      );
+
+      await buscarFrequencias(response.id);
 
     } catch (error) {
+
       console.error(error);
+
     }
+
   }
 
   async function handleGraduarAluno(dados) {
+    if (!alunoData?.id) {
+      addToast("Dados do aluno não carregados. Aguarde.", "error");
+      return;
+    }
     try {
-
       await graduarAluno(
         alunoData.id,
         dados.faixa,
         dados.grau_faixa
       );
-
+      addToast("Aluno graduado com sucesso!", "success");
       await buscarAluno();
-
-      
-
       setModalGraduacaoOpen(false);
-
     } catch (error) {
       console.error(error);
-
-      alert(
+      addToast(
         error?.response?.data?.message ||
-        "Erro ao graduar aluno."
+        "Erro ao graduar aluno.",
+        "error"
       );
     }
   }
@@ -80,14 +200,12 @@ const PerfilAluno = () => {
   const dadosAluno = alunoData || {};
   const faixa = dadosAluno.faixa ?? "";
   const grau = dadosAluno.grau_faixa ?? "";
-  const presencas = dadosAluno.frequencia_atual ?? 0;
+  const presencas = dadosAluno.total_presencas ?? dadosAluno.frequencia_atual ?? 0;
 
-  const historico =
-    dadosAluno.historico_frequencias ?? [];
+
 
   return (
-    <div className='main'>
-      <div className="container">
+    <div className="container">
 
         <header className="page-header">
 
@@ -111,7 +229,7 @@ const PerfilAluno = () => {
 
         </header>
 
-        <main className="profile-grid">
+        <div className="profile-grid">
 
           <aside className="sidebar-card">
 
@@ -125,17 +243,32 @@ const PerfilAluno = () => {
               </div>
             </div>
 
-            <h3 className="student-name">
-              {dadosAluno.nome || "Aluno"}
-            </h3>
-
-            <span
-              className={`status-badge ${String(
-                dadosAluno.status || ""
-              ).toLowerCase()}`}
-            >
-              {dadosAluno.status || "--"}
-            </span>
+<h3
+  className="perfil-aluno-student-name"
+  title={dadosAluno.nome || "Aluno"}
+>
+  {dadosAluno.nome || "Aluno"}
+</h3>
+            <RoleGuard allowedRoutes={["admin"]}>
+              <button
+                className={`perfil-aluno-status-badge ${String(
+                  dadosAluno.status || ""
+                ).toLowerCase()}`}
+                onClick={handleToggleStatus}
+                style={{ cursor: "pointer", border: "none" }}
+              >
+                {dadosAluno.status === "ENABLED" ? "Ativo" : "Inativo"}
+              </button>
+            </RoleGuard>
+            {user && !user.roles.includes("admin") && (
+              <span
+                className={`perfil-aluno-status-badge ${String(
+                  dadosAluno.status || ""
+                ).toLowerCase()}`}
+              >
+                {dadosAluno.status === "ENABLED" ? "Ativo" : "Inativo"}
+              </span>
+            )}
 
             <div className="personal-details">
               <p>
@@ -194,71 +327,104 @@ const PerfilAluno = () => {
 
             <table className="history-table">
 
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Frequência</th>
-                  <th>Turma</th>
-                </tr>
-              </thead>
+      <thead>
+
+        <tr >
+
+          <th>Data</th>
+          <th>Presença</th>
+          
+          <th>Início</th>
+          <th>Fim</th>
+          <th>Turma</th>
+
+        </tr>
+
+      </thead>
 
               <tbody>
 
-                {historico.length > 0 ? (
-                  historico.map((item, index) => (
-                    <tr key={index}>
+  {historico.length > 0 ? (
 
-                      <td data-label="Data">
-                        {formatarDataBR(item.data)}
-                      </td>
+    historico.map((item) => (
 
-                      <td data-label="Frequência">
-                        <div className="presence-status">
+  <tr key={item.id}>
 
-                          <span>
-                            {item.status_presenca}
-                          </span>
+    <td>
+      {formatarDataBR(item.data)}
+    </td>
 
-                          <button
-                            className={`presence-button ${
-                              item.status_presenca === "PRESENTE"
-                                ? "present"
-                                : "absent"
-                            }`}
-                          ></button>
+  <td>
+    <div className="presence-status">
 
-                        </div>
-                      </td>
+      <span>
+        {item.status_presenca}
+      </span>
 
-                      <td data-label="Turma">
-                        {item.turma_nome}
-                      </td>
+      <RoleGuard allowedRoutes={["admin", "professor"]}>
+        <button
+          className={`presence-button ${
+            item.status_presenca === "PRESENTE"
+              ? "present"
+              : "absent"
+          }`}
+          onClick={() => togglePresenca(item)}
+          title="Alterar presença"
+        />
+      </RoleGuard>
 
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="3"
-                      style={{
-                        textAlign: "center",
-                        padding: "20px"
-                      }}
-                    >
-                      Nenhum histórico encontrado.
-                    </td>
-                  </tr>
-                )}
+    </div>
+  </td>
 
-              </tbody>
+    <td>
+      {new Date(item.horario_inicio)
+        .toLocaleTimeString("pt-BR")}
+    </td>
+
+    <td>
+      {new Date(item.horario_fim)
+        .toLocaleTimeString("pt-BR")}
+    </td>
+
+    <td>
+      {nomesTurmas[item.turma_id] || "--"}
+    </td>
+
+  </tr>
+
+))
+
+  ) : (
+
+    <tr>
+
+      <td
+        colSpan="6"
+        style={{
+          textAlign: "center",
+          padding: "20px"
+        }}
+      >
+        Nenhum histórico encontrado.
+      </td>
+
+
+        <td>
+
+</td>
+    </tr>
+
+
+
+  )}
+
+</tbody>
 
             </table>
 
           </section>
 
-        </main>
-
-      </div>
+        </div>
 
       {modalGraduacaoOpen && (
         <GraduarAlunoModal
@@ -266,6 +432,8 @@ const PerfilAluno = () => {
             setModalGraduacaoOpen(false)
           }
           onSave={handleGraduarAluno}
+          faixaAtual={faixa}
+          grauAtual={grau}
         />
       )}
 

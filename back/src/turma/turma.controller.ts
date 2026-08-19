@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -18,13 +19,20 @@ import {
 } from '@nestjs/swagger';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import {
+  CurrentUser,
+  JwtPayload,
+} from '../auth/decorators/current-user.decorator';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
 import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
+import { UpdateTurmaStatusDto } from './dtos/update-turma-status.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaService } from './turma.service';
 
@@ -47,10 +55,59 @@ export class TurmaController {
   @Get()
   @UseGuards(PermissionsGuard)
   @Permissions('turma.read')
-  @ApiOperation({ summary: 'Listar todas as turmas' })
+  @ApiOperation({ summary: 'Listar turmas (filtradas pelo usuário logado)' })
   @ApiResponse({ status: 200, type: [TurmaEntity] })
-  async listar(): Promise<TurmaEntity[]> {
-    return this.service.listar();
+  async listar(
+    @Query() pagination: PaginationQueryDto,
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<PaginatedResult<TurmaEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listar(
+      (page - 1) * limit,
+      limit,
+      usuario,
+    );
+    return new PaginatedResult(data, total, page, limit);
+  }
+
+  @Get('arquivadas')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.read')
+  @ApiOperation({
+    summary: 'Listar turmas arquivadas (filtradas pelo usuário)',
+  })
+  @ApiResponse({ status: 200, type: [TurmaEntity] })
+  async listarArquivadas(
+    @Query() pagination: PaginationQueryDto,
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<PaginatedResult<TurmaEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 100;
+    const { data, total } = await this.service.listarArquivadas(
+      (page - 1) * limit,
+      limit,
+      usuario,
+    );
+    return new PaginatedResult(data, total, page, limit);
+  }
+
+  @Patch(':id/arquivar')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Arquivar turma' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  async arquivar(@Param('id') id: string): Promise<TurmaEntity> {
+    return this.service.arquivar(id);
+  }
+
+  @Patch(':id/reativar')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Reativar turma arquivada' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  async reativar(@Param('id') id: string): Promise<TurmaEntity> {
+    return this.service.reativar(id);
   }
 
   @Get(':id')
@@ -82,6 +139,18 @@ export class TurmaController {
   @ApiResponse({ status: 204 })
   async deletar(@Param('id') id: string): Promise<void> {
     return this.service.deletar(id);
+  }
+
+  @Patch(':id/status')
+  @UseGuards(PermissionsGuard)
+  @Permissions('turma.update')
+  @ApiOperation({ summary: 'Alterar status da turma (ATIVO/INATIVO)' })
+  @ApiResponse({ status: 200, type: TurmaEntity })
+  async atualizarStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateTurmaStatusDto,
+  ): Promise<TurmaEntity> {
+    return this.service.atualizarStatus(id, dto);
   }
 
   @Post(':id/aluno')
@@ -129,8 +198,18 @@ export class TurmaController {
   @Permissions('student.list.by_turma')
   @ApiOperation({ summary: 'Listar alunos de uma turma' })
   @ApiResponse({ status: 200, type: [AlunoEntity] })
-  async listarAlunos(@Param('id') id: string): Promise<AlunoEntity[]> {
-    return this.service.listarAlunos(id);
+  async listarAlunos(
+    @Param('id') id: string,
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listarAlunos(
+      id,
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
   }
 
   @Get(':id/professores')
@@ -138,8 +217,18 @@ export class TurmaController {
   @Permissions('turma.read')
   @ApiOperation({ summary: 'Listar professores de uma turma' })
   @ApiResponse({ status: 200, type: [ProfessorEntity] })
-  async listarProfessores(@Param('id') id: string): Promise<ProfessorEntity[]> {
-    return this.service.listarProfessores(id);
+  async listarProfessores(
+    @Param('id') id: string,
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<ProfessorEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    const { data, total } = await this.service.listarProfessores(
+      id,
+      (page - 1) * limit,
+      limit,
+    );
+    return new PaginatedResult(data, total, page, limit);
   }
 
   @Delete(':id/aluno/:alunoId')

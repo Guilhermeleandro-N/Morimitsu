@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -22,8 +23,10 @@ import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { AlunoService } from './aluno.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
-import { GraduarAlunoDto } from './dtos/graduar-aluno.dto';
+import { GraduarAlunoDto, GraduarProximoNivelDto } from './dtos/graduar-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { AlunoEntity } from './entities/aluno.entity';
 
 @ApiTags('Aluno')
@@ -61,8 +64,12 @@ export class AlunoController {
   @Permissions('student.read')
   @ApiOperation({ summary: 'Listar todos os alunos' })
   @ApiResponse({ status: 200, type: [AlunoEntity] })
-  async listar(): Promise<AlunoEntity[]> {
-    return this.service.listar();
+  async listar(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listar((page - 1) * limit, limit);
   }
 
   @Get('minha-turma')
@@ -74,8 +81,15 @@ export class AlunoController {
   @ApiResponse({ status: 200, type: [AlunoEntity] })
   async listarDaMinhaTurma(
     @CurrentUser() usuario: JwtPayload,
-  ): Promise<AlunoEntity[]> {
-    return this.service.listarDaTurmaDoProfessor(usuario.sub);
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listarDaTurmaDoProfessor(
+      usuario.sub,
+      (page - 1) * limit,
+      limit,
+    );
   }
 
   @Get('usuario/:usuarioId')
@@ -123,6 +137,20 @@ export class AlunoController {
     @Body() dto: GraduarAlunoDto,
   ): Promise<AlunoEntity> {
     return this.service.graduar(id, dto);
+  }
+
+  @Patch(':id/graduar/proximo')
+  @UseGuards(PermissionsGuard)
+  @Permissions('student.rank.update')
+  @ApiOperation({
+    summary: 'Graduar aluno automaticamente para o próximo grau/faixa',
+  })
+  @ApiResponse({ status: 200, type: AlunoEntity })
+  async graduarProximo(
+    @Param('id') id: string,
+    @Body() dto: GraduarProximoNivelDto,
+  ): Promise<AlunoEntity> {
+    return this.service.graduarProximoNivel(id, dto.turma_id);
   }
 
   @Delete(':id')

@@ -17,6 +17,7 @@ import { LoginRequestDto } from './dtos/login-request.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { LogoutRequestDto } from './dtos/logout-request.dto';
 import { RefreshTokenRequestDto } from './dtos/refresh-token-request.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -29,6 +30,18 @@ export class AuthController {
   @ApiResponse({ status: 200, type: LoginResponseDto })
   async login(@Body() dto: LoginRequestDto): Promise<LoginResponseDto> {
     return this.service.login(dto);
+  }
+
+  @Post('resetar-senha')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Redefinir senha informando o email' })
+  @ApiResponse({ status: 200, description: 'Senha redefinida com sucesso' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
+  async resetarSenha(@Body() dto: ResetPasswordDto): Promise<{
+    message: string;
+  }> {
+    await this.service.resetarSenha(dto);
+    return { message: 'Senha redefinida com sucesso' };
   }
 
   @Post('refresh-token')

@@ -1,7 +1,114 @@
 @import "../ListarAlunos/ListarAlunos.css";
 
+.table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c41e1e #f0f0f0;
+}
+
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #c41e1e;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a81818;
+}
+
+.listar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 20px;
+}
+
 .listar-header h2 {
     font-size: 28px;
+}
+
+.listar-header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.listar-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.filtros-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filtro-select {
+    padding: 9px 30px 9px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.status-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: 0.2s;
+    color: white;
+    white-space: nowrap;
+}
+
+.status-btn.status-ativo {
+    background-color: #16a34a;
+}
+
+.status-btn.status-ativo:hover {
+    background-color: #15803d;
+}
+
+.status-btn.status-inativo {
+    background-color: #9ca3af;
+}
+
+.status-btn.status-inativo:hover {
+    background-color: #6b7280;
+}
+
+.status-btn.status-arquivado {
+    background-color: #dc2626;
+    color: white;
+}
+
+.status-btn.status-arquivado:hover {
+    background-color: #b91c1c;
 }
 
 .listar-container {
@@ -39,6 +146,33 @@
     align-items: center;
 
     margin-bottom: 25px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 10px;
+    background-color: #c41e1e;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+
+.back-btn:hover {
+    background-color: #a81818;
+    transform: translateX(-2px);
 }
 
 .page-header h1 {
@@ -89,4 +223,34 @@
 
     background-color: #a81818;
     transform: translateY(-2px);
+}
+
+.turma-status-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.2s;
+    color: white;
+    white-space: nowrap;
+}
+
+.turma-status-btn.status-ativo {
+    background-color: #16a34a;
+}
+
+.turma-status-btn.status-ativo:hover {
+    background-color: #15803d;
+}
+
+.turma-status-btn.status-inativo {
+    background-color: #9ca3af;
+}
+
+.turma-status-btn.status-inativo:hover {
+    background-color: #6b7280;
 }

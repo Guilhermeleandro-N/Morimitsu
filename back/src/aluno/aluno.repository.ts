@@ -51,9 +51,6 @@ export class AlunoRepository {
           faixa: dto.faixa ?? 'BRANCA',
           grau_faixa: dto.grau_faixa ?? 0,
           frequencia_atual: dto.frequencia_atual ?? 0,
-          data_nascimento: dto.data_nascimento
-            ? new Date(dto.data_nascimento)
-            : null,
           usuarioId: dto.usuarioId,
         },
         include: {
@@ -86,14 +83,24 @@ export class AlunoRepository {
     }
   }
 
-  async listar(): Promise<AlunoEntity[]> {
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: AlunoEntity[]; total: number }> {
     try {
-      const alunos = await this.prisma.aluno.findMany({
-        include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
-        },
-      });
-      return alunos.map((a) => this.toEntity(a));
+      const where = {};
+      const [alunos, total] = await Promise.all([
+        this.prisma.aluno.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            usuario: { select: { nome: true, email: true, telefone: true } },
+          },
+        }),
+        this.prisma.aluno.count({ where }),
+      ]);
+      return { data: alunos.map((a) => this.toEntity(a)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar alunos no banco de dados',
@@ -101,37 +108,56 @@ export class AlunoRepository {
     }
   }
 
-  async listarPorProfessorUsuarioId(usuarioId: string): Promise<AlunoEntity[]> {
+  async listarPorProfessorUsuarioId(
+    usuarioId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: AlunoEntity[]; total: number }> {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId },
         select: { id: true },
       });
-      if (!professor) return [];
+      if (!professor) return { data: [], total: 0 };
 
-      const vinculos = await this.prisma.alunoTurma.findMany({
-        where: {
-          turma: {
-            professorTurmas: {
-              some: { professor_id: professor.id },
-            },
+      const where = {
+        turma: {
+          professorTurmas: {
+            some: { professor_id: professor.id },
           },
         },
-        include: {
-          aluno: {
-            include: {
-              usuario: { select: { nome: true, email: true, telefone: true } },
+      };
+
+      const [vinculos, total] = await Promise.all([
+        this.prisma.alunoTurma.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            aluno: {
+              include: {
+                usuario: {
+                  select: { nome: true, email: true, telefone: true },
+                },
+              },
             },
           },
-        },
-        distinct: ['aluno_id'],
-      });
+          distinct: ['aluno_id'],
+        }),
+        this.prisma.alunoTurma.count({
+          where,
+        }),
+      ]);
 
-      return vinculos.map((v) => {
-        const entity = this.toEntity(v.aluno);
-        entity.frequente = v.frequente;
-        return entity;
-      });
+      return {
+        data: vinculos.map((v) => {
+          const entity = this.toEntity(v.aluno);
+          entity.frequente = v.frequente;
+          entity.arquivado_at = v.arquivado_at;
+          return entity;
+        }),
+        total,
+      };
     } catch (e) {
       if (e instanceof NotFoundException) throw e;
       throw new InternalServerErrorException(
@@ -147,6 +173,7 @@ export class AlunoRepository {
     email: string;
     telefone: string | null;
     data_nascimento: Date | null;
+    status: string;
     faixa: string;
     grau_faixa: number;
     frequencia_atual: number;
@@ -156,7 +183,15 @@ export class AlunoRepository {
       const aluno = await this.prisma.aluno.findUnique({
         where: { usuarioId },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              data_nascimento: true,
+              status: true,
+            },
+          },
           frequencias: {
             orderBy: { data: 'desc' },
             include: { turma: { select: { nome: true } } },
@@ -171,7 +206,8 @@ export class AlunoRepository {
         nome: aluno.usuario.nome,
         email: aluno.usuario.email,
         telefone: aluno.usuario.telefone,
-        data_nascimento: aluno.data_nascimento,
+        data_nascimento: aluno.usuario.data_nascimento,
+        status: aluno.usuario.status,
         faixa: aluno.faixa,
         grau_faixa: aluno.grau_faixa,
         frequencia_atual: aluno.frequencia_atual,
@@ -222,6 +258,49 @@ export class AlunoRepository {
     }
   }
 
+  async contarPresencas(alunoId: string): Promise<number> {
+    try {
+      const resultado = await this.prisma.alunoTurma.aggregate({
+        where: { aluno_id: alunoId },
+        _sum: { frequencia_atual: true },
+      });
+      return resultado._sum.frequencia_atual ?? 0;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao contar presenças do aluno no banco de dados',
+      );
+    }
+  }
+
+  async zerarFrequenciaTurma(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    try {
+      await this.prisma.alunoTurma.updateMany({
+        where: { aluno_id: alunoId, turma_id: turmaId },
+        data: { frequencia_atual: 0 },
+      });
+
+      // Recalcula a frequência global do aluno como a soma dos vínculos
+      // restantes. Isso garante que, após a graduação, o card saia do painel
+      // mesmo quando o vínculo zerado não refletia o valor global.
+      const soma = await this.prisma.alunoTurma.aggregate({
+        where: { aluno_id: alunoId },
+        _sum: { frequencia_atual: true },
+      });
+
+      await this.prisma.aluno.update({
+        where: { id: alunoId },
+        data: { frequencia_atual: soma._sum.frequencia_atual ?? 0 },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao zerar frequência da turma no banco de dados',
+      );
+    }
+  }
+
   async atualizar(
     id: string,
     dto: UpdateAlunoDto,
@@ -232,10 +311,6 @@ export class AlunoRepository {
       if (dto.grau_faixa !== undefined) data.grau_faixa = dto.grau_faixa;
       if (dto.frequencia_atual !== undefined)
         data.frequencia_atual = dto.frequencia_atual;
-      if (dto.data_nascimento !== undefined)
-        data.data_nascimento = dto.data_nascimento
-          ? new Date(dto.data_nascimento)
-          : null;
 
       const aluno = await this.prisma.aluno.update({
         where: { id },
@@ -272,12 +347,30 @@ export class AlunoRepository {
     }
   }
 
+  // Professor também participa como aluno (ex.: turma do admin) —
+  // sincroniza a graduação no registro de professor, se existir.
+  async atualizarGraduacaoProfessor(
+    usuarioId: string,
+    faixa: string,
+    grau: number,
+  ): Promise<void> {
+    try {
+      await this.prisma.professor.updateMany({
+        where: { usuarioId },
+        data: { faixa, grau },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao atualizar graduação do professor no banco de dados',
+      );
+    }
+  }
+
   private toEntity(aluno: {
     id: string;
     frequencia_atual: number;
     grau_faixa: number;
     faixa: string;
-    data_nascimento: Date | null;
     usuarioId: string;
     usuario?: { nome: string; email: string; telefone: string | null };
   }): AlunoEntity {
@@ -286,7 +379,6 @@ export class AlunoRepository {
     entity.frequencia_atual = aluno.frequencia_atual;
     entity.grau_faixa = aluno.grau_faixa;
     entity.faixa = aluno.faixa;
-    entity.data_nascimento = aluno.data_nascimento;
     entity.usuarioId = aluno.usuarioId;
     if (aluno.usuario) {
       entity.nome = aluno.usuario.nome;

@@ -12,27 +12,15 @@ import { UpdateFrequenciaProfDto } from './dtos/update-frequencia-prof.dto';
 import { UpdateFrequenciaDto } from './dtos/update-frequencia.dto';
 import { FrequenciaProfEntity } from './entities/frequencia-prof.entity';
 import { FrequenciaEntity } from './entities/frequencia.entity';
+import {
+  FREQUENCIAS_POR_GRAU,
+} from '../common/faixas.constants';
 
 export interface GraduacaoResultado {
   novoGrau: number;
   novaFaixa: string;
   graduou: boolean;
 }
-
-const PROGRESSAO_FAIXAS = [
-  'BRANCA',
-  'CINZA',
-  'AMARELA',
-  'LARANJA',
-  'VERDE',
-  'AZUL',
-  'ROXA',
-  'MARROM',
-  'PRETA',
-];
-
-const FREQUENCIAS_POR_GRAU = 30;
-const GRAUS_POR_FAIXA = 4;
 
 @Injectable()
 export class FrequenciaRepository {
@@ -51,17 +39,19 @@ export class FrequenciaRepository {
         return { frequencia: this.toEntity(frequencia), graduacao: null };
       }
 
-      const aluno = await this.prisma.aluno.update({
+      await this.prisma.aluno.update({
         where: { id: dto.aluno_id },
         data: { frequencia_atual: { increment: 1 } },
       });
 
+      await this.incrementarFrequencia(dto.aluno_id, dto.turma_id);
+
+      await this.notificarAniversario(dto.aluno_id, dto.turma_id);
+
       const graduacao = await this.verificarGraduacao(
         dto.aluno_id,
         dto.turma_id,
-        aluno.frequencia_atual,
-        aluno.faixa,
-        aluno.grau_faixa,
+        dto.professor_id,
       );
 
       return { frequencia: this.toEntity(frequencia), graduacao };
@@ -76,6 +66,58 @@ export class FrequenciaRepository {
         'Erro ao registrar frequência no banco de dados',
       );
     }
+  }
+
+  async relatorioTreino(
+    professorId: string,
+    turmaId: string,
+    alunosPresentes: string[],
+  ): Promise<{
+    treino: FrequenciaProfEntity;
+    frequencias: FrequenciaEntity[];
+  }> {
+    const agora = new Date();
+    const inicio = new Date(agora.getTime() - 2 * 60 * 60 * 1000);
+
+    const treino = await this.prisma.frequenciaProf.create({
+      data: {
+        professor_id: professorId,
+        turma_id: turmaId,
+        data: agora,
+        status_aula: 'REALIZADA',
+      },
+    });
+
+    const frequencias: FrequenciaEntity[] = [];
+
+    for (const alunoId of alunosPresentes) {
+      const freq = await this.prisma.frequenciaAluno.create({
+        data: {
+          aluno_id: alunoId,
+          professor_id: professorId,
+          turma_id: turmaId,
+          data: agora,
+          horario_inicio: inicio,
+          horario_fim: agora,
+          status_presenca: 'PRESENTE',
+        },
+      });
+
+      const aluno = await this.prisma.aluno.update({
+        where: { id: alunoId },
+        data: { frequencia_atual: { increment: 1 } },
+      });
+
+      await this.incrementarFrequencia(alunoId, turmaId);
+
+      await this.notificarAniversario(alunoId, turmaId);
+
+      await this.verificarGraduacao(alunoId, turmaId, professorId);
+
+      frequencias.push(this.toEntity(freq));
+    }
+
+    return { treino: this.toEntityProf(treino), frequencias };
   }
 
   async atualizar(
@@ -118,12 +160,14 @@ export class FrequenciaRepository {
             data: { frequencia_atual: { increment: 1 } },
           });
 
+          await this.incrementarFrequencia(atual.aluno_id, atual.turma_id);
+
+          await this.notificarAniversario(atual.aluno_id, atual.turma_id);
+
           await this.verificarGraduacao(
             atual.aluno_id,
             atual.turma_id,
-            aluno.frequencia_atual,
-            aluno.faixa,
-            aluno.grau_faixa,
+            atual.professor_id,
           );
         } else if (
           dto.status_presenca === 'AUSENTE' &&
@@ -133,6 +177,8 @@ export class FrequenciaRepository {
             where: { id: atual.aluno_id },
             data: { frequencia_atual: { decrement: 1 } },
           });
+
+          await this.decrementarFrequencia(atual.aluno_id, atual.turma_id);
         }
       }
 
@@ -150,37 +196,69 @@ export class FrequenciaRepository {
     }
   }
 
+  private async incrementarFrequencia(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    await this.prisma.alunoTurma.updateMany({
+      where: { aluno_id: alunoId, turma_id: turmaId },
+      data: { frequencia_atual: { increment: 1 } },
+    });
+  }
+
+  private async decrementarFrequencia(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    await this.prisma.alunoTurma.updateMany({
+      where: { aluno_id: alunoId, turma_id: turmaId },
+      data: { frequencia_atual: { decrement: 1 } },
+    });
+  }
+
   private async verificarGraduacao(
     alunoId: string,
     turmaId: string,
-    frequenciaAtual: number,
-    faixaAtual: string,
-    grauFaixaAtual: number,
+    professorId: string,
   ): Promise<GraduacaoResultado | null> {
-    if (frequenciaAtual % FREQUENCIAS_POR_GRAU !== 0) {
+    // A graduação é manual: somente o admin ou o professor responsável
+    // pode graduar o aluno. Aqui notificamos os professores quando
+    // o aluno se aproxima (faltando 5..1 frequências) ou atinge os 30
+    // frequências na turma (pronto para graduar), e também o próprio
+    // aluno sobre o seu progresso.
+    const [vinculo, aluno] = await Promise.all([
+      this.prisma.alunoTurma.findUnique({
+        where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
+        select: { frequencia_atual: true },
+      }),
+      this.prisma.aluno.findUnique({
+        where: { id: alunoId },
+        select: { usuario: { select: { nome: true } } },
+      }),
+    ]);
+
+    const frequenciaTurma = vinculo?.frequencia_atual ?? 0;
+    if (frequenciaTurma === 0) return null;
+
+    const nome = aluno?.usuario?.nome ?? 'Aluno';
+    const resto = frequenciaTurma % FREQUENCIAS_POR_GRAU;
+
+    let mensagem: string;
+    let mensagemAluno: string;
+    if (resto === 0) {
+      mensagem = `${nome} já possui ${frequenciaTurma} frequências, o aluno já deve ser graduado`;
+      mensagemAluno = `Parabéns! Você atingiu as ${frequenciaTurma} presenças necessárias. Procure seu professor para ser graduado!`;
+    } else if (resto >= FREQUENCIAS_POR_GRAU - 5) {
+      const restantes = FREQUENCIAS_POR_GRAU - resto;
+      mensagem = `Falta ${restantes} frequência${
+        restantes === 1 ? '' : 's'
+      } para o aluno ${nome} se graduar`;
+      mensagemAluno = `Sua graduação está próxima! Faltam apenas ${restantes} presença${
+        restantes === 1 ? '' : 's'
+      } para você se graduar.`;
+    } else {
       return null;
     }
-
-    let novoGrau = grauFaixaAtual + 1;
-    let novaFaixa = faixaAtual;
-
-    if (novoGrau > GRAUS_POR_FAIXA) {
-      const indiceAtual = PROGRESSAO_FAIXAS.indexOf(novaFaixa);
-      const proximoIndice = indiceAtual + 1;
-      if (proximoIndice < PROGRESSAO_FAIXAS.length) {
-        novaFaixa = PROGRESSAO_FAIXAS[proximoIndice];
-      }
-      novoGrau = 0;
-    }
-
-    await this.prisma.aluno.update({
-      where: { id: alunoId },
-      data: {
-        grau_faixa: novoGrau,
-        faixa: novaFaixa,
-        ...(novoGrau === 0 && { frequencia_atual: 0 }),
-      },
-    });
 
     // Notificar todos os professores da turma
     const professorTurmas = await this.prisma.professorTurma.findMany({
@@ -188,26 +266,87 @@ export class FrequenciaRepository {
       select: { professor_id: true },
     });
 
-    const mensagem = `Aluno atingiu ${frequenciaAtual} frequências e avançou para ${novaFaixa} grau ${novoGrau}`;
+    if (professorTurmas.length > 0) {
+      await this.prisma.notificacao.createMany({
+        data: professorTurmas.map((pt) => ({
+          professor_id: pt.professor_id,
+          aluno_id: alunoId,
+          mensagem,
+          tipo: 'graduacao',
+        })),
+      });
+    }
+
+    // Notificar o próprio aluno sobre a sua graduação
+    await this.prisma.notificacao.create({
+      data: {
+        professor_id: professorId,
+        aluno_id: alunoId,
+        mensagem: mensagemAluno,
+        tipo: 'graduacao',
+      },
+    });
+
+    return null;
+  }
+
+  private async notificarAniversario(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<void> {
+    const aluno = await this.prisma.aluno.findUnique({
+      where: { id: alunoId },
+      select: {
+        usuario: { select: { nome: true, data_nascimento: true } },
+      },
+    });
+
+    const nascimento = aluno?.usuario?.data_nascimento;
+    if (!nascimento) return;
+
+    const hoje = new Date();
+    if (
+      nascimento.getDate() !== hoje.getDate() ||
+      nascimento.getMonth() !== hoje.getMonth()
+    )
+      return;
+
+    const professorTurmas = await this.prisma.professorTurma.findMany({
+      where: { turma_id: turmaId },
+      select: { professor_id: true },
+    });
+
+    if (professorTurmas.length === 0) return;
+
+    const mensagem = `Hoje é o aniversário de ${aluno?.usuario?.nome}!`;
 
     await this.prisma.notificacao.createMany({
       data: professorTurmas.map((pt) => ({
         professor_id: pt.professor_id,
         aluno_id: alunoId,
         mensagem,
+        tipo: 'aniversario',
       })),
     });
-
-    return { novoGrau, novaFaixa, graduou: true };
   }
 
-  async listarPorAluno(alunoId: string): Promise<FrequenciaEntity[]> {
+  async listarPorAluno(
+    alunoId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaEntity[]; total: number }> {
     try {
-      const frequencias = await this.prisma.frequenciaAluno.findMany({
-        where: { aluno_id: alunoId },
-        orderBy: { data: 'desc' },
-      });
-      return frequencias.map((f) => this.toEntity(f));
+      const where = { aluno_id: alunoId };
+      const [frequencias, total] = await Promise.all([
+        this.prisma.frequenciaAluno.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaAluno.count({ where }),
+      ]);
+      return { data: frequencias.map((f) => this.toEntity(f)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar frequências no banco de dados',
@@ -215,13 +354,23 @@ export class FrequenciaRepository {
     }
   }
 
-  async listarPorTurma(turmaId: string): Promise<FrequenciaEntity[]> {
+  async listarPorTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaEntity[]; total: number }> {
     try {
-      const frequencias = await this.prisma.frequenciaAluno.findMany({
-        where: { turma_id: turmaId },
-        orderBy: { data: 'desc' },
-      });
-      return frequencias.map((f) => this.toEntity(f));
+      const where = { turma_id: turmaId };
+      const [frequencias, total] = await Promise.all([
+        this.prisma.frequenciaAluno.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaAluno.count({ where }),
+      ]);
+      return { data: frequencias.map((f) => this.toEntity(f)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar frequências da turma no banco de dados',
@@ -238,13 +387,15 @@ export class FrequenciaRepository {
       data_fim?: Date;
       frequente?: string;
     },
-  ): Promise<FrequenciaEntity[]> {
+    skip = 0,
+    take = 10,
+  ): Promise<{ data: FrequenciaEntity[]; total: number }> {
     try {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId: professorUsuarioId },
         select: { id: true },
       });
-      if (!professor) return [];
+      if (!professor) return { data: [], total: 0 };
 
       const turmasDoProfessor = await this.prisma.professorTurma.findMany({
         where: { professor_id: professor.id },
@@ -252,7 +403,7 @@ export class FrequenciaRepository {
       });
       const turmaIds = turmasDoProfessor.map((t) => t.turma_id);
 
-      if (turmaIds.length === 0) return [];
+      if (turmaIds.length === 0) return { data: [], total: 0 };
 
       const where: Prisma.FrequenciaAlunoWhereInput = {
         turma_id: filtros?.turma_id ? filtros.turma_id : { in: turmaIds },
@@ -279,12 +430,17 @@ export class FrequenciaRepository {
         };
       }
 
-      const frequencias = await this.prisma.frequenciaAluno.findMany({
-        where,
-        orderBy: { data: 'desc' },
-      });
+      const [frequencias, total] = await Promise.all([
+        this.prisma.frequenciaAluno.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaAluno.count({ where }),
+      ]);
 
-      return frequencias.map((f) => this.toEntity(f));
+      return { data: frequencias.map((f) => this.toEntity(f)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar frequências das turmas do professor',
@@ -309,6 +465,38 @@ export class FrequenciaRepository {
     } catch {
       throw new InternalServerErrorException(
         'Erro ao verificar vínculo professor-turma no banco de dados',
+      );
+    }
+  }
+
+  async buscarProfessorPorUsuarioId(
+    usuarioId: string,
+  ): Promise<{ id: string } | null> {
+    try {
+      return this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar professor pelo usuário',
+      );
+    }
+  }
+
+  async alunoEstaAtivoNaTurma(
+    alunoId: string,
+    turmaId: string,
+  ): Promise<boolean> {
+    try {
+      const vinculo = await this.prisma.alunoTurma.findUnique({
+        where: { aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId } },
+        select: { frequente: true },
+      });
+      return vinculo?.frequente === 'S';
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao verificar status do aluno na turma',
       );
     }
   }
@@ -355,12 +543,34 @@ export class FrequenciaRepository {
     }
   }
 
+  // Verifica se o aluno pertence ao usuário logado (perfil do próprio aluno).
+  async alunoPertenceAoUsuario(
+    alunoId: string,
+    usuarioId: string,
+  ): Promise<boolean> {
+    try {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { id: alunoId, usuarioId },
+        select: { id: true },
+      });
+      return !!aluno;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao verificar aluno no banco de dados',
+      );
+    }
+  }
+
   // FrequenciaProf
   async registrarTreino(
     dto: CreateFrequenciaProfDto,
   ): Promise<FrequenciaProfEntity> {
     try {
       const treino = await this.prisma.frequenciaProf.create({ data: dto });
+
+      // Notifica os alunos da turma sobre o treino marcado
+      await this.notificarAlunosDoTreino(dto.professor_id, dto.turma_id, dto.data);
+
       return this.toEntityProf(treino);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -373,6 +583,43 @@ export class FrequenciaRepository {
         'Erro ao registrar treino no banco de dados',
       );
     }
+  }
+
+  // Cria notificações para todos os alunos ativos da turma quando
+  // um treino é marcado pelo professor.
+  private async notificarAlunosDoTreino(
+    professorId: string,
+    turmaId: string,
+    dataTreino: Date,
+  ): Promise<void> {
+    const [turma, vinculos] = await Promise.all([
+      this.prisma.turma.findUnique({
+        where: { id: turmaId },
+        select: { nome: true },
+      }),
+      this.prisma.alunoTurma.findMany({
+        where: { turma_id: turmaId, frequente: 'S' },
+        select: { aluno_id: true },
+      }),
+    ]);
+
+    if (vinculos.length === 0) return;
+
+    const dataFormatada = dataTreino.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    const mensagem = `Treino marcado para o dia ${dataFormatada} na turma ${turma?.nome ?? ''}`;
+
+    await this.prisma.notificacao.createMany({
+      data: vinculos.map((v) => ({
+        professor_id: professorId,
+        aluno_id: v.aluno_id,
+        mensagem,
+        tipo: 'treino',
+      })),
+    });
   }
 
   async atualizarTreino(
@@ -407,16 +654,48 @@ export class FrequenciaRepository {
 
   async listarTreinosPorProfessor(
     professorId: string,
-  ): Promise<FrequenciaProfEntity[]> {
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaProfEntity[]; total: number }> {
     try {
-      const treinos = await this.prisma.frequenciaProf.findMany({
-        where: { professor_id: professorId },
-        orderBy: { data: 'desc' },
-      });
-      return treinos.map((t) => this.toEntityProf(t));
+      const where = { professor_id: professorId };
+      const [treinos, total] = await Promise.all([
+        this.prisma.frequenciaProf.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaProf.count({ where }),
+      ]);
+      return { data: treinos.map((t) => this.toEntityProf(t)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar treinos no banco de dados',
+      );
+    }
+  }
+
+  async listarTreinosPorTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: FrequenciaProfEntity[]; total: number }> {
+    try {
+      const where = { turma_id: turmaId };
+      const [treinos, total] = await Promise.all([
+        this.prisma.frequenciaProf.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { data: 'desc' },
+        }),
+        this.prisma.frequenciaProf.count({ where }),
+      ]);
+      return { data: treinos.map((t) => this.toEntityProf(t)), total };
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao listar treinos da turma no banco de dados',
       );
     }
   }

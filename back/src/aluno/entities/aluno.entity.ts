@@ -10,6 +10,12 @@ export class AlunoEntity {
   @ApiPropertyOptional({ nullable: true })
   telefone?: string | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
+  data_nascimento?: Date | null;
+
+  @ApiPropertyOptional({ description: 'Status do usuário (ENABLED/DISABLED)' })
+  status?: string;
+
   @ApiProperty()
   id!: string;
 
@@ -21,9 +27,6 @@ export class AlunoEntity {
 
   @ApiProperty()
   faixa!: string;
-
-  @ApiPropertyOptional({ type: String, nullable: true })
-  data_nascimento!: Date | null;
 
   @ApiProperty()
   usuarioId!: string;
@@ -47,4 +50,7 @@ export class AlunoEntity {
     description: 'Status do vínculo na turma (S=ativo, N=inativo)',
   })
   frequente?: string;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  arquivado_at?: Date | null;
 }

@@ -8,6 +8,8 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,8 +17,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Permissions } from '../authorization/decorators/permissions.decorator';
+import { PermissionsGuard } from '../authorization/guards/permissions.guard';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { ArquivarUsuarioDto } from './dtos/arquivar-usuario.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { UserEntity } from './entities/user.entity';
 import { UserService } from './user.service';
 
@@ -35,14 +42,22 @@ export class UserController {
 
   @Get()
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.read')
   @ApiOperation({ summary: 'Listar todos os usuários' })
   @ApiResponse({ status: 200, type: [UserEntity] })
-  async listar(): Promise<UserEntity[]> {
-    return this.service.listar();
+  async listar(
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<UserEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listar((page - 1) * limit, limit);
   }
 
   @Get(':id')
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.read')
   @ApiOperation({ summary: 'Buscar usuário por ID' })
   @ApiResponse({ status: 200, type: UserEntity })
   async buscarPorId(@Param('id') id: string): Promise<UserEntity> {
@@ -51,6 +66,8 @@ export class UserController {
 
   @Patch(':id')
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.update')
   @ApiOperation({ summary: 'Atualizar usuário' })
   @ApiResponse({ status: 200, type: UserEntity })
   async atualizar(
@@ -63,9 +80,24 @@ export class UserController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.update')
   @ApiOperation({ summary: 'Deletar usuário' })
   @ApiResponse({ status: 204 })
   async deletar(@Param('id') id: string): Promise<void> {
     return this.service.deletar(id);
+  }
+
+  @Patch(':id/arquivar')
+  @ApiBearerAuth()
+  @UseGuards(PermissionsGuard)
+  @Permissions('user.update')
+  @ApiOperation({ summary: 'Arquivar ou reativar usuário' })
+  @ApiResponse({ status: 200, type: UserEntity })
+  async arquivar(
+    @Param('id') id: string,
+    @Body() dto: ArquivarUsuarioDto,
+  ): Promise<UserEntity> {
+    return this.service.arquivar(id, dto.arquivado);
   }
 }

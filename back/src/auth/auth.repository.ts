@@ -16,11 +16,15 @@ export class AuthRepository {
         userPerfis: {
           include: {
             perfil: {
-              include: {
+              select: {
+                nome: true,
                 perfilPermissions: { include: { permission: true } },
               },
             },
           },
+        },
+        userPermissions: {
+          include: { permission: true },
         },
       },
     });
@@ -38,11 +42,15 @@ export class AuthRepository {
         userPerfis: {
           include: {
             perfil: {
-              include: {
+              select: {
+                nome: true,
                 perfilPermissions: { include: { permission: true } },
               },
             },
           },
+        },
+        userPermissions: {
+          include: { permission: true },
         },
       },
     });
@@ -60,11 +68,15 @@ export class AuthRepository {
         userPerfis: {
           include: {
             perfil: {
-              include: {
+              select: {
+                nome: true,
                 perfilPermissions: { include: { permission: true } },
               },
             },
           },
+        },
+        userPermissions: {
+          include: { permission: true },
         },
       },
     });
@@ -75,6 +87,21 @@ export class AuthRepository {
     if (!senhaValida) return null;
 
     return this.toAuthEntity(usuario);
+  }
+
+  async atualizarSenha(email: string, novaSenha: string): Promise<void> {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (!usuario) return;
+
+    const senhaHash = await argon2.hash(novaSenha);
+    await this.prisma.usuario.update({
+      where: { id: usuario.id },
+      data: { senha: senhaHash },
+    });
   }
 
   private toAuthEntity(usuario: {
@@ -88,20 +115,36 @@ export class AuthRepository {
     professor: { id: string } | null;
     userPerfis: {
       perfil: {
+        nome: string;
         perfilPermissions: { permission: { codigo: string } }[];
       };
     }[];
+    userPermissions: { is_removed: boolean; permission: { codigo: string } }[];
   }): AuthEntity {
     const roles: string[] = [];
 
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
-    if (roles.length === 0) roles.push('admin');
+
+    for (const up of usuario.userPerfis) {
+      const roleName = up.perfil.nome.toLowerCase();
+      if (!roles.includes(roleName)) {
+        roles.push(roleName);
+      }
+    }
 
     const permissoes = new Set<string>();
     for (const up of usuario.userPerfis) {
       for (const pp of up.perfil.perfilPermissions) {
         permissoes.add(pp.permission.codigo);
+      }
+    }
+
+    for (const override of usuario.userPermissions) {
+      if (override.is_removed) {
+        permissoes.delete(override.permission.codigo);
+      } else {
+        permissoes.add(override.permission.codigo);
       }
     }
 

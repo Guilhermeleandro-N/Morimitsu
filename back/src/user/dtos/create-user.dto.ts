@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsDateString,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -35,4 +36,9 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   telefone?: string;
+
+  @ApiPropertyOptional({ example: '2000-01-01' })
+  @IsDateString()
+  @IsOptional()
+  data_nascimento?: string;
 }

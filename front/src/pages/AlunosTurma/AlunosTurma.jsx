@@ -1,20 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { listarAlunosDaTurma } from "../../services/turmaService";
+import { listarAlunosDaTurma, removerAlunoDaTurma, atualizarStatusAlunoNaTurma, atualizarArquivadoAlunoNaTurma, atualizarStatusTurma } from "../../services/turmaService";
 import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import FrequenciaModal from "../../components/RegistrarFrequencia/FrequenciaModal";
-
+import RoleGuard from "../../routes/RoleGuard";
 import {
   FaEye,
   FaTrash,
   FaArchive,
   FaUserPlus,
   FaClipboardCheck,
-  FaHistory
+  FaHistory,
+  FaArrowLeft
 } from "react-icons/fa";
 
 import "./AlunosTurma.css";
 import AdicionarAlunoTurmaModal from "../../components/AdicionarAlunoTurma/AdicionarAlunoTurmaModal";
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
+
+const FAIXAS = [
+  "BRANCA",
+  "CINZA",
+  "AMARELA",
+  "LARANJA",
+  "VERDE",
+  "AZUL",
+  "ROXA",
+  "MARROM",
+  "PRETA",
+];
+
+const FILTRO_STATUS = {
+  TODOS: "TODOS",
+  ATIVOS: "ATIVOS",
+  INATIVOS: "INATIVOS",
+  ARQUIVADOS: "ARQUIVADOS",
+};
 
 function AlunosTurma() {
 
@@ -26,12 +47,25 @@ function AlunosTurma() {
   
   const turmaHorarioInicio = location.state?.turmaHorarioInicio;
   const turmaHorarioFim = location.state?.turmaHorarioFim;
+
+  const [statusTurma, setStatusTurma] = useState(
+    location.state?.turmaStatus || "ATIVO"
+  );
+
   const [alunos, setAlunos] = useState([]);
   const [modalAdicionarOpen, setModalAdicionarOpen] =
     useState(false);
 
   const [modalFrequenciaOpen, setModalFrequenciaOpen] =
   useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] =
+    useState(false);
+  const [selectedAlunoParaRemover, setSelectedAlunoParaRemover] =
+    useState(null);
+
+  const [filtroStatus, setFiltroStatus] = useState(FILTRO_STATUS.TODOS);
+  const [filtroFaixa, setFiltroFaixa] = useState("");
+  const [filtroGrau, setFiltroGrau] = useState("");
 
   function abrirPerfil(userId) {
     navigate("/perfilAluno", {
@@ -57,8 +91,9 @@ function AlunosTurma() {
               );
 
             return {
+              ...alunoCompleto,
               ...aluno,
-              ...alunoCompleto
+              frequencia_atual: aluno.frequencia_atual,
             };
 
           })
@@ -81,6 +116,82 @@ function AlunosTurma() {
     }
   }
 
+  async function handleToggleStatus(aluno) {
+    const novoStatus = aluno.frequente === "S" ? "N" : "S";
+    try {
+      await atualizarStatusAlunoNaTurma(turmaId, aluno.id, novoStatus);
+      setAlunos((prev) =>
+        prev.map((a) =>
+          a.id === aluno.id ? { ...a, frequente: novoStatus } : a
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao alternar status do aluno:", error);
+    }
+  }
+
+  async function handleToggleArquivado(aluno) {
+    const arquivado = !aluno.arquivado_at;
+    try {
+      await atualizarArquivadoAlunoNaTurma(turmaId, aluno.id, arquivado);
+      setAlunos((prev) =>
+        prev.map((a) =>
+          a.id === aluno.id
+            ? { ...a, arquivado_at: arquivado ? new Date().toISOString() : null }
+            : a
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao arquivar/reativar aluno:", error);
+    }
+  }
+
+  async function handleToggleStatusTurma() {
+    const novoStatus = statusTurma === "ATIVO" ? "INATIVO" : "ATIVO";
+    try {
+      await atualizarStatusTurma(turmaId, novoStatus);
+      setStatusTurma(novoStatus);
+    } catch (error) {
+      console.error("Erro ao alternar status da turma:", error);
+    }
+  }
+
+  function abrirConfirmacaoRemocao(aluno) {
+    setSelectedAlunoParaRemover(aluno);
+    setConfirmModalOpen(true);
+  }
+
+  async function handleRemoverAluno() {
+    if (!selectedAlunoParaRemover) {
+      return;
+    }
+
+    try {
+      await removerAlunoDaTurma(
+        turmaId,
+        selectedAlunoParaRemover.id,
+      );
+      setAlunos((prevAlunos) =>
+        prevAlunos.filter(
+          (aluno) => aluno.id !== selectedAlunoParaRemover.id,
+        ),
+      );
+    } catch (error) {
+      console.error(
+        "Erro ao remover aluno da turma:",
+        error,
+      );
+    } finally {
+      setConfirmModalOpen(false);
+      setSelectedAlunoParaRemover(null);
+    }
+  }
+
+  function fecharConfirmacao() {
+    setConfirmModalOpen(false);
+    setSelectedAlunoParaRemover(null);
+  }
+
   useEffect(() => {
 
     if (turmaId) {
@@ -89,12 +200,44 @@ function AlunosTurma() {
 
   }, [turmaId]);
 
+  const grausDisponiveis = useMemo(() => {
+    const graus = new Set(alunos.map((a) => a.grau_faixa));
+    return Array.from(graus).sort((a, b) => a - b);
+  }, [alunos]);
+
+  const alunosFiltrados = useMemo(() => {
+    let lista = alunos;
+
+    if (filtroStatus === FILTRO_STATUS.ATIVOS) {
+      lista = lista.filter((a) => a.frequente === "S" && !a.arquivado_at);
+    } else if (filtroStatus === FILTRO_STATUS.INATIVOS) {
+      lista = lista.filter((a) => a.frequente === "N" && !a.arquivado_at);
+    } else if (filtroStatus === FILTRO_STATUS.ARQUIVADOS) {
+      lista = lista.filter((a) => a.arquivado_at);
+    } else {
+      lista = lista.filter((a) => !a.arquivado_at);
+    }
+
+    if (filtroFaixa) {
+      lista = lista.filter((a) => a.faixa === filtroFaixa);
+    }
+
+    if (filtroGrau !== "") {
+      lista = lista.filter((a) => String(a.grau_faixa) === filtroGrau);
+    }
+
+    return lista;
+  }, [alunos, filtroStatus, filtroFaixa, filtroGrau]);
+
   function getFaixaClass(faixa) {
 
     switch (faixa?.toLowerCase()) {
 
       case "branca":
         return "faixa branca";
+
+      case "cinza":
+        return "faixa cinza";
 
       case "amarela":
         return "faixa amarela";
@@ -108,6 +251,15 @@ function AlunosTurma() {
       case "azul":
         return "faixa azul";
 
+      case "roxa":
+        return "faixa roxa";
+
+      case "marrom":
+        return "faixa marrom";
+
+      case "preta":
+        return "faixa preta";
+
       default:
         return "faixa";
     }
@@ -119,16 +271,30 @@ function AlunosTurma() {
 
       <div className="page-header">
 
-        <div>
+        <div className="page-header-left">
 
-          <h1>Lista de Alunos</h1>
+          <button
+            className="back-btn"
+            onClick={() =>
+              navigate("/turmas")
+            }
+            title="Voltar para turmas"
+          >
+            <FaArrowLeft />
+          </button>
 
-          <p>
-            Gerenciar alunos da turma {turmaNome}
-          </p>
+          <div>
+
+            <h1>Lista de Alunos</h1>
+
+            <p>
+              Gerenciar alunos da turma {turmaNome}
+            </p>
+
+          </div>
 
         </div>
-
+        <RoleGuard allowedRoutes={["admin", "professor"]}>
         <div className="header-actions">
 
           <button
@@ -136,6 +302,7 @@ function AlunosTurma() {
             onClick={() =>
               setModalAdicionarOpen(true)
             }
+            title="Adicionar aluno à turma"
           >
             <FaUserPlus />
           </button>
@@ -145,6 +312,7 @@ function AlunosTurma() {
           onClick={() =>
             setModalFrequenciaOpen(true)
           }
+          title="Registrar frequência"
         >
           <FaClipboardCheck />
         </button>
@@ -165,18 +333,83 @@ function AlunosTurma() {
         </button>
 
         </div>
-
+      </RoleGuard>    
       </div>
 
       <div className="listar-card">
 
         <div className="listar-header">
 
-          <h2>{turmaNome}</h2>
+          <div className="listar-header-left">
+            <h2>{turmaNome}</h2>
+            <p>
+              Total de {alunosFiltrados.length} alunos nesta turma
+            </p>
+          </div>
 
-          <p>
-            Total de {alunos.length} alunos nesta turma
-          </p>
+          <div className="listar-header-right">
+
+            <div className="filtros-bar">
+
+              <select
+                className="filtro-select"
+                value={filtroStatus}
+                onChange={(e) =>
+                  setFiltroStatus(e.target.value)
+                }
+                title="Filtrar por status"
+              >
+                <option value={FILTRO_STATUS.TODOS}>Todos</option>
+                <option value={FILTRO_STATUS.ATIVOS}>Ativos</option>
+                <option value={FILTRO_STATUS.INATIVOS}>Inativos</option>
+                <option value={FILTRO_STATUS.ARQUIVADOS}>Arquivados</option>
+              </select>
+
+              <select
+                className="filtro-select"
+                value={filtroFaixa}
+                onChange={(e) =>
+                  setFiltroFaixa(e.target.value)
+                }
+                title="Filtrar por faixa"
+              >
+                <option value="">Todas as faixas</option>
+                {FAIXAS.map((faixa) => (
+                  <option key={faixa} value={faixa}>
+                    {faixa.charAt(0) + faixa.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="filtro-select"
+                value={filtroGrau}
+                onChange={(e) =>
+                  setFiltroGrau(e.target.value)
+                }
+                title="Filtrar por grau"
+              >
+                <option value="">Todos os graus</option>
+                {grausDisponiveis.map((grau) => (
+                  <option key={grau} value={String(grau)}>
+                    Grau {grau}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
+            <RoleGuard allowedRoutes={["admin"]}>
+              <button
+                className={`turma-status-btn ${statusTurma === "ATIVO" ? "status-ativo" : "status-inativo"}`}
+                onClick={handleToggleStatusTurma}
+                title={statusTurma === "ATIVO" ? "Clique para inativar" : "Clique para ativar"}
+              >
+                {statusTurma === "ATIVO" ? "Ativo" : "Inativo"}
+              </button>
+            </RoleGuard>
+
+          </div>
 
         </div>
 
@@ -199,7 +432,7 @@ function AlunosTurma() {
 
             <tbody>
 
-              {alunos.map((aluno) => (
+              {alunosFiltrados.map((aluno) => (
 
                 <tr key={aluno.id}>
 
@@ -227,31 +460,47 @@ function AlunosTurma() {
 
                   <td>
 
-                    <span
-                      className={
-                        aluno.frequente === "S"
-                          ? "status ativo"
-                          : "status inativo"
-                      }
+                    <button
+                      type="button"
+                      className={`status-btn ${
+                        aluno.arquivado_at
+                          ? "status-arquivado"
+                          : aluno.frequente === "S"
+                            ? "status-ativo"
+                            : "status-inativo"
+                      }`}
+                      onClick={() => handleToggleStatus(aluno)}
+                      title={aluno.arquivado_at ? "Arquivado" : aluno.frequente === "S" ? "Clique para inativar" : "Clique para ativar"}
                     >
-                      {aluno.frequente === "S"
-                        ? "Ativo"
-                        : "Inativo"}
-                    </span>
-
-                  </td>
-
-                  <td>
-
-                    <button className="icon-btn">
-                      <FaArchive />
+                      {aluno.arquivado_at
+                        ? "Arquivado"
+                        : aluno.frequente === "S"
+                          ? "Ativo"
+                          : "Inativo"}
                     </button>
 
                   </td>
 
                   <td>
+                    <button
+                      className="icon-btn"
+                      onClick={() => handleToggleArquivado(aluno)}
+                      title={aluno.arquivado_at ? "Reativar aluno" : "Arquivar aluno"}
+                    >
+                      <FaArchive
+                        style={{ color: aluno.arquivado_at ? "#dc2626" : "#6b7280" }}
+                      />
+                    </button>
+                  </td>
 
-                    <button className="icon-btn delete">
+                  <td>
+
+                    <button
+                      className="icon-btn delete"
+                      onClick={() =>
+                        abrirConfirmacaoRemocao(aluno)
+                      }
+                    >
                       <FaTrash />
                     </button>
 
@@ -277,7 +526,7 @@ function AlunosTurma() {
 
               ))}
 
-              {alunos.length === 0 && (
+              {alunosFiltrados.length === 0 && (
 
                 <tr>
 
@@ -288,7 +537,9 @@ function AlunosTurma() {
                       padding: "20px"
                     }}
                   >
-                    Nenhum aluno encontrado.
+                    {filtroStatus === FILTRO_STATUS.ARQUIVADOS
+                      ? "Nenhum aluno arquivado."
+                      : "Nenhum aluno encontrado."}
                   </td>
 
                 </tr>
@@ -329,16 +580,23 @@ function AlunosTurma() {
     onClose={() =>
       setModalFrequenciaOpen(false)
     }
-    onSalvar={(presentes) => {
-      console.log(
-        "Alunos presentes:",
-        presentes
-      );
-
+    onSalvar={async (presentes) => {
+      await carregarAlunos();
       setModalFrequenciaOpen(false);
     }}
   />
 )}
+
+      {confirmModalOpen && selectedAlunoParaRemover && (
+        <ConfirmModal
+          title="Confirmar exclusão"
+          message={`Deseja realmente remover ${selectedAlunoParaRemover.nome} desta turma?`}
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          onConfirm={handleRemoverAluno}
+          onCancel={fecharConfirmacao}
+        />
+      )}
 
     </div>
 

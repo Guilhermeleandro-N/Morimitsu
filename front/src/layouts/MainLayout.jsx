@@ -6,11 +6,25 @@ import { useState } from "react";
 export default function MainLayout(){
     const [isOpen, setIsOpen] = useState(false)
     return(
-    <div>
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <Header isOpen={isOpen} setIsOpen={setIsOpen} />
+        {isOpen && (
+          <div
+            onClick={() => setIsOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 998,
+              background: "rgba(0,0,0,0.3)",
+            }}
+          />
+        )}
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen}/>
-        <main>
-                <Outlet />
+        <main
+          style={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}
+          onClick={() => isOpen && setIsOpen(false)}
+        >
+            <Outlet />
         </main>
     </div>
     )

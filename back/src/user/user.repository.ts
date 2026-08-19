@@ -17,8 +17,15 @@ export class UserRepository {
         email: dto.email,
         senha: senhaHash,
         telefone: dto.telefone,
+        data_nascimento: dto.data_nascimento
+          ? new Date(dto.data_nascimento)
+          : null,
       },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     return this.toEntity(usuario);
   }
@@ -26,7 +33,11 @@ export class UserRepository {
   async buscarPorId(id: string): Promise<UserEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     if (!usuario) return null;
     return this.toEntity(usuario);
@@ -35,17 +46,35 @@ export class UserRepository {
   async buscarPorEmail(email: string): Promise<UserEntity | null> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { email },
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     if (!usuario) return null;
     return this.toEntity(usuario);
   }
 
-  async listar(): Promise<UserEntity[]> {
-    const usuarios = await this.prisma.usuario.findMany({
-      include: { aluno: true, professor: true },
-    });
-    return usuarios.map((u) => this.toEntity(u));
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: UserEntity[]; total: number }> {
+    const where = {};
+    const [usuarios, total] = await Promise.all([
+      this.prisma.usuario.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          aluno: true,
+          professor: true,
+          userPerfis: { include: { perfil: { select: { nome: true } } } },
+        },
+      }),
+      this.prisma.usuario.count({ where }),
+    ]);
+    return { data: usuarios.map((u) => this.toEntity(u)), total };
   }
 
   async atualizar(id: string, dto: UpdateUserDto): Promise<UserEntity | null> {
@@ -55,11 +84,19 @@ export class UserRepository {
     if (dto.telefone !== undefined) data.telefone = dto.telefone;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.senha !== undefined) data.senha = await argon2.hash(dto.senha);
+    if (dto.data_nascimento !== undefined)
+      data.data_nascimento = dto.data_nascimento
+        ? new Date(dto.data_nascimento)
+        : null;
 
     const usuario = await this.prisma.usuario.update({
       where: { id },
       data,
-      include: { aluno: true, professor: true },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
     });
     return this.toEntity(usuario);
   }
@@ -72,25 +109,49 @@ export class UserRepository {
     ]);
   }
 
+  async arquivar(id: string, arquivado: boolean): Promise<UserEntity | null> {
+    const usuario = await this.prisma.usuario.update({
+      where: { id },
+      data: { arquivado_at: arquivado ? new Date() : null },
+      include: {
+        aluno: true,
+        professor: true,
+        userPerfis: { include: { perfil: { select: { nome: true } } } },
+      },
+    });
+    return this.toEntity(usuario);
+  }
+
   private toEntity(usuario: {
     id: string;
     nome: string;
     email: string;
     telefone: string | null;
+    data_nascimento: Date | null;
+    arquivado_at: Date | null;
     status: string;
     aluno: { id: string } | null;
     professor: { id: string } | null;
+    userPerfis: { perfil: { nome: string } }[];
   }): UserEntity {
     const roles: string[] = [];
     if (usuario.aluno) roles.push('aluno');
     if (usuario.professor) roles.push('professor');
-    if (roles.length === 0) roles.push('user');
+
+    for (const up of usuario.userPerfis) {
+      const roleName = up.perfil.nome.toLowerCase();
+      if (!roles.includes(roleName)) {
+        roles.push(roleName);
+      }
+    }
 
     const entity = new UserEntity();
     entity.id = usuario.id;
     entity.nome = usuario.nome;
     entity.email = usuario.email;
     entity.telefone = usuario.telefone;
+    entity.data_nascimento = usuario.data_nascimento;
+    entity.arquivado_at = usuario.arquivado_at;
     entity.status = usuario.status;
     entity.roles = roles;
     return entity;

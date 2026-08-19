@@ -11,21 +11,24 @@ import { NotificacaoEntity } from './entities/notificacao.entity';
 export class NotificacaoRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async listarPorProfessor(
-    professorUsuarioId: string,
-  ): Promise<NotificacaoEntity[]> {
+  async listarParaUsuario(
+    usuarioId: string,
+    roles: string[],
+    skip: number,
+    take: number,
+  ): Promise<{ data: NotificacaoEntity[]; total: number }> {
     try {
-      const professor = await this.prisma.professor.findUnique({
-        where: { usuarioId: professorUsuarioId },
-        select: { id: true },
-      });
-      if (!professor) return [];
-
-      const notificacoes = await this.prisma.notificacao.findMany({
-        where: { professor_id: professor.id },
-        orderBy: { created_at: 'desc' },
-      });
-      return notificacoes.map((n) => this.toEntity(n));
+      const where = await this.montarFiltro(usuarioId, roles);
+      const [notificacoes, total] = await Promise.all([
+        this.prisma.notificacao.findMany({
+          where,
+          skip,
+          take,
+          orderBy: { created_at: 'desc' },
+        }),
+        this.prisma.notificacao.count({ where }),
+      ]);
+      return { data: notificacoes.map((n) => this.toEntity(n)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar notificações no banco de dados',
@@ -35,20 +38,22 @@ export class NotificacaoRepository {
 
   async marcarComoLida(
     id: string,
-    professorUsuarioId: string,
+    usuarioId: string,
+    roles: string[],
   ): Promise<NotificacaoEntity> {
     try {
-      const professor = await this.prisma.professor.findUnique({
-        where: { usuarioId: professorUsuarioId },
-        select: { id: true },
-      });
-
       const notificacao = await this.prisma.notificacao.findUnique({
         where: { id },
       });
       if (!notificacao)
         throw new NotFoundException('Notificação não encontrada');
-      if (professor && notificacao.professor_id !== professor.id) {
+
+      const pertence = await this.pertenceAoUsuario(
+        notificacao,
+        usuarioId,
+        roles,
+      );
+      if (!pertence) {
         throw new NotFoundException('Notificação não encontrada');
       }
 
@@ -70,16 +75,14 @@ export class NotificacaoRepository {
     }
   }
 
-  async contarNaoLidas(professorUsuarioId: string): Promise<number> {
+  async contarNaoLidas(
+    usuarioId: string,
+    roles: string[],
+  ): Promise<number> {
     try {
-      const professor = await this.prisma.professor.findUnique({
-        where: { usuarioId: professorUsuarioId },
-        select: { id: true },
-      });
-      if (!professor) return 0;
-
+      const where = await this.montarFiltro(usuarioId, roles);
       return this.prisma.notificacao.count({
-        where: { professor_id: professor.id, lida: false },
+        where: { ...where, lida: false },
       });
     } catch {
       throw new InternalServerErrorException(
@@ -88,11 +91,94 @@ export class NotificacaoRepository {
     }
   }
 
+  async marcarTodasComoLidas(
+    usuarioId: string,
+    roles: string[],
+  ): Promise<number> {
+    try {
+      const where = await this.montarFiltro(usuarioId, roles);
+      const resultado = await this.prisma.notificacao.updateMany({
+        where: { ...where, lida: false },
+        data: { lida: true },
+      });
+      return resultado.count;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao marcar notificações como lidas no banco de dados',
+      );
+    }
+  }
+
+  // Filtra as notificações conforme o perfil do usuário logado.
+  private async montarFiltro(
+    usuarioId: string,
+    roles: string[],
+  ): Promise<Prisma.NotificacaoWhereInput> {
+    const or: Prisma.NotificacaoWhereInput[] = [];
+
+    if (roles.includes('admin')) return {};
+
+    if (roles.includes('professor')) {
+      const professor = await this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (professor) {
+        or.push({ professor_id: professor.id });
+      }
+    }
+
+    if (roles.includes('aluno')) {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (aluno) {
+        or.push({ aluno_id: aluno.id });
+      }
+    }
+
+    if (or.length === 0) return { id: 'sem-acesso' };
+
+    return { OR: or };
+  }
+
+  private async pertenceAoUsuario(
+    notificacao: { professor_id: string; aluno_id: string },
+    usuarioId: string,
+    roles: string[],
+  ): Promise<boolean> {
+    if (roles.includes('admin')) return true;
+
+    if (roles.includes('professor')) {
+      const professor = await this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (professor && professor.id === notificacao.professor_id) {
+        return true;
+      }
+    }
+
+    if (roles.includes('aluno')) {
+      const aluno = await this.prisma.aluno.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (aluno && aluno.id === notificacao.aluno_id) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private toEntity(n: {
     id: string;
     professor_id: string;
     aluno_id: string;
     mensagem: string;
+    tipo: string;
     lida: boolean;
     created_at: Date;
   }): NotificacaoEntity {
@@ -101,6 +187,7 @@ export class NotificacaoRepository {
     entity.professor_id = n.professor_id;
     entity.aluno_id = n.aluno_id;
     entity.mensagem = n.mensagem;
+    entity.tipo = n.tipo ?? 'GENERICA';
     entity.lida = n.lida;
     entity.created_at = n.created_at;
     return entity;

@@ -1,14 +1,12 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { JwtPayload } from '../auth/decorators/current-user.decorator';
 import { AlunoEntity } from '../aluno/entities/aluno.entity';
 import { ProfessorEntity } from '../professor/entities/professor.entity';
 import { AddAlunoTurmaDto } from './dtos/add-aluno-turma.dto';
 import { AddProfessorTurmaDto } from './dtos/add-professor-turma.dto';
 import { CreateTurmaDto } from './dtos/create-turma.dto';
 import { UpdateAlunoTurmaDto } from './dtos/update-aluno-turma.dto';
+import { UpdateTurmaStatusDto } from './dtos/update-turma-status.dto';
 import { UpdateTurmaDto } from './dtos/update-turma.dto';
 import { TurmaEntity } from './entities/turma.entity';
 import { TurmaRepository } from './turma.repository';
@@ -21,8 +19,41 @@ export class TurmaService {
     return this.repository.criar(dto);
   }
 
-  async listar(): Promise<TurmaEntity[]> {
-    return this.repository.listar();
+  async listar(
+    skip: number,
+    take: number,
+    usuario?: JwtPayload,
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
+    return this.repository.listar(skip, take, usuario?.sub, usuario?.roles);
+  }
+
+  async listarArquivadas(
+    skip: number,
+    take: number,
+    usuario?: JwtPayload,
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
+    return this.repository.listarArquivadas(
+      skip,
+      take,
+      usuario?.sub,
+      usuario?.roles,
+    );
+  }
+
+  async arquivar(id: string): Promise<TurmaEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Turma não encontrada');
+    const arquivada = await this.repository.arquivar(id);
+    if (!arquivada) throw new NotFoundException('Turma não encontrada');
+    return arquivada;
+  }
+
+  async reativar(id: string): Promise<TurmaEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Turma não encontrada');
+    const reativada = await this.repository.reativar(id);
+    if (!reativada) throw new NotFoundException('Turma não encontrada');
+    return reativada;
   }
 
   async buscarPorId(id: string): Promise<TurmaEntity> {
@@ -43,6 +74,17 @@ export class TurmaService {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Turma não encontrada');
     await this.repository.deletar(id);
+  }
+
+  async atualizarStatus(
+    id: string,
+    dto: UpdateTurmaStatusDto,
+  ): Promise<TurmaEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Turma não encontrada');
+    const atualizada = await this.repository.atualizarStatus(id, dto.status);
+    if (!atualizada) throw new NotFoundException('Turma não encontrada');
+    return atualizada;
   }
 
   async adicionarAluno(turmaId: string, dto: AddAlunoTurmaDto): Promise<void> {
@@ -70,10 +112,14 @@ export class TurmaService {
     await this.repository.adicionarProfessor(turmaId, dto);
   }
 
-  async listarAlunos(turmaId: string): Promise<AlunoEntity[]> {
+  async listarAlunos(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: AlunoEntity[]; total: number }> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
-    return this.repository.listarAlunosDaTurma(turmaId);
+    return this.repository.listarAlunosDaTurma(turmaId, skip, take);
   }
 
   async removerAlunoDaTurma(turmaId: string, alunoId: string): Promise<void> {
@@ -82,9 +128,13 @@ export class TurmaService {
     await this.repository.removerAlunoDaTurma(turmaId, alunoId);
   }
 
-  async listarProfessores(turmaId: string): Promise<ProfessorEntity[]> {
+  async listarProfessores(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: ProfessorEntity[]; total: number }> {
     const turma = await this.repository.buscarPorId(turmaId);
     if (!turma) throw new NotFoundException('Turma não encontrada');
-    return this.repository.listarProfessoresDaTurma(turmaId);
+    return this.repository.listarProfessoresDaTurma(turmaId, skip, take);
   }
 }

@@ -1,12 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsDateString,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Min,
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateAlunoDto {
   @ApiProperty()
@@ -30,9 +23,4 @@ export class CreateAlunoDto {
   @Min(0)
   @IsOptional()
   frequencia_atual?: number;
-
-  @ApiPropertyOptional({ example: '2000-01-01' })
-  @IsDateString()
-  @IsOptional()
-  data_nascimento?: string;
 }

@@ -1,4 +1,3 @@
-import {useEffect, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import {GiHamburgerMenu} from "react-icons/gi";
 import { IoIosLogOut } from "react-icons/io";
@@ -6,6 +5,7 @@ import logo from "../../assets/morimitsu.png";
 import "./Header.css"
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import NotificationBell from "../NotificationBell/NotificationBell";
 
 const Header = ({isOpen, setIsOpen}) => {
   let nome;
@@ -15,17 +15,8 @@ const Header = ({isOpen, setIsOpen}) => {
   }else{
      nome = user.nome;
   }
-console.log(user)
+  console.log(user)
   const navigate = useNavigate()
-  const abrirPerfilAluno = (userId) => {
-    console.log(userId)
-    navigate("/perfilAluno", {
-      state: {
-          id: userId
-      }
-    })
-  }
-
 
   const handleMenuToggle = () => {
       setIsOpen(!isOpen)
@@ -38,7 +29,7 @@ console.log(user)
                 <GiHamburgerMenu size={24} />
         </button>
       
-      <div className='nome-logo' onClick={() => {abrirPerfilAluno(user.userId)}} >
+      <div className='nome-logo' onClick={() => {navigate("/")}} >
         <img src={logo} alt="logo" />
         <div className="nome-logo-text">
           <span className="titulo">Morimitsu</span>
@@ -49,7 +40,7 @@ console.log(user)
       </div>
 
     <div className='header-right'>
-      
+      <NotificationBell />
     </div>
     </header>
   )

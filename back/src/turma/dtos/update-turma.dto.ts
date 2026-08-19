@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsIn, IsOptional, IsString } from 'class-validator';
 
 export class UpdateTurmaDto {
   @ApiProperty({ example: 'Turma Avançada' })
@@ -20,11 +20,11 @@ export class UpdateTurmaDto {
   @IsOptional()
   horario_fim?: Date;
 
-  @ApiProperty({ example: '2024-06-15T00:00:00.000Z' })
-  @Type(() => Date)
-  @IsDate()
+  @ApiProperty({ enum: ['ATIVO', 'INATIVO'], example: 'ATIVO' })
+  @IsString()
   @IsOptional()
-  data_especifica?: Date;
+  @IsIn(['ATIVO', 'INATIVO'])
+  status?: string;
 
   @ApiProperty()
   @IsBoolean()

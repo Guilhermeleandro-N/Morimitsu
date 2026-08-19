@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -17,6 +18,8 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/decorators/current-user.decorator';
 import { Permissions } from '../authorization/decorators/permissions.decorator';
 import { PermissionsGuard } from '../authorization/guards/permissions.guard';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { NotificacaoCountEntity } from './entities/notificacao-count.entity';
 import { NotificacaoEntity } from './entities/notificacao.entity';
 import { NotificacaoService } from './notificacao.service';
@@ -30,25 +33,33 @@ export class NotificacaoController {
   @Get()
   @UseGuards(PermissionsGuard)
   @Permissions('notification.read')
-  @ApiOperation({ summary: 'Listar notificações do professor logado' })
+  @ApiOperation({ summary: 'Listar notificações do usuário logado' })
   @ApiResponse({ status: 200, type: [NotificacaoEntity] })
   async listar(
     @CurrentUser() usuario: JwtPayload,
-  ): Promise<NotificacaoEntity[]> {
-    return this.service.listarPorProfessor(usuario.sub);
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedResult<NotificacaoEntity>> {
+    const page = pagination.page ?? 1;
+    const limit = pagination.limit ?? 10;
+    return this.service.listarParaUsuario(
+      usuario.sub,
+      usuario.roles ?? [],
+      (page - 1) * limit,
+      limit,
+    );
   }
 
   @Get('nao-lidas/count')
   @UseGuards(PermissionsGuard)
   @Permissions('notification.read')
   @ApiOperation({
-    summary: 'Contar notificações não lidas do professor logado',
+    summary: 'Contar notificações não lidas do usuário logado',
   })
   @ApiResponse({ status: 200, type: NotificacaoCountEntity })
   async contarNaoLidas(
     @CurrentUser() usuario: JwtPayload,
   ): Promise<NotificacaoCountEntity> {
-    return this.service.contarNaoLidas(usuario.sub);
+    return this.service.contarNaoLidas(usuario.sub, usuario.roles ?? []);
   }
 
   @Patch(':id/lida')
@@ -61,6 +72,17 @@ export class NotificacaoController {
     @Param('id') id: string,
     @CurrentUser() usuario: JwtPayload,
   ): Promise<NotificacaoEntity> {
-    return this.service.marcarComoLida(id, usuario.sub);
+    return this.service.marcarComoLida(id, usuario.sub, usuario.roles ?? []);
+  }
+
+  @Patch('marcar-todas-lidas')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(PermissionsGuard)
+  @Permissions('notification.read')
+  @ApiOperation({ summary: 'Marcar todas as notificações como lidas' })
+  async marcarTodasComoLidas(
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<{ atualizadas: number }> {
+    return this.service.marcarTodasComoLidas(usuario.sub, usuario.roles ?? []);
   }
 }

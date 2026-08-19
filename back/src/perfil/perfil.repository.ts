@@ -22,18 +22,30 @@ export class PerfilRepository {
     }
   }
 
-  async buscarPerfis(): Promise<
-    { id: string; nome: string; _count: { perfilPermissions: number } }[]
-  > {
+  async buscarPerfis(
+    skip: number,
+    take: number,
+  ): Promise<{
+    data: { id: string; nome: string; _count: { perfilPermissions: number } }[];
+    total: number;
+  }> {
     try {
-      return this.prisma.perfil.findMany({
-        select: {
-          id: true,
-          nome: true,
-          _count: { select: { perfilPermissions: true } },
-        },
-        orderBy: { nome: 'asc' },
-      });
+      const where = {};
+      const [data, total] = await Promise.all([
+        this.prisma.perfil.findMany({
+          where,
+          skip,
+          take,
+          select: {
+            id: true,
+            nome: true,
+            _count: { select: { perfilPermissions: true } },
+          },
+          orderBy: { nome: 'asc' },
+        }),
+        this.prisma.perfil.count({ where }),
+      ]);
+      return { data, total };
     } catch {
       throw new InternalServerErrorException('Erro ao buscar perfis');
     }
@@ -125,15 +137,27 @@ export class PerfilRepository {
 
   async buscarPerfisDoUsuario(
     usuarioId: string,
-  ): Promise<{ perfil_id: string; perfil: { nome: string } }[]> {
+    skip: number,
+    take: number,
+  ): Promise<{
+    data: { perfil_id: string; perfil: { nome: string } }[];
+    total: number;
+  }> {
     try {
-      return this.prisma.userPerfil.findMany({
-        where: { usuario_id: usuarioId },
-        select: {
-          perfil_id: true,
-          perfil: { select: { nome: true } },
-        },
-      });
+      const where = { usuario_id: usuarioId };
+      const [data, total] = await Promise.all([
+        this.prisma.userPerfil.findMany({
+          where,
+          skip,
+          take,
+          select: {
+            perfil_id: true,
+            perfil: { select: { nome: true } },
+          },
+        }),
+        this.prisma.userPerfil.count({ where }),
+      ]);
+      return { data, total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao buscar perfis do usuário',

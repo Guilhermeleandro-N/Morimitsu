@@ -84,14 +84,44 @@
 /* NAV */
 nav {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin-top: 40px;
+  padding-right: 4px;
+}
+
+nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: #c4c4c4;
+  border-radius: 3px;
+}
+
+nav::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 nav ul {
   list-style: none;
+}
+
+.nav-section {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
+}
+
+.nav-section + .nav-section {
+  margin-top: 10px;
+}
+
+.nav-divider {
+  height: 1px;
+  background: #ddd;
+  margin: 18px 0;
 }
 
 /* BOTÕES DO MENU */
@@ -99,16 +129,28 @@ nav li {
   background: #e0e0e0;
   padding: 18px;
   border-radius: 15px;
-  text-align: center;
   font-size: 18px;
   font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
   cursor: pointer;
   transition: 0.2s;
 }
 
+nav li .menu-icon {
+  flex-shrink: 0;
+  color: #333;
+}
+
 nav li:hover {
   background: #d5d5d5;
+}
+
+nav li:hover .menu-icon {
+  color: #1976d2;
 }
 
 /* botao de fechar */
@@ -140,8 +182,17 @@ nav li:hover {
   font-weight: bold;
   cursor: pointer;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
   margin-top: 20px;
-  
+}
+
+.sidebar .logout-btn .menu-icon {
+  color: white;
+  flex-shrink: 0;
 }
 
 .sidebar button:hover {

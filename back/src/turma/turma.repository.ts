@@ -35,13 +35,169 @@ export class TurmaRepository {
     }
   }
 
-  async listar(): Promise<TurmaEntity[]> {
+  async listar(
+    skip: number,
+    take: number,
+    usuarioId?: string,
+    roles: string[] = [],
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
     try {
-      const turmas = await this.prisma.turma.findMany();
-      return turmas.map((t) => this.toEntity(t));
+      const where = this.montarFiltroPorUsuario(usuarioId, roles, {
+        status: 'ATIVO',
+      });
+      const [turmas, total] = await Promise.all([
+        this.prisma.turma.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            professorTurmas: {
+              include: {
+                professor: {
+                  include: {
+                    usuario: { select: { nome: true } },
+                  },
+                },
+              },
+            },
+          },
+        }),
+        this.prisma.turma.count({ where }),
+      ]);
+      return { data: turmas.map((t) => this.toEntity(t)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar turmas no banco de dados',
+      );
+    }
+  }
+
+  async listarArquivadas(
+    skip: number,
+    take: number,
+    usuarioId?: string,
+    roles: string[] = [],
+  ): Promise<{ data: TurmaEntity[]; total: number }> {
+    try {
+      const where = this.montarFiltroPorUsuario(usuarioId, roles, {
+        status: { in: ['ARQUIVADA', 'INATIVO'] },
+      });
+      const [turmas, total] = await Promise.all([
+        this.prisma.turma.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            professorTurmas: {
+              include: {
+                professor: {
+                  include: {
+                    usuario: { select: { nome: true } },
+                  },
+                },
+              },
+            },
+          },
+        }),
+        this.prisma.turma.count({ where }),
+      ]);
+      return { data: turmas.map((t) => this.toEntity(t)), total };
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao listar turmas arquivadas no banco de dados',
+      );
+    }
+  }
+
+  // Admin vê todas; professor vê as que ministra/participa;
+  // aluno vê apenas as que participa.
+  private montarFiltroPorUsuario(
+    usuarioId: string | undefined,
+    roles: string[],
+    base: Prisma.TurmaWhereInput,
+  ): Prisma.TurmaWhereInput {
+    if (!usuarioId || roles.includes('admin')) return base;
+
+    const or: Prisma.TurmaWhereInput[] = [];
+
+    if (roles.includes('professor')) {
+      or.push({
+        professorTurmas: { some: { professor: { usuarioId } } },
+      });
+    }
+
+    if (roles.includes('aluno')) {
+      or.push({
+        alunoTurmas: { some: { aluno: { usuarioId } } },
+      });
+    }
+
+    if (or.length === 0) {
+      return { ...base, id: 'sem-acesso' };
+    }
+
+    return { ...base, OR: or };
+  }
+
+  async arquivar(id: string): Promise<TurmaEntity | null> {
+    try {
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: { status: 'ARQUIVADA', arquivada_em: new Date() },
+      });
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
+      throw new InternalServerErrorException(
+        'Erro ao arquivar turma no banco de dados',
+      );
+    }
+  }
+
+  async reativar(id: string): Promise<TurmaEntity | null> {
+    try {
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: { status: 'ATIVO', arquivada_em: null },
+      });
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
+      throw new InternalServerErrorException(
+        'Erro ao reativar turma no banco de dados',
+      );
+    }
+  }
+
+  async atualizarStatus(
+    id: string,
+    status: string,
+  ): Promise<TurmaEntity | null> {
+    try {
+      const turma = await this.prisma.turma.update({
+        where: { id },
+        data: {
+          status,
+          arquivada_em: status === 'INATIVO' ? new Date() : null,
+        },
+      });
+      return this.toEntity(turma);
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      )
+        throw new NotFoundException('Turma não encontrada');
+      throw new InternalServerErrorException(
+        'Erro ao atualizar status da turma no banco de dados',
       );
     }
   }
@@ -82,7 +238,13 @@ export class TurmaRepository {
 
   async deletar(id: string): Promise<void> {
     try {
-      await this.prisma.turma.delete({ where: { id } });
+      await this.prisma.$transaction([
+        this.prisma.alunoTurma.deleteMany({ where: { turma_id: id } }),
+        this.prisma.professorTurma.deleteMany({ where: { turma_id: id } }),
+        this.prisma.frequenciaAluno.deleteMany({ where: { turma_id: id } }),
+        this.prisma.frequenciaProf.deleteMany({ where: { turma_id: id } }),
+        this.prisma.turma.delete({ where: { id } }),
+      ]);
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
@@ -123,11 +285,16 @@ export class TurmaRepository {
     dto: UpdateAlunoTurmaDto,
   ): Promise<void> {
     try {
+      const data: { frequente?: string; arquivado_at?: Date | null } = {};
+      if (dto.frequente !== undefined) data.frequente = dto.frequente;
+      if (dto.arquivado !== undefined) {
+        data.arquivado_at = dto.arquivado ? new Date() : null;
+      }
       await this.prisma.alunoTurma.update({
         where: {
           aluno_id_turma_id: { aluno_id: alunoId, turma_id: turmaId },
         },
-        data: { frequente: dto.frequente },
+        data,
       });
     } catch (e) {
       if (
@@ -168,22 +335,37 @@ export class TurmaRepository {
     }
   }
 
-  async listarAlunosDaTurma(turmaId: string): Promise<AlunoEntity[]> {
+  async listarAlunosDaTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: AlunoEntity[]; total: number }> {
     try {
-      const vinculos = await this.prisma.alunoTurma.findMany({
-        where: { turma_id: turmaId },
-        include: { aluno: true },
-      });
-      return vinculos.map((v) => {
-        const entity = new AlunoEntity();
-        entity.id = v.aluno.id;
-        entity.frequencia_atual = v.aluno.frequencia_atual;
-        entity.grau_faixa = v.aluno.grau_faixa;
-        entity.faixa = v.aluno.faixa;
-        entity.usuarioId = v.aluno.usuarioId;
-        entity.frequente = v.frequente;
-        return entity;
-      });
+      const where = { turma_id: turmaId };
+      const [vinculos, total] = await Promise.all([
+        this.prisma.alunoTurma.findMany({
+          where,
+          skip,
+          take,
+          include: { aluno: true },
+        }),
+        this.prisma.alunoTurma.count({ where }),
+      ]);
+
+      return {
+        data: vinculos.map((v) => {
+          const entity = new AlunoEntity();
+          entity.id = v.aluno.id;
+          entity.frequencia_atual = v.frequencia_atual;
+          entity.grau_faixa = v.aluno.grau_faixa;
+          entity.faixa = v.aluno.faixa;
+          entity.usuarioId = v.aluno.usuarioId;
+          entity.frequente = v.frequente;
+          entity.arquivado_at = v.arquivado_at;
+          return entity;
+        }),
+        total,
+      };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar alunos da turma no banco de dados',
@@ -191,20 +373,33 @@ export class TurmaRepository {
     }
   }
 
-  async listarProfessoresDaTurma(turmaId: string): Promise<ProfessorEntity[]> {
+  async listarProfessoresDaTurma(
+    turmaId: string,
+    skip: number,
+    take: number,
+  ): Promise<{ data: ProfessorEntity[]; total: number }> {
     try {
-      const vinculos = await this.prisma.professorTurma.findMany({
-        where: { turma_id: turmaId },
-        include: { professor: true },
-      });
-      return vinculos.map((v) => {
-        const entity = new ProfessorEntity();
-        entity.id = v.professor.id;
-        entity.faixa = v.professor.faixa;
-        entity.grau = v.professor.grau;
-        entity.usuarioId = v.professor.usuarioId;
-        return entity;
-      });
+      const where = { turma_id: turmaId };
+      const [vinculos, total] = await Promise.all([
+        this.prisma.professorTurma.findMany({
+          where,
+          skip,
+          take,
+          include: { professor: true },
+        }),
+        this.prisma.professorTurma.count({ where }),
+      ]);
+      return {
+        data: vinculos.map((v) => {
+          const entity = new ProfessorEntity();
+          entity.id = v.professor.id;
+          entity.faixa = v.professor.faixa;
+          entity.grau = v.professor.grau;
+          entity.usuarioId = v.professor.usuarioId;
+          return entity;
+        }),
+        total,
+      };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar professores da turma no banco de dados',
@@ -268,7 +463,8 @@ export class TurmaRepository {
     nome: string;
     horario_inicio: Date;
     horario_fim: Date;
-    data_especifica: Date | null;
+    status?: string;
+    arquivada_em: Date | null;
     segunda: boolean;
     terca: boolean;
     quarta: boolean;
@@ -276,13 +472,17 @@ export class TurmaRepository {
     sexta: boolean;
     sabado: boolean;
     domingo: boolean;
+    professorTurmas?: Array<{
+      professor: { usuario: { nome: string } };
+    }>;
   }): TurmaEntity {
     const entity = new TurmaEntity();
     entity.id = turma.id;
     entity.nome = turma.nome;
     entity.horario_inicio = turma.horario_inicio;
     entity.horario_fim = turma.horario_fim;
-    entity.data_especifica = turma.data_especifica;
+    entity.status = turma.status ?? 'ATIVO';
+    entity.arquivada_em = turma.arquivada_em ?? null;
     entity.segunda = turma.segunda;
     entity.terca = turma.terca;
     entity.quarta = turma.quarta;
@@ -290,6 +490,9 @@ export class TurmaRepository {
     entity.sexta = turma.sexta;
     entity.sabado = turma.sabado;
     entity.domingo = turma.domingo;
+    entity.professores = turma.professorTurmas?.map(
+      (pt) => pt.professor.usuario.nome,
+    );
     return entity;
   }
 }

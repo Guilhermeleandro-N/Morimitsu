@@ -5,6 +5,8 @@ import { BuscarAlunoCompletoPorUserId } from "../../services/alunoService";
 import { listarFrequenciasTurma } from "../../services/frequenciaService";
 import { FaArrowLeft, FaCalendarCheck, FaChevronRight } from "react-icons/fa";
 import "./HistoricoTreinos.css";
+import { editarFrequencia } from "../../services/frequenciaService";
+import { useToast } from "../../context/ToastContext";
 
 function HistoricoTreinos() {
   const navigate = useNavigate();
@@ -17,11 +19,92 @@ function HistoricoTreinos() {
   const [treinos, setTreinos] = useState([]);
   const [treinoSelecionado, setTreinoSelecionado] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (!turmaId) return;
     carregarDados();
   }, [turmaId]);
+
+  async function alterarStatus(freq) {
+
+  const novoStatus =
+    freq.status_presenca === "PRESENTE"
+      ? "AUSENTE"
+      : "PRESENTE";
+
+  try {
+
+    await editarFrequencia(
+      freq.id,
+      {
+        status_presenca: novoStatus,
+        data: freq.data,
+        horario_inicio: freq.horario_inicio,
+        horario_fim: freq.horario_fim,
+      }
+    );
+
+    // Atualiza o estado local
+    setTreinos((treinosAnteriores) => {
+
+      const novosTreinos = treinosAnteriores.map((treino) => {
+
+        if (treino.data !== treinoSelecionado.data)
+          return treino;
+
+const novasPresencas = treino.presencas.map((aluno) => {
+
+  const novasFrequencias = aluno.frequencias.map((f) =>
+    f.id === freq.id
+      ? {
+          ...f,
+          status_presenca: novoStatus,
+        }
+      : f
+  );
+
+  return {
+    ...aluno,
+    frequencias: novasFrequencias,
+  };
+
+});
+
+const totalPresentes = novasPresencas.filter((aluno) =>
+  aluno.frequencias.some(
+    (f) => f.status_presenca === "PRESENTE"
+  )
+).length;
+
+return {
+  ...treino,
+  presencas: novasPresencas,
+  totalPresentes,
+};
+
+      });
+
+      // Atualiza também o treino exibido à direita
+      const treinoAtualizado =
+        novosTreinos.find(
+          (t) => t.data === treinoSelecionado.data
+        );
+
+      setTreinoSelecionado(treinoAtualizado);
+
+      return novosTreinos;
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+    addToast("Erro ao atualizar frequência.", "error");
+
+  }
+
+}
 
   async function carregarDados() {
     try {
@@ -79,19 +162,33 @@ function HistoricoTreinos() {
     );
 
     return treinosArray.map((treino) => {
-      const presentesIds = new Set(
-        treino.frequencias
-          .filter((f) => f.status_presenca === "PRESENTE")
-          .map((f) => f.aluno_id),
-      );
+      const frequenciasPorAluno = {};
+
+      treino.frequencias.forEach((freq) => {
+
+        if (!frequenciasPorAluno[freq.aluno_id]) {
+
+          frequenciasPorAluno[freq.aluno_id] = [];
+
+        }
+
+        frequenciasPorAluno[freq.aluno_id].push(freq);
+
+      });
 
       const presencas = alunosAtivos.map((aluno) => ({
+
         ...aluno,
-        status: presentesIds.has(aluno.id) ? "PRESENTE" : "AUSENTE",
+
+        frequencias:
+          frequenciasPorAluno[aluno.id] || []
+
       }));
 
-      const totalPresentes = presencas.filter(
-        (p) => p.status === "PRESENTE",
+      const totalPresentes = presencas.filter((aluno) =>
+        aluno.frequencias.some(
+          (freq) => freq.status_presenca === "PRESENTE"
+        )
       ).length;
 
       return {
@@ -169,9 +266,8 @@ function HistoricoTreinos() {
                 {treinos.map((treino) => (
                   <div
                     key={treino.data}
-                    className={`treino-item ${
-                      treinoSelecionado?.data === treino.data ? "selected" : ""
-                    }`}
+                    className={`treino-item ${treinoSelecionado?.data === treino.data ? "selected" : ""
+                      }`}
                     onClick={() => setTreinoSelecionado(treino)}
                   >
                     <div className="treino-item-info">
@@ -233,17 +329,62 @@ function HistoricoTreinos() {
                             </span>
                           </td>
                           <td>
-                            <span
-                              className={`presenca-badge ${
-                                aluno.status === "PRESENTE"
-                                  ? "presente"
-                                  : "ausente"
-                              }`}
-                            >
-                              {aluno.status === "PRESENTE"
-                                ? "Presente"
-                                : "Ausente"}
-                            </span>
+                            {aluno.frequencias.length === 0 ? (
+                              <span className="presenca-badge ausente">
+                                Sem frequência
+                              </span>
+                            ) : (
+                              aluno.frequencias.map((freq) => (
+                                <div
+                                  key={freq.id}
+                                  className="frequencia-card"
+                                >
+                                  <div className="frequencia-info">
+
+                                    <span className="frequencia-horario">
+                                      {new Date(freq.horario_inicio).toLocaleTimeString(
+                                        "pt-BR",
+                                        {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        }
+                                      )}
+                                      {" - "}
+                                      {new Date(freq.horario_fim).toLocaleTimeString(
+                                        "pt-BR",
+                                        {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        }
+                                      )}
+                                    </span>
+
+                                    <span
+                                      className={`presenca-badge ${freq.status_presenca === "PRESENTE"
+                                          ? "presente"
+                                          : "ausente"
+                                        }`}
+                                    >
+                                      {freq.status_presenca}
+                                    </span>
+
+                                  </div>
+
+                                  <label className="toggle-switch">
+                                    <input
+                                      type="checkbox"
+                                      checked={
+                                        freq.status_presenca === "PRESENTE"
+                                      }
+                                      onChange={() =>
+                                        alterarStatus(freq)
+                                      }
+                                    />
+                                    <span className="toggle-slider"></span>
+                                  </label>
+                                </div>
+                              ))
+                            )}
                           </td>
                         </tr>
                       ))}

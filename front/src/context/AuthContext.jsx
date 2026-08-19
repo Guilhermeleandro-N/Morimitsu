@@ -5,33 +5,38 @@ import authService from "../services/authService";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  /*useEffect(() => {
-        console.log("User atualizado:", user);
-    }, [user]);*/
+  const [user, setUser] = useState(() => {
+    const usuarioSalvo = localStorage.getItem("user");
+    return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
+  });
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+    }
+  }, [user]);
 
   async function login(email, senha) {
-    try {
-      const response = await api.post("auth/login", {
-        email,
-        senha,
-      });
+    const response = await api.post("auth/login", {
+      email,
+      senha,
+    });
 
-      const data = response.data;
+    const data = response.data;
 
-      authService.setTokens(data.token, data.refreshToken);
+    authService.setTokens(data.token, data.refreshToken);
 
-      setUser(data);
+    setUser(data);
 
-      return response;
-    } catch (error) {
-      return error;
-    }
+    return response;
   }
 
   async function logout() {
     try {
       const refreshToken = authService.getRefreshToken();
+
       await api.post("auth/logout", {
         refreshToken,
       });

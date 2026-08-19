@@ -1,13 +1,12 @@
-import { useState } from 'react'
 import AppRoutes from './routes/AppRoutes'
-import { BrowserRouter } from "react-router-dom";
-function App() {
-  
+import SessionExpiredOverlay from './components/SessionExpiredOverlay/SessionExpiredOverlay'
 
+function App() {
   return (
-     
-    <AppRoutes />
- 
+    <>
+      <AppRoutes />
+      <SessionExpiredOverlay />
+    </>
   )
 }
 

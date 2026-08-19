@@ -13,6 +13,12 @@ export class UserEntity {
   @ApiProperty({ nullable: true })
   telefone!: string | null;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
+  data_nascimento!: Date | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true })
+  arquivado_at!: Date | null;
+
   @ApiProperty()
   status!: string;
 

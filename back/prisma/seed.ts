@@ -11,8 +11,11 @@ const prisma = new PrismaClient({
 });
 
 const PROFESSOR_PERMISSIONS = [
+  { codigo: 'user.read', descricao: 'Visualizar usuários' },
+  { codigo: 'user.update', descricao: 'Atualizar usuários' },
   { codigo: 'turma.read', descricao: 'Visualizar turma' },
   { codigo: 'turma.update', descricao: 'Atualizar turma' },
+  { codigo: 'turma.create', descricao: 'Criar turma' },
   { codigo: 'student.create', descricao: 'Criar aluno' },
   { codigo: 'student.read', descricao: 'Visualizar aluno' },
   { codigo: 'student.update', descricao: 'Atualizar aluno' },
@@ -34,20 +37,22 @@ const PROFESSOR_PERMISSIONS = [
   { codigo: 'student.profile.read', descricao: 'Visualizar perfil do aluno' },
   { codigo: 'notification.read', descricao: 'Visualizar notificações' },
   { codigo: 'remove.student', descricao: 'Remover aluno da turma' },
+  { codigo: 'professor.read', descricao: 'Visualizar professor' },
+  { codigo: 'professor.update', descricao: 'Atualizar professor' },
 ];
 
 const ALUNO_PERMISSIONS = [
   { codigo: 'profile.read', descricao: 'Visualizar próprio perfil' },
   { codigo: 'attendance.read', descricao: 'Visualizar presença' },
   { codigo: 'training.read', descricao: 'Visualizar treino' },
+  { codigo: 'turma.read', descricao: 'Visualizar turma' },
+  { codigo: 'notification.read', descricao: 'Visualizar notificações' },
   // criar permissao de visualizar seus proprios dados de presenca e treino, sem acessar os dados dos outros alunos
 ];
 
 const ADMIN_ONLY_PERMISSIONS = [
   { codigo: 'turma.create', descricao: 'Criar turma' },
   { codigo: 'professor.create', descricao: 'Criar professor' },
-  { codigo: 'professor.read', descricao: 'Visualizar professor' },
-  { codigo: 'professor.update', descricao: 'Atualizar professor' },
 ];
 
 const SCREEN_PROFESSOR_PERMISSIONS = [
@@ -88,6 +93,10 @@ const SCREEN_ALUNO_PERMISSIONS = [
     codigo: 'screen.treino.visualizar',
     descricao: 'Tela de visualização de treinos',
   },
+  {
+    codigo: 'screen.turma.listar',
+    descricao: 'Tela de listagem de turmas',
+  },
 ];
 
 async function main() {
@@ -119,6 +128,16 @@ async function main() {
     where: { id: 'perfil-aluno' },
     update: {},
     create: { id: 'perfil-aluno', nome: 'ALUNO', descricao: 'Perfil do aluno' },
+  });
+
+  const admin = await prisma.perfil.upsert({
+    where: { id: 'perfil-admin' },
+    update: {},
+    create: {
+      id: 'perfil-admin',
+      nome: 'ADMIN',
+      descricao: 'Perfil do administrador',
+    },
   });
 
   const allPermissions = await prisma.permission.findMany();
@@ -166,14 +185,45 @@ async function main() {
     });
   }
 
+  // Admin: permissões exclusivas (o bypass do PermissionsGuard já garante acesso total)
+  for (const perm of ADMIN_ONLY_PERMISSIONS) {
+    const permissionId = permMap.get(perm.codigo);
+    if (!permissionId) continue;
+    await prisma.perfilPermission.upsert({
+      where: {
+        perfil_id_permission_id: {
+          perfil_id: admin.id,
+          permission_id: permissionId,
+        },
+      },
+      update: {},
+      create: { perfil_id: admin.id, permission_id: permissionId },
+    });
+  }
+
   const senhaHash = await argon2.hash('Admin@1234');
-  await prisma.usuario.upsert({
+  const adminUsuario = await prisma.usuario.upsert({
     where: { email: 'admin@morimitsu.com' },
     update: {},
     create: {
       nome: 'Administrador',
       email: 'admin@morimitsu.com',
       senha: senhaHash,
+    },
+  });
+
+  // Associar perfil ADMIN ao usuário administrador
+  await prisma.userPerfil.upsert({
+    where: {
+      usuario_id_perfil_id: {
+        usuario_id: adminUsuario.id,
+        perfil_id: admin.id,
+      },
+    },
+    update: {},
+    create: {
+      usuario_id: adminUsuario.id,
+      perfil_id: admin.id,
     },
   });
 

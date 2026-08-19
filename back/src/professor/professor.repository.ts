@@ -44,6 +44,22 @@ export class ProfessorRepository {
     }
   }
 
+  async atualizarDataNascimento(
+    usuarioId: string,
+    dataNascimento: string,
+  ): Promise<void> {
+    try {
+      await this.prisma.usuario.update({
+        where: { id: usuarioId },
+        data: { data_nascimento: new Date(dataNascimento) },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao atualizar data de nascimento no banco de dados',
+      );
+    }
+  }
+
   async criar(dto: CreateProfessorDto): Promise<ProfessorEntity> {
     try {
       const professor = await this.prisma.professor.create({
@@ -53,7 +69,16 @@ export class ProfessorRepository {
           usuarioId: dto.usuarioId,
         },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+              data_nascimento: true,
+            },
+          },
         },
       });
       await this.prisma.userPerfil.upsert({
@@ -66,6 +91,18 @@ export class ProfessorRepository {
         update: {},
         create: { usuario_id: dto.usuarioId, perfil_id: PERFIL_PROFESSOR_ID },
       });
+
+      // Cria registro de aluno para tracking de frequência
+      await this.prisma.aluno.upsert({
+        where: { usuarioId: dto.usuarioId },
+        update: {},
+        create: {
+          faixa: dto.faixa ?? 'BRANCA',
+          grau_faixa: dto.grau ?? 0,
+          usuarioId: dto.usuarioId,
+        },
+      });
+
       return this.toEntity(professor);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -84,14 +121,33 @@ export class ProfessorRepository {
     }
   }
 
-  async listar(): Promise<ProfessorEntity[]> {
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<{ data: ProfessorEntity[]; total: number }> {
     try {
-      const professores = await this.prisma.professor.findMany({
-        include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
-        },
-      });
-      return professores.map((p) => this.toEntity(p));
+      const where = {};
+      const [professores, total] = await Promise.all([
+        this.prisma.professor.findMany({
+          where,
+          skip,
+          take,
+          include: {
+            usuario: {
+              select: {
+                nome: true,
+                email: true,
+                telefone: true,
+                status: true,
+                arquivado_at: true,
+                data_nascimento: true,
+              },
+            },
+          },
+        }),
+        this.prisma.professor.count({ where }),
+      ]);
+      return { data: professores.map((p) => this.toEntity(p)), total };
     } catch {
       throw new InternalServerErrorException(
         'Erro ao listar professores no banco de dados',
@@ -104,7 +160,16 @@ export class ProfessorRepository {
       const professor = await this.prisma.professor.findUnique({
         where: { id },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+              data_nascimento: true,
+            },
+          },
         },
       });
       if (!professor) return null;
@@ -121,7 +186,16 @@ export class ProfessorRepository {
       const professor = await this.prisma.professor.findUnique({
         where: { usuarioId },
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+              data_nascimento: true,
+            },
+          },
         },
       });
       if (!professor) return null;
@@ -145,7 +219,16 @@ export class ProfessorRepository {
         where: { id },
         data,
         include: {
-          usuario: { select: { nome: true, email: true, telefone: true } },
+          usuario: {
+            select: {
+              nome: true,
+              email: true,
+              telefone: true,
+              status: true,
+              arquivado_at: true,
+              data_nascimento: true,
+            },
+          },
         },
       });
       return this.toEntity(professor);
@@ -176,12 +259,106 @@ export class ProfessorRepository {
     }
   }
 
+  async buscarDashboard(
+    usuarioId: string,
+    roles: string[] = [],
+  ): Promise<
+    {
+      aluno_id: string;
+      usuario_id: string;
+      nome: string;
+      faixa: string;
+      grau_faixa: number;
+      frequencia_atual: number;
+      data_nascimento: Date | null;
+      turma_id: string;
+      turma_nome: string;
+      frequente: string;
+    }[]
+  > {
+    try {
+      if (roles.includes('admin')) {
+        const vinculos = await this.prisma.alunoTurma.findMany({
+          include: {
+            aluno: {
+              include: {
+                usuario: { select: { nome: true, data_nascimento: true } },
+              },
+            },
+            turma: { select: { nome: true } },
+          },
+        });
+
+        return vinculos.map((v) => ({
+          aluno_id: v.aluno_id,
+          usuario_id: v.aluno.usuarioId,
+          nome: v.aluno.usuario.nome,
+          faixa: v.aluno.faixa,
+          grau_faixa: v.aluno.grau_faixa,
+          frequencia_atual: v.aluno.frequencia_atual,
+          data_nascimento: v.aluno.usuario.data_nascimento,
+          turma_id: v.turma_id,
+          turma_nome: v.turma.nome,
+          frequente: v.frequente,
+        }));
+      }
+
+      const professor = await this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (!professor) return [];
+
+      const vinculos = await this.prisma.alunoTurma.findMany({
+        where: {
+          turma: {
+            professorTurmas: {
+              some: { professor_id: professor.id },
+            },
+          },
+        },
+        include: {
+          aluno: {
+            include: {
+              usuario: { select: { nome: true, data_nascimento: true } },
+            },
+          },
+          turma: { select: { nome: true } },
+        },
+      });
+
+      return vinculos.map((v) => ({
+        aluno_id: v.aluno_id,
+        usuario_id: v.aluno.usuarioId,
+        nome: v.aluno.usuario.nome,
+        faixa: v.aluno.faixa,
+        grau_faixa: v.aluno.grau_faixa,
+        frequencia_atual: v.aluno.frequencia_atual,
+        data_nascimento: v.aluno.usuario.data_nascimento,
+        turma_id: v.turma_id,
+        turma_nome: v.turma.nome,
+        frequente: v.frequente,
+      }));
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao buscar dashboard do professor',
+      );
+    }
+  }
+
   private toEntity(professor: {
     id: string;
     faixa: string;
     grau: number;
     usuarioId: string;
-    usuario?: { nome: string; email: string; telefone: string | null };
+    usuario?: {
+      nome: string;
+      email: string;
+      telefone: string | null;
+      data_nascimento: Date | null;
+      status: string;
+      arquivado_at: Date | null;
+    };
   }): ProfessorEntity {
     const entity = new ProfessorEntity();
     entity.id = professor.id;
@@ -192,6 +369,9 @@ export class ProfessorRepository {
       entity.nome = professor.usuario.nome;
       entity.email = professor.usuario.email;
       entity.telefone = professor.usuario.telefone;
+      entity.data_nascimento = professor.usuario.data_nascimento;
+      entity.status = professor.usuario.status;
+      entity.arquivado_at = professor.usuario.arquivado_at;
     }
     return entity;
   }

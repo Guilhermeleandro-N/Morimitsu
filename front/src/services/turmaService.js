@@ -4,7 +4,6 @@ export async function criarTurma(
     nome,
     horario_inicio,
     horario_fim,
-    data_especifica,
     segunda,
     terca,
     quarta,
@@ -19,7 +18,6 @@ export async function criarTurma(
             nome: nome,
             horario_inicio: horario_inicio,
             horario_fim: horario_fim,
-            data_especifica: data_especifica,
             segunda: segunda,
             terca: terca,
             quarta: quarta,
@@ -54,7 +52,7 @@ export async function listarTurmas() {
         console.log("Turmas encontradas:");
         console.log(response.data);
 
-        return response.data;
+        return response.data?.data ?? response.data;
 
     } catch (error) {
 
@@ -67,37 +65,7 @@ export async function listarTurmas() {
 
 }
 
-/*export async function AtualizarTurma(id, nome, 
-            horario_inicio, 
-            horario_fim, 
-            data_especifica, 
-            segunda, 
-            terca, 
-            quarta, 
-            quinta, 
-            sexta, 
-            sabado, 
-            domingo){
-    try{
-        const response = await  api.patch(`turma/${id}`,{
-            nome, 
-            horario_inicio, 
-            horario_fim, 
-            data_especifica, 
-            segunda, 
-            terca, 
-            quarta, 
-            quinta, 
-            sexta, 
-            sabado, 
-            domingo
-        })
-        console.log("Turma atualizada")
-    }catch(error){
-        console.log(error)
-        return error;
-    }
-}*/
+
 
 export async function AtualizarTurma(id, dados) {
     try {
@@ -116,7 +84,7 @@ export async function AtualizarTurma(id, dados) {
 export const listarAlunosDaTurma = async (id) => {
     try {
         const response = await api.get(`/turma/${id}/alunos`);
-        return response.data;
+        return response.data?.data ?? response.data;
     } catch (error) {
         console.error("Erro ao listar alunos da turma:", error);
         throw error;
@@ -139,7 +107,14 @@ export const adicionarAlunoNaTurma = async (id, aluno_id, frequente = "S") => {
     }
 };
 
-
+export const removerAlunoDaTurma = async (turmaId, alunoId) => {
+  try {
+    await api.delete(`/turma/${turmaId}/aluno/${alunoId}`);
+  } catch (error) {
+    console.error("Erro ao remover aluno da turma:", error);
+    throw error;
+  }
+};
 
 export async function adicionarProfessorTurma(
   turmaId,
@@ -164,6 +139,75 @@ export async function adicionarProfessorTurma(
   }
 }
 
+export async function atualizarStatusTurma(id, status) {
+  try {
+    const response = await api.patch(`turma/${id}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar status da turma:", error);
+    throw error;
+  }
+}
+
+export async function listarTurmasArquivadas() {
+  try {
+    const response = await api.get("turma/arquivadas");
+    return response.data?.data ?? response.data;
+  } catch (error) {
+    console.error("Erro ao listar turmas arquivadas:", error);
+    throw error;
+  }
+}
+
+export async function arquivarTurma(id) {
+  try {
+    const response = await api.patch(`turma/${id}/arquivar`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao arquivar turma:", error);
+    throw error;
+  }
+}
+
+export async function reativarTurma(id) {
+  try {
+    const response = await api.patch(`turma/${id}/reativar`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao reativar turma:", error);
+    throw error;
+  }
+}
+
+export async function excluirTurma(id) {
+  try {
+    await api.delete(`turma/${id}`);
+  } catch (error) {
+    console.error("Erro ao excluir turma:", error);
+    throw error;
+  }
+}
+
+export async function atualizarStatusAlunoNaTurma(turmaId, alunoId, frequente) {
+  try {
+    const response = await api.patch(`/turma/${turmaId}/aluno/${alunoId}`, { frequente });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar status do aluno na turma:", error);
+    throw error;
+  }
+}
+
+export async function atualizarArquivadoAlunoNaTurma(turmaId, alunoId, arquivado) {
+  try {
+    const response = await api.patch(`/turma/${turmaId}/aluno/${alunoId}`, { arquivado });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao arquivar/reativar aluno na turma:", error);
+    throw error;
+  }
+}
+
 export async function listarProfessoresDaTurma(
   turmaId
 ) {
@@ -174,7 +218,7 @@ export async function listarProfessoresDaTurma(
       `/turma/${turmaId}/professores`
     );
 
-    return response.data;
+    return response.data?.data ?? response.data;
 
   } catch (error) {
 

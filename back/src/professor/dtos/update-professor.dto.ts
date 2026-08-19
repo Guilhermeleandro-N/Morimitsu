@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateProfessorDto {
@@ -12,4 +12,9 @@ export class UpdateProfessorDto {
   @Min(0)
   @IsOptional()
   grau?: number;
+
+  @ApiPropertyOptional({ example: '2000-05-10' })
+  @IsString()
+  @IsOptional()
+  data_nascimento?: string;
 }

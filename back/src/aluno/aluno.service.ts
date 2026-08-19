@@ -9,6 +9,8 @@ import { AuthorizationService } from '../authorization/authorization.service';
 import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
+import { PROGRESSAO_FAIXAS, GRAUS_POR_FAIXA } from '../common/faixas.constants';
 
 @Injectable()
 export class AlunoService {
@@ -28,17 +30,37 @@ export class AlunoService {
     return this.enriquecer(entity);
   }
 
-  async listar(): Promise<AlunoEntity[]> {
-    const entities = await this.repository.listar();
-    return Promise.all(entities.map((e) => this.enriquecer(e)));
+  async listar(
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const { data, total } = await this.repository.listar(skip, take);
+    const enriquecidos = await Promise.all(data.map((e) => this.enriquecer(e)));
+    return new PaginatedResult(
+      enriquecidos,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async listarDaTurmaDoProfessor(
     professorUsuarioId: string,
-  ): Promise<AlunoEntity[]> {
-    const entities =
-      await this.repository.listarPorProfessorUsuarioId(professorUsuarioId);
-    return Promise.all(entities.map((e) => this.enriquecer(e)));
+    skip: number,
+    take: number,
+  ): Promise<PaginatedResult<AlunoEntity>> {
+    const { data, total } = await this.repository.listarPorProfessorUsuarioId(
+      professorUsuarioId,
+      skip,
+      take,
+    );
+    const enriquecidos = await Promise.all(data.map((e) => this.enriquecer(e)));
+    return new PaginatedResult(
+      enriquecidos,
+      total,
+      Math.floor(skip / take) + 1,
+      take,
+    );
   }
 
   async buscarPorId(id: string): Promise<AlunoEntity> {
@@ -50,6 +72,7 @@ export class AlunoService {
   async buscarPorUsuarioId(usuarioId: string): Promise<AlunoEntity> {
     const entity = await this.repository.buscarPorUsuarioId(usuarioId);
     if (!entity) throw new NotFoundException('Aluno não encontrado');
+    entity.total_presencas = await this.repository.contarPresencas(entity.id);
     return this.enriquecer(entity);
   }
 
@@ -57,9 +80,7 @@ export class AlunoService {
     const perfil = await this.repository.buscarPerfilCompleto(usuarioId);
     if (!perfil) throw new NotFoundException('Perfil de aluno não encontrado');
 
-    const totalPresencas = perfil.historico.filter(
-      (f) => f.status_presenca === 'PRESENTE',
-    ).length;
+    const totalPresencas = await this.repository.contarPresencas(perfil.id);
 
     const entity = new AlunoEntity();
     entity.id = perfil.id;
@@ -67,10 +88,11 @@ export class AlunoService {
     entity.nome = perfil.nome;
     entity.email = perfil.email;
     entity.telefone = perfil.telefone;
+    entity.status = perfil.status;
     entity.data_nascimento = perfil.data_nascimento;
     entity.faixa = perfil.faixa;
     entity.grau_faixa = perfil.grau_faixa;
-    entity.frequencia_atual = perfil.frequencia_atual;
+    entity.frequencia_atual = totalPresencas;
     entity.total_presencas = totalPresencas;
     entity.historico_frequencias = perfil.historico;
     return this.enriquecer(entity);
@@ -112,29 +134,17 @@ export class AlunoService {
     const faixaAtual = existente.faixa;
     const totalGraus = Math.floor(existente.frequencia_atual / 30);
 
-    const FAIXAS = [
-      'BRANCA',
-      'CINZA',
-      'AMARELA',
-      'LARANJA',
-      'VERDE',
-      'AZUL',
-      'ROXA',
-      'MARROM',
-      'PRETA',
-    ];
-
-    let indiceFaixa = FAIXAS.indexOf(faixaAtual);
+    let indiceFaixa = PROGRESSAO_FAIXAS.indexOf(faixaAtual);
     if (indiceFaixa === -1) indiceFaixa = 0;
 
     let grausRestantes = totalGraus + grauAtual;
 
-    while (grausRestantes >= 4 && indiceFaixa < FAIXAS.length - 1) {
+    while (grausRestantes >= 4 && indiceFaixa < PROGRESSAO_FAIXAS.length - 1) {
       grausRestantes -= 4;
       indiceFaixa++;
     }
 
-    const novaFaixa = FAIXAS[indiceFaixa];
+    const novaFaixa = PROGRESSAO_FAIXAS[indiceFaixa];
     const novoGrau = grausRestantes;
 
     if (novaFaixa === faixaAtual && novoGrau === grauAtual) {
@@ -148,6 +158,48 @@ export class AlunoService {
     updateDto.grau_faixa = novoGrau;
     const entity = await this.repository.atualizar(id, updateDto);
     if (!entity) throw new NotFoundException('Aluno não encontrado');
+    return this.enriquecer(entity);
+  }
+
+  async graduarProximoNivel(
+    id: string,
+    turmaId?: string,
+  ): Promise<AlunoEntity> {
+    const existente = await this.repository.buscarPorId(id);
+    if (!existente) throw new NotFoundException('Aluno não encontrado');
+
+    let novoGrau = existente.grau_faixa + 1;
+    let novaFaixa = existente.faixa;
+
+    if (novoGrau > GRAUS_POR_FAIXA) {
+      const indiceAtual = PROGRESSAO_FAIXAS.indexOf(existente.faixa);
+      const proximoIndice = indiceAtual + 1;
+      if (proximoIndice < PROGRESSAO_FAIXAS.length) {
+        novaFaixa = PROGRESSAO_FAIXAS[proximoIndice];
+      }
+      novoGrau = 0;
+    }
+
+    if (novaFaixa === existente.faixa && novoGrau === existente.grau_faixa) {
+      throw new BadRequestException('Aluno já está no nível máximo');
+    }
+
+    const updateDto = new UpdateAlunoDto();
+    updateDto.faixa = novaFaixa;
+    updateDto.grau_faixa = novoGrau;
+    const entity = await this.repository.atualizar(id, updateDto);
+    if (!entity) throw new NotFoundException('Aluno não encontrado');
+
+    if (turmaId) {
+      await this.repository.zerarFrequenciaTurma(entity.id, turmaId);
+    }
+
+    await this.repository.atualizarGraduacaoProfessor(
+      entity.usuarioId,
+      novaFaixa,
+      novoGrau,
+    );
+
     return this.enriquecer(entity);
   }
 

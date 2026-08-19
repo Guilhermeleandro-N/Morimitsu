@@ -1,0 +1,277 @@
+.register {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100%;
+  background-color: #fff;
+  width: 100%;
+}
+
+.register__container {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  padding: 16px 50px 28px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 1300px;
+  box-sizing: border-box;
+}
+
+.register__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.form__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form__label-row label {
+  margin-bottom: 0;
+}
+
+.register__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.register__icons img {
+  display: none;
+}
+.register__title {
+  font-size: 26px;
+  color: #1a1a1a;
+  margin: 0;
+}
+.register__subtitle {
+  display: none;
+}
+
+.toggle-container {
+  display: flex;
+  gap: 0;
+}
+
+.toggle-btn {
+  padding: 4px 12px;
+  border: 1.5px solid #d32f2f;
+  background: white;
+  color: #d32f2f;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.toggle-btn:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.toggle-btn:last-child {
+  border-radius: 0 6px 6px 0;
+}
+.toggle-btn.active {
+  background: #d32f2f;
+  color: white;
+}
+
+.novo-usuario-toggle {
+  display: flex;
+  gap: 0;
+  justify-content: flex-end;
+}
+
+.novo-usuario-toggle .toggle-btn {
+  text-align: center;
+}
+
+.btn-novo-usuario {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.btn-novo-usuario:hover {
+  text-decoration: underline;
+  color: #b71c1c;
+}
+
+.register__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form__group {
+  margin-bottom: 0;
+}
+
+.form__group--full {
+  grid-column: span 2;
+}
+
+.form__group label {
+  display: block;
+  margin-bottom: 0;
+  font-weight: 600;
+  color: #444;
+  font-size: 11px;
+}
+
+.form__group input,
+.form__group select {
+  width: 100%;
+  padding: 2px 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fdfdfd;
+  font-size: 13px;
+  height: 24px;
+  box-sizing: border-box;
+}
+
+.form__group input:focus,
+.form__group select:focus {
+  outline: none;
+  border-color: #d32f2f;
+}
+
+.form__group input:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.busca-wrapper {
+  position: relative;
+}
+
+.busca-wrapper input {
+  width: 100%;
+  padding: 2px 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fdfdfd;
+  font-size: 13px;
+  height: 24px;
+  box-sizing: border-box;
+}
+
+.busca-wrapper input:focus {
+  outline: none;
+  border-color: #d32f2f;
+}
+
+.busca-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 0 0 6px 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.busca-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.busca-item:last-child {
+  border-bottom: none;
+}
+.busca-item:hover {
+  background-color: #fef2f2;
+}
+
+.busca-item .busca-nome {
+  font-weight: 600;
+  color: #222;
+}
+.busca-item .busca-email {
+  font-size: 11px;
+  color: #888;
+}
+
+.form__actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  flex: 1;
+  text-align: center;
+  transition: background 0.3s;
+  font-size: 13px;
+}
+
+.btn-primary {
+  background-color: #d32f2f;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #b71c1c;
+}
+.btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.btn-secondary {
+  background-color: #e0e0e0;
+  color: #555;
+}
+.btn-secondary:hover {
+  background-color: #d0d0d0;
+}
+
+.faixa-cor {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  margin-left: 6px;
+  vertical-align: middle;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .register__form {
+    grid-template-columns: 1fr;
+  }
+  .form__group--full,
+  .form__actions {
+    grid-column: span 1;
+  }
+  .register__container {
+    padding: 0 20px 24px;
+  }
+  .form__actions {
+    flex-direction: column-reverse;
+  }
+}
