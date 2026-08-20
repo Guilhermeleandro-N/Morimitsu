@@ -10,7 +10,14 @@ import { CreateAlunoDto } from './dtos/create-aluno.dto';
 import { UpdateAlunoDto } from './dtos/update-aluno.dto';
 import { AlunoEntity } from './entities/aluno.entity';
 import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
-import { PROGRESSAO_FAIXAS, GRAUS_POR_FAIXA } from '../common/faixas.constants';
+import {
+  GRAUS_POR_FAIXA,
+  FAIXAS_MAIORES,
+  FAIXAS_CRIANCAS,
+  IDADE_LIMITE_FAIXA,
+  calcularIdade,
+  faixaPermitidaParaIdade,
+} from '../common/faixas.constants';
 
 @Injectable()
 export class AlunoService {
@@ -26,7 +33,17 @@ export class AlunoService {
     const alunoJaExiste = await this.repository.alunoJaExiste(dto.usuarioId);
     if (alunoJaExiste) throw new ConflictException('Usuário já é aluno');
 
-    const entity = await this.repository.criar(dto);
+    const dataNascimento = await this.repository.buscarDataNascimentoUsuario(
+      dto.usuarioId,
+    );
+    const faixa = dto.faixa ?? 'BRANCA';
+    if (!faixaPermitidaParaIdade(faixa, dataNascimento)) {
+      throw new BadRequestException(
+        'Faixa não permitida para a idade do aluno',
+      );
+    }
+
+    const entity = await this.repository.criar({ ...dto, faixa });
     return this.enriquecer(entity);
   }
 
@@ -101,6 +118,18 @@ export class AlunoService {
   async atualizar(id: string, dto: UpdateAlunoDto): Promise<AlunoEntity> {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Aluno não encontrado');
+
+    if (dto.faixa !== undefined) {
+      const dataNascimento = await this.repository.buscarDataNascimentoUsuario(
+        existente.usuarioId,
+      );
+      if (!faixaPermitidaParaIdade(dto.faixa, dataNascimento)) {
+        throw new BadRequestException(
+          'Faixa não permitida para a idade do aluno',
+        );
+      }
+    }
+
     const entity = await this.repository.atualizar(id, dto);
     if (!entity) throw new NotFoundException('Aluno não encontrado');
     return this.enriquecer(entity);
@@ -124,27 +153,49 @@ export class AlunoService {
       const updateDto = new UpdateAlunoDto();
       if (dto.faixa !== undefined) updateDto.faixa = dto.faixa;
       if (dto.grau_faixa !== undefined) updateDto.grau_faixa = dto.grau_faixa;
+
+      if (updateDto.faixa !== undefined) {
+        const dataNascimento =
+          await this.repository.buscarDataNascimentoUsuario(
+            existente.usuarioId,
+          );
+        if (!faixaPermitidaParaIdade(updateDto.faixa, dataNascimento)) {
+          throw new BadRequestException(
+            'Faixa não permitida para a idade do aluno',
+          );
+        }
+      }
+
       const entity = await this.repository.atualizar(id, updateDto);
       if (!entity) throw new NotFoundException('Aluno não encontrado');
       return this.enriquecer(entity);
     }
 
     // Auto-calculate: cada 30 de frequencia_atual sobe 1 grau, 4 graus troca de faixa
+    const dataNascimento = await this.repository.buscarDataNascimentoUsuario(
+      existente.usuarioId,
+    );
+    const progressao =
+      dataNascimento &&
+      calcularIdade(dataNascimento) > IDADE_LIMITE_FAIXA
+        ? FAIXAS_MAIORES
+        : FAIXAS_CRIANCAS;
+
     const grauAtual = existente.grau_faixa;
     const faixaAtual = existente.faixa;
     const totalGraus = Math.floor(existente.frequencia_atual / 30);
 
-    let indiceFaixa = PROGRESSAO_FAIXAS.indexOf(faixaAtual);
+    let indiceFaixa = progressao.indexOf(faixaAtual);
     if (indiceFaixa === -1) indiceFaixa = 0;
 
     let grausRestantes = totalGraus + grauAtual;
 
-    while (grausRestantes >= 4 && indiceFaixa < PROGRESSAO_FAIXAS.length - 1) {
+    while (grausRestantes >= 4 && indiceFaixa < progressao.length - 1) {
       grausRestantes -= 4;
       indiceFaixa++;
     }
 
-    const novaFaixa = PROGRESSAO_FAIXAS[indiceFaixa];
+    const novaFaixa = progressao[indiceFaixa];
     const novoGrau = grausRestantes;
 
     if (novaFaixa === faixaAtual && novoGrau === grauAtual) {
@@ -168,14 +219,23 @@ export class AlunoService {
     const existente = await this.repository.buscarPorId(id);
     if (!existente) throw new NotFoundException('Aluno não encontrado');
 
+    const dataNascimento = await this.repository.buscarDataNascimentoUsuario(
+      existente.usuarioId,
+    );
+    const progressao =
+      dataNascimento &&
+      calcularIdade(dataNascimento) > IDADE_LIMITE_FAIXA
+        ? FAIXAS_MAIORES
+        : FAIXAS_CRIANCAS;
+
     let novoGrau = existente.grau_faixa + 1;
     let novaFaixa = existente.faixa;
 
     if (novoGrau > GRAUS_POR_FAIXA) {
-      const indiceAtual = PROGRESSAO_FAIXAS.indexOf(existente.faixa);
+      const indiceAtual = progressao.indexOf(existente.faixa);
       const proximoIndice = indiceAtual + 1;
-      if (proximoIndice < PROGRESSAO_FAIXAS.length) {
-        novaFaixa = PROGRESSAO_FAIXAS[proximoIndice];
+      if (proximoIndice < progressao.length) {
+        novaFaixa = progressao[proximoIndice];
       }
       novoGrau = 0;
     }

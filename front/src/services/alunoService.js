@@ -80,6 +80,15 @@ export async function atualizarAluno(usuarioId, nome, email, senha, telefone, da
   }
 }
 
+export async function deletarAluno(alunoId) {
+  try {
+    await api.delete(`aluno/${alunoId}`);
+  } catch (error) {
+    console.error("Erro ao deletar aluno:", error);
+    throw error;
+  }
+}
+
 export const graduarAluno = async (alunoId, faixa, grau_faixa) => {
   try {
     const response = await api.patch(`/aluno/${alunoId}/graduar`, { faixa, grau_faixa });

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
-import { listarProfessores } from "../../services/professorService";
+import { listarProfessores, deletarProfessor } from "../../services/professorService";
 
 import { arquivarUsuario } from "../../services/userService";
 
@@ -11,6 +11,10 @@ import { listarAlunosCompleto } from "../../services/alunoService";
 import { listarPerfisDoUsuario } from "../../services/authorizationService";
 
 import { FaEye, FaTrash, FaArchive } from "react-icons/fa";
+
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
+
+import { useToast } from "../../context/ToastContext";
 
 import "../ListarAlunos/ListarAlunos.css";
 
@@ -28,6 +32,11 @@ function ListarProfessores() {
   const [professores, setProfessores] = useState([]);
 
   const [filtroStatus, setFiltroStatus] = useState("TODOS");
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedProfessorParaExcluir, setSelectedProfessorParaExcluir] = useState(null);
+
+  const { addToast } = useToast();
 
   async function carregarProfessores() {
     try {
@@ -80,18 +89,66 @@ function ListarProfessores() {
     try {
       await arquivarUsuario(professor.usuarioId, arquivado);
       setProfessores((prev) =>
-        prev.map((p) =>
-          p.usuarioId === professor.usuarioId
-            ? {
-                ...p,
-                arquivado_at: arquivado ? new Date().toISOString() : null,
-              }
-            : p,
-        ),
+        prev
+          .map((p) =>
+            p.usuarioId === professor.usuarioId
+              ? {
+                  ...p,
+                  arquivado_at: arquivado
+                    ? new Date().toISOString()
+                    : null,
+                }
+              : p,
+          )
+          .sort((a, b) => {
+            if (!!a.arquivado_at !== !!b.arquivado_at) {
+              return a.arquivado_at ? 1 : -1;
+            }
+            return 0;
+          }),
+      );
+      addToast(
+        arquivado
+          ? "Professor arquivado com sucesso!"
+          : "Professor reativado com sucesso!",
+        "success",
       );
     } catch (error) {
       console.error("Erro ao arquivar:", error);
+      addToast("Erro ao arquivar professor.", "error");
     }
+  }
+
+  function abrirConfirmacaoExclusao(professor) {
+    setSelectedProfessorParaExcluir(professor);
+    setConfirmModalOpen(true);
+  }
+
+  async function handleExcluirProfessor() {
+    if (!selectedProfessorParaExcluir) {
+      return;
+    }
+
+    try {
+      await deletarProfessor(selectedProfessorParaExcluir.id);
+      setProfessores((prev) =>
+        prev.filter(
+          (p) => p.id !== selectedProfessorParaExcluir.id,
+        ),
+      );
+      addToast("Professor excluído com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao excluir professor:", error);
+      addToast("Erro ao excluir professor.", "error");
+    } finally {
+      setConfirmModalOpen(false);
+      setSelectedProfessorParaExcluir(null);
+    }
+  }
+
+  function fecharConfirmacao() {
+    setConfirmModalOpen(false);
+    setSelectedProfessorParaExcluir(null);
   }
 
   function statusLabel(status) {
@@ -203,7 +260,12 @@ function ListarProfessores() {
                   </td>
 
                   <td>
-                    <button className="icon-btn delete">
+                    <button
+                      className="icon-btn delete"
+                      onClick={() =>
+                        abrirConfirmacaoExclusao(professor)
+                      }
+                    >
                       <FaTrash />
                     </button>
                   </td>
@@ -237,6 +299,17 @@ function ListarProfessores() {
           </table>
         </div>
       </div>
+
+      {confirmModalOpen && selectedProfessorParaExcluir && (
+        <ConfirmModal
+          title="Confirmar exclusão"
+          message={`Deseja realmente excluir ${selectedProfessorParaExcluir.nome}?`}
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          onConfirm={handleExcluirProfessor}
+          onCancel={fecharConfirmacao}
+        />
+      )}
     </div>
   );
 }

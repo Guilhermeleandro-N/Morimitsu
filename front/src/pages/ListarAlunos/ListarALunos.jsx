@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { listarAlunosCompleto } from "../../services/alunoService";
+import { listarAlunosCompleto, deletarAluno } from "../../services/alunoService";
 import { arquivarUsuario } from "../../services/userService";
 import { listarPerfisDoUsuario } from "../../services/authorizationService";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaTrash, FaArchive } from "react-icons/fa";
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
+import { useToast } from "../../context/ToastContext";
 
 import "./ListarAlunos.css";
 
@@ -11,6 +13,9 @@ const ListarAluno = () => {
   const navigate = useNavigate();
   const [alunos, setAlunos] = useState([]);
   const [filtroStatus, setFiltroStatus] = useState("TODOS");
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedAlunoParaExcluir, setSelectedAlunoParaExcluir] = useState(null);
+  const { addToast } = useToast();
 
   function abrirPerfil(userId) {
     navigate("/perfilAluno", { state: { id: userId } });
@@ -21,21 +26,67 @@ const ListarAluno = () => {
     try {
       await arquivarUsuario(aluno.usuarioId, arquivado);
       setAlunos((prev) =>
-        prev.map((a) =>
-          a.id === aluno.id
-            ? {
-                ...a,
-                usuario: {
-                  ...a.usuario,
-                  arquivado_at: arquivado ? new Date().toISOString() : null,
-                },
-              }
-            : a
-        )
+        prev
+          .map((a) =>
+            a.id === aluno.id
+              ? {
+                  ...a,
+                  usuario: {
+                    ...a.usuario,
+                    arquivado_at: arquivado ? new Date().toISOString() : null,
+                  },
+                }
+              : a
+          )
+          .sort((x, y) => {
+            if (!!x.usuario?.arquivado_at !== !!y.usuario?.arquivado_at) {
+              return x.usuario?.arquivado_at ? 1 : -1;
+            }
+            return 0;
+          })
+      );
+      addToast(
+        arquivado
+          ? "Aluno arquivado com sucesso!"
+          : "Aluno reativado com sucesso!",
+        "success"
       );
     } catch (error) {
       console.error("Erro ao arquivar:", error);
+      addToast("Erro ao arquivar aluno.", "error");
     }
+  }
+
+  function abrirConfirmacaoExclusao(aluno) {
+    setSelectedAlunoParaExcluir(aluno);
+    setConfirmModalOpen(true);
+  }
+
+  async function handleExcluirAluno() {
+    if (!selectedAlunoParaExcluir) {
+      return;
+    }
+
+    try {
+      await deletarAluno(selectedAlunoParaExcluir.id);
+      setAlunos((prevAlunos) =>
+        prevAlunos.filter(
+          (aluno) => aluno.id !== selectedAlunoParaExcluir.id,
+        ),
+      );
+      addToast("Aluno excluído com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao excluir aluno:", error);
+      addToast("Erro ao excluir aluno.", "error");
+    } finally {
+      setConfirmModalOpen(false);
+      setSelectedAlunoParaExcluir(null);
+    }
+  }
+
+  function fecharConfirmacao() {
+    setConfirmModalOpen(false);
+    setSelectedAlunoParaExcluir(null);
   }
 
   useEffect(() => {
@@ -153,7 +204,10 @@ const ListarAluno = () => {
                     </button>
                   </td>
                   <td>
-                    <button className="icon-btn delete">
+                    <button
+                      className="icon-btn delete"
+                      onClick={() => abrirConfirmacaoExclusao(aluno)}
+                    >
                       <FaTrash />
                     </button>
                   </td>
@@ -168,6 +222,17 @@ const ListarAluno = () => {
           </table>
         </div>
       </div>
+
+      {confirmModalOpen && selectedAlunoParaExcluir && (
+        <ConfirmModal
+          title="Confirmar exclusão"
+          message={`Deseja realmente excluir ${selectedAlunoParaExcluir.usuario?.nome ?? "este aluno"}?`}
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          onConfirm={handleExcluirAluno}
+          onCancel={fecharConfirmacao}
+        />
+      )}
     </div>
   );
 };

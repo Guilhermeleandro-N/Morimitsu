@@ -136,3 +136,12 @@ export async function atualizarProfessor(id, dados) {
   }
 }
 
+export async function deletarProfessor(id) {
+  try {
+    await api.delete(`professor/${id}`);
+  } catch (error) {
+    console.error("Erro ao deletar professor:", error);
+    throw error;
+  }
+}
+

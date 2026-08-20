@@ -30,6 +30,22 @@ export class AlunoRepository {
     }
   }
 
+  async buscarDataNascimentoUsuario(
+    usuarioId: string,
+  ): Promise<Date | null> {
+    try {
+      const usuario = await this.prisma.usuario.findUnique({
+        where: { id: usuarioId },
+        select: { data_nascimento: true },
+      });
+      return usuario?.data_nascimento ?? null;
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao verificar usuário no banco de dados',
+      );
+    }
+  }
+
   async alunoJaExiste(usuarioId: string): Promise<boolean> {
     try {
       const aluno = await this.prisma.aluno.findUnique({
@@ -334,7 +350,12 @@ export class AlunoRepository {
 
   async deletar(id: string): Promise<void> {
     try {
-      await this.prisma.aluno.delete({ where: { id } });
+      await this.prisma.$transaction([
+        this.prisma.alunoTurma.deleteMany({ where: { aluno_id: id } }),
+        this.prisma.frequenciaAluno.deleteMany({ where: { aluno_id: id } }),
+        this.prisma.notificacao.deleteMany({ where: { aluno_id: id } }),
+        this.prisma.aluno.delete({ where: { id } }),
+      ]);
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&

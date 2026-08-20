@@ -34,7 +34,23 @@ function NotificationBell() {
   const [carregando, setCarregando] = useState(false);
   const [filtro, setFiltro] = useState("TODAS");
   const [painelAvisos, setPainelAvisos] = useState([]);
+  const [avisosLidos, setAvisosLidos] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("morimitsu_avisos_lidos") || "[]");
+    } catch {
+      return [];
+    }
+  });
   const ref = useRef(null);
+
+  function persistirAvisosLidos(ids) {
+    setAvisosLidos(ids);
+    try {
+      localStorage.setItem("morimitsu_avisos_lidos", JSON.stringify(ids));
+    } catch (error) {
+      console.error("Erro ao salvar avisos lidos:", error);
+    }
+  }
 
   function proximoFiltro() {
     const idx = FILTROS.indexOf(filtro);
@@ -46,8 +62,9 @@ function NotificationBell() {
       const data = await buscarDashboardProfessor();
       const avisos = [];
       (data?.proximos_graduacao || []).forEach((g) => {
+        const id = `graduacao-${g.aluno_id}`;
         avisos.push({
-          id: `graduacao-${g.aluno_id}`,
+          id,
           aluno_id: g.aluno_id,
           mensagem:
             g.frequencias_restantes === 0
@@ -56,13 +73,14 @@ function NotificationBell() {
                   g.frequencias_restantes === 1 ? "" : "s"
                 } para o aluno ${g.nome} se graduar`,
           tipo: "graduacao",
-          lida: false,
+          lida: avisosLidos.includes(id),
           created_at: new Date().toISOString(),
         });
       });
       (data?.proximos_aniversario || []).forEach((a) => {
+        const id = `aniversario-${a.aluno_id}`;
         avisos.push({
-          id: `aniversario-${a.aluno_id}`,
+          id,
           aluno_id: a.aluno_id,
           mensagem:
             a.dias_restantes === 0
@@ -71,7 +89,7 @@ function NotificationBell() {
                   a.dias_restantes === 1 ? "" : "s"
                 }!`,
           tipo: "aniversario",
-          lida: false,
+          lida: avisosLidos.includes(id),
           created_at: new Date().toISOString(),
         });
       });
@@ -81,6 +99,9 @@ function NotificationBell() {
       setPainelAvisos([]);
     }
   }
+
+  const avisosNaoLidos = painelAvisos.filter((a) => !a.lida).length;
+  const totalNaoLidas = naoLidas + avisosNaoLidos;
 
   const notificacoesFiltradas = useMemo(() => {
     if (filtro === "ALUNO") {
@@ -143,6 +164,9 @@ function NotificationBell() {
       setPainelAvisos((prev) =>
         prev.map((n) => (n.id === id ? { ...n, lida: true } : n))
       );
+      if (!avisosLidos.includes(id)) {
+        persistirAvisosLidos([...avisosLidos, id]);
+      }
       return;
     }
     try {
@@ -187,7 +211,7 @@ function NotificationBell() {
         title="Notificações"
       >
         <FaBell size={20} />
-        {naoLidas > 0 && <span className="bell-badge">{naoLidas}</span>}
+        {totalNaoLidas > 0 && <span className="bell-badge">{totalNaoLidas}</span>}
       </button>
 
       {aberto && (
@@ -211,7 +235,7 @@ function NotificationBell() {
                 {filtro === "TURMA" && <span>Turmas</span>}
               </button>
               <span className="bell-count">
-                {naoLidas} não lida{naoLidas !== 1 ? "s" : ""}
+                {totalNaoLidas} não lida{totalNaoLidas !== 1 ? "s" : ""}
               </span>
             </div>
           </div>

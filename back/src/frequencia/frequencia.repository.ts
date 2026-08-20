@@ -585,14 +585,14 @@ export class FrequenciaRepository {
     }
   }
 
-  // Cria notificações para todos os alunos ativos da turma quando
-  // um treino é marcado pelo professor.
+  // Cria notificações para todos os alunos ativos e para todos os
+  // professores da turma quando um treino é marcado pelo professor.
   private async notificarAlunosDoTreino(
     professorId: string,
     turmaId: string,
     dataTreino: Date,
   ): Promise<void> {
-    const [turma, vinculos] = await Promise.all([
+    const [turma, vinculos, professorTurmas] = await Promise.all([
       this.prisma.turma.findUnique({
         where: { id: turmaId },
         select: { nome: true },
@@ -600,6 +600,10 @@ export class FrequenciaRepository {
       this.prisma.alunoTurma.findMany({
         where: { turma_id: turmaId, frequente: 'S' },
         select: { aluno_id: true },
+      }),
+      this.prisma.professorTurma.findMany({
+        where: { turma_id: turmaId },
+        select: { professor_id: true },
       }),
     ]);
 
@@ -613,12 +617,22 @@ export class FrequenciaRepository {
     const mensagem = `Treino marcado para o dia ${dataFormatada} na turma ${turma?.nome ?? ''}`;
 
     await this.prisma.notificacao.createMany({
-      data: vinculos.map((v) => ({
-        professor_id: professorId,
-        aluno_id: v.aluno_id,
-        mensagem,
-        tipo: 'treino',
-      })),
+      data: [
+        // Alunos ativos da turma
+        ...vinculos.map((v) => ({
+          professor_id: professorId,
+          aluno_id: v.aluno_id,
+          mensagem,
+          tipo: 'treino',
+        })),
+        // Todos os professores da turma (para aparecer no filtro "Turma")
+        ...professorTurmas.map((pt) => ({
+          professor_id: pt.professor_id,
+          aluno_id: vinculos[0].aluno_id,
+          mensagem,
+          tipo: 'treino',
+        })),
+      ],
     });
   }
 

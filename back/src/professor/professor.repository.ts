@@ -246,7 +246,13 @@ export class ProfessorRepository {
 
   async deletar(id: string): Promise<void> {
     try {
-      await this.prisma.professor.delete({ where: { id } });
+      await this.prisma.$transaction([
+        this.prisma.professorTurma.deleteMany({ where: { professor_id: id } }),
+        this.prisma.frequenciaProf.deleteMany({ where: { professor_id: id } }),
+        this.prisma.frequenciaAluno.deleteMany({ where: { professor_id: id } }),
+        this.prisma.notificacao.deleteMany({ where: { professor_id: id } }),
+        this.prisma.professor.delete({ where: { id } }),
+      ]);
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
