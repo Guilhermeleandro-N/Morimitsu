@@ -103,12 +103,24 @@ function NotificationBell() {
   const avisosNaoLidos = painelAvisos.filter((a) => !a.lida).length;
   const totalNaoLidas = naoLidas + avisosNaoLidos;
 
+  function dedupeTreino(lista) {
+    const vistos = new Set();
+    return lista.filter((n) => {
+      if (n.tipo !== "treino") return true;
+      if (vistos.has(n.mensagem)) return false;
+      vistos.add(n.mensagem);
+      return true;
+    });
+  }
+
   const notificacoesFiltradas = useMemo(() => {
     if (filtro === "ALUNO") {
       return painelAvisos;
     }
     if (filtro === "TURMA") {
-      return notificacoes.filter((n) => n.tipo === "treino");
+      return dedupeTreino(
+        notificacoes.filter((n) => n.tipo === "treino")
+      );
     }
 
     const chavesAvisos = new Set(
@@ -119,8 +131,8 @@ function NotificationBell() {
         n.tipo !== "treino" &&
         !chavesAvisos.has(`${n.tipo}-${n.aluno_id}`)
     );
-    const notificacoesTreino = notificacoes.filter(
-      (n) => n.tipo === "treino"
+    const notificacoesTreino = dedupeTreino(
+      notificacoes.filter((n) => n.tipo === "treino")
     );
 
     return [...painelAvisos, ...notificacoesAluno, ...notificacoesTreino];
@@ -169,12 +181,29 @@ function NotificationBell() {
       }
       return;
     }
+
+    const alvo = notificacoes.find((n) => n.id === id);
+    const doMesmoTreino =
+      alvo?.tipo === "treino"
+        ? notificacoes.filter((n) => n.tipo === "treino" && n.mensagem === alvo.mensagem)
+        : [alvo];
+
     try {
-      await marcarNotificacaoComoLida(id);
-      setNotificacoes((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, lida: true } : n))
+      await Promise.all(
+        doMesmoTreino
+          .filter((n) => !n.lida)
+          .map((n) => marcarNotificacaoComoLida(n.id))
       );
-      setNaoLidas((prev) => Math.max(0, prev - 1));
+      setNotificacoes((prev) =>
+        prev.map((n) =>
+          doMesmoTreino.some((t) => t.id === n.id)
+            ? { ...n, lida: true }
+            : n
+        )
+      );
+      setNaoLidas((prev) =>
+        Math.max(0, prev - doMesmoTreino.filter((n) => !n.lida).length)
+      );
     } catch (error) {
       console.error("Erro ao marcar notificação como lida:", error);
     }
