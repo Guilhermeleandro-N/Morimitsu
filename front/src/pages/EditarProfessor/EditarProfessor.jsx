@@ -23,29 +23,34 @@ const EditarProfessor = () => {
       : "",
     faixa: (professorData?.faixa || "").toString().trim().toUpperCase(),
     grau: professorData?.grau ?? 0,
+    frequencia: professorData?.frequencia_atual ?? 0,
   });
 
   const { addToast } = useToast();
 
   useEffect(() => {
-    async function carregarFaixaGrau() {
+    async function carregarDadosCompletos() {
       if (!professorData?.usuarioId) return;
       try {
-        const { professor } = await buscarProfessorEUsuario(
+        const { usuario, professor } = await buscarProfessorEUsuario(
           professorData.usuarioId
         );
-        if (professor?.id) {
-          setForm((prev) => ({
-            ...prev,
-            faixa: (professor.faixa || "").toString().trim().toUpperCase(),
-            grau: professor.grau ?? prev.grau,
-          }));
-        }
+        setForm((prev) => ({
+          nome: usuario?.nome ?? prev.nome,
+          email: usuario?.email ?? prev.email,
+          telefone: usuario?.telefone ?? prev.telefone,
+          data_nascimento: usuario?.data_nascimento
+            ? String(usuario.data_nascimento).split("T")[0]
+            : prev.data_nascimento,
+          faixa: (professor?.faixa || "").toString().trim().toUpperCase(),
+          grau: professor?.grau ?? prev.grau,
+          frequencia: professor?.frequencia_atual ?? prev.frequencia,
+        }));
       } catch (error) {
-        console.error("Erro ao carregar faixa do professor:", error);
+        console.error("Erro ao carregar dados do professor:", error);
       }
     }
-    carregarFaixaGrau();
+    carregarDadosCompletos();
   }, [professorData?.usuarioId]);
 
   if (!professorData) {
@@ -67,10 +72,11 @@ const EditarProfessor = () => {
         data_nascimento: form.data_nascimento || undefined,
       });
 
-      // Atualiza dados do professor (faixa, grau)
+      // Atualiza dados do professor (faixa, grau, frequência)
       await atualizarProfessor(professorData.id, {
         faixa: form.faixa,
         grau: parseInt(form.grau),
+        frequencia_atual: parseInt(form.frequencia) || 0,
       });
 
       addToast("Professor atualizado com sucesso!", "success");
@@ -96,6 +102,7 @@ const EditarProfessor = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="register__form">
+            {/* NOME */}
             <div className="form__group form__group--full">
               <label htmlFor="nome">Nome</label>
               <input
@@ -108,6 +115,7 @@ const EditarProfessor = () => {
               />
             </div>
 
+            {/* EMAIL */}
             <div className="form__group form__group--full">
               <label htmlFor="email">E-mail</label>
               <input
@@ -120,6 +128,7 @@ const EditarProfessor = () => {
               />
             </div>
 
+            {/* TELEFONE */}
             <div className="form__group">
               <label htmlFor="telefone">Telefone</label>
               <input
@@ -132,7 +141,21 @@ const EditarProfessor = () => {
               />
             </div>
 
-            <div className="form__group form__group--full">
+            {/* GRAU */}
+            <div className="form__group">
+              <label htmlFor="grau">Grau Atual</label>
+              <input
+                type="number"
+                id="grau"
+                name="grau"
+                placeholder="Grau"
+                value={form.grau}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* DATA DE NASCIMENTO | FREQUÊNCIA */}
+            <div className="form__group">
               <label htmlFor="data_nascimento">Data de Nascimento</label>
               <input
                 type="date"
@@ -144,19 +167,21 @@ const EditarProfessor = () => {
             </div>
 
             <div className="form__group">
-              <label htmlFor="grau">Grau</label>
+              <label htmlFor="frequencia">Frequência Atual</label>
               <input
                 type="number"
-                id="grau"
-                name="grau"
-                placeholder="Grau"
-                value={form.grau}
+                id="frequencia"
+                name="frequencia"
+                min="0"
+                placeholder="XX presenças"
+                value={form.frequencia}
                 onChange={handleChange}
               />
             </div>
 
+            {/* FAIXA */}
             <div className="form__group form__group--full">
-              <label htmlFor="faixa">Faixa</label>
+              <label htmlFor="faixa">Faixa Atual</label>
               <select
                 id="faixa"
                 name="faixa"
@@ -176,6 +201,7 @@ const EditarProfessor = () => {
               </select>
             </div>
 
+            {/* BOTÕES */}
             <div className="form__actions">
               <button
                 type="button"

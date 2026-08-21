@@ -161,7 +161,7 @@ const EditarAluno = () => {
               />
             </div>
 
-            {/* DATA DE NASCIMENTO */}
+            {/* DATA DE NASCIMENTO | FREQUÊNCIA */}
             <div className="form__group">
               <label htmlFor="data_nascimento">Data de Nascimento</label>
 
@@ -170,6 +170,19 @@ const EditarAluno = () => {
                 id="data_nascimento"
                 name="data_nascimento"
                 value={form.data_nascimento}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="form__group">
+              <label htmlFor="frequencia">Frequência Atual</label>
+
+              <input
+                type="number"
+                id="frequencia"
+                name="frequencia"
+                placeholder="XX presenças"
+                value={form.frequencia}
                 onChange={handleChange}
               />
             </div>
@@ -195,20 +208,6 @@ const EditarAluno = () => {
                 <option value="MARROM">Marrom</option>
                 <option value="PRETA">Preta</option>
               </select>
-            </div>
-
-            {/* FREQUÊNCIA */}
-            <div className="form__group">
-              <label htmlFor="frequencia">Frequência Atual</label>
-
-              <input
-                type="number"
-                id="frequencia"
-                name="frequencia"
-                placeholder="XX presenças"
-                value={form.frequencia}
-                onChange={handleChange}
-              />
             </div>
 
             {/* BOTÕES */}

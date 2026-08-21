@@ -5,6 +5,7 @@ export async function criarProfessor(
   usuarioId,
   faixa,
   grau,
+  frequencia,
   data_nascimento
 ) {
   try {
@@ -15,6 +16,7 @@ export async function criarProfessor(
         usuarioId,
         faixa,
         grau,
+        ...(frequencia !== undefined ? { frequencia_atual: frequencia } : {}),
         ...(data_nascimento ? { data_nascimento } : {}),
       }
     );

@@ -16,6 +16,8 @@ import RoleGuard from "../../routes/RoleGuard";
 
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 
+import AccessDenied from "../AccessDenied/AccessDenied";
+
 import { useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../../context/AuthContext";
@@ -30,6 +32,7 @@ function VisualizarTurmas() {
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
   const [confirmExcluirOpen, setConfirmExcluirOpen] = useState(false);
   const [turmaParaExcluir, setTurmaParaExcluir] = useState(null);
+  const [acessoNegado, setAcessoNegado] = useState(false);
 
   const navigate = useNavigate();
   const [turmas, setTurmas] = useState([]);
@@ -119,7 +122,19 @@ function VisualizarTurmas() {
         </div>
         <div className="turmas-header-actions">
           <RoleGuard allowedRoutes={["admin", "professor"]}>
-            <button className="btn-criar" onClick={() => setModalOpen(true)}>
+            <button
+              className="btn-criar"
+              onClick={() => {
+                const podeCriar =
+                  user?.roles?.includes("admin") ||
+                  (user?.permissoes || []).includes("turma.create");
+                if (podeCriar) {
+                  setModalOpen(true);
+                } else {
+                  setAcessoNegado(true);
+                }
+              }}
+            >
               Criar Turma
             </button>
           </RoleGuard>
@@ -269,6 +284,10 @@ function VisualizarTurmas() {
           onConfirm={handleExcluir}
           onCancel={fecharConfirmacaoExcluir}
         />
+      )}
+
+      {acessoNegado && (
+        <AccessDenied />
       )}
     </div>
   );

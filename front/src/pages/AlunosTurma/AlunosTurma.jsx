@@ -201,9 +201,8 @@ function AlunosTurma() {
   }, [turmaId]);
 
   const grausDisponiveis = useMemo(() => {
-    const graus = new Set(alunos.map((a) => a.grau_faixa));
-    return Array.from(graus).sort((a, b) => a - b);
-  }, [alunos]);
+    return [0, 1, 2, 3, 4];
+  }, []);
 
   const alunosFiltrados = useMemo(() => {
     let lista = alunos;

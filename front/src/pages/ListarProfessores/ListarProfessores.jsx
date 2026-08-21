@@ -82,7 +82,9 @@ function ListarProfessores() {
       ? professores
       : filtroStatus === "ARQUIVADO"
         ? professores.filter((p) => p.arquivado_at)
-        : professores.filter((p) => p.status === filtroStatus);
+        : professores.filter(
+            (p) => p.status === filtroStatus && !p.arquivado_at,
+          );
 
   async function handleArquivar(professor) {
     const arquivado = !professor.arquivado_at;
@@ -239,14 +241,18 @@ function ListarProfessores() {
                   <td>
                     <span
                       className={
-                        professor.status === "ENABLED"
-                          ? "status ativo"
-                          : professor.status === "DISMISSED"
-                            ? "status desligado"
-                            : "status inativo"
+                        professor.arquivado_at
+                          ? "status arquivado"
+                          : professor.status === "ENABLED"
+                            ? "status ativo"
+                            : professor.status === "DISMISSED"
+                              ? "status desligado"
+                              : "status inativo"
                       }
                     >
-                      {statusLabel(professor.status)}
+                      {professor.arquivado_at
+                        ? "Arquivado"
+                        : statusLabel(professor.status)}
                     </span>
                   </td>
 

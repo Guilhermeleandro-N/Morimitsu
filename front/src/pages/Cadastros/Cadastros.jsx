@@ -221,6 +221,7 @@ function Cadastros() {
           usuarioId,
           faixa,
           parseInt(grau) || 0,
+          parseInt(frequencia) || 0,
           dataNascimento,
         );
       }
@@ -454,20 +455,20 @@ function Cadastros() {
           </div>
 
           {/* Frequência | Data de Nascimento */}
-          {isAlunoMode && (
-            <div className="form__group">
-              <label htmlFor="frequencia">Frequência Atual</label>
-              <input
-                type="number"
-                id="frequencia"
-                min="0"
-                placeholder="0"
-                value={frequencia}
-                onChange={(e) => setFrequencia(e.target.value)}
-                required
-              />
-            </div>
-          )}
+          <div className="form__group">
+            <label htmlFor="frequencia">
+              {isAlunoMode ? "Frequência Atual" : "Frequência"}
+            </label>
+            <input
+              type="number"
+              id="frequencia"
+              min="0"
+              placeholder="0"
+              value={frequencia}
+              onChange={(e) => setFrequencia(e.target.value)}
+              required
+            />
+          </div>
 
           {novoUsuario && (
             <div className="form__group">

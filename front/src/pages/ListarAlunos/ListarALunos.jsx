@@ -123,7 +123,12 @@ const ListarAluno = () => {
       ? alunos.filter((a) => a.usuario)
       : filtroStatus === "ARQUIVADO"
         ? alunos.filter((a) => a.usuario && a.usuario.arquivado_at)
-        : alunos.filter((a) => a.usuario && a.usuario.status === filtroStatus);
+        : alunos.filter(
+            (a) =>
+              a.usuario &&
+              a.usuario.status === filtroStatus &&
+              !a.usuario.arquivado_at,
+          );
 
   function getFaixaClass(faixa) {
     switch (faixa?.toLowerCase()) {
@@ -153,6 +158,7 @@ const ListarAluno = () => {
         >
           <option value="TODOS">Todos</option>
           <option value="ENABLED">Ativos</option>
+          <option value="DISABLED">Inativos</option>
           <option value="ARQUIVADO">Arquivados</option>
         </select>
       </div>
@@ -192,10 +198,16 @@ const ListarAluno = () => {
                       className={
                         aluno.usuario?.arquivado_at
                           ? "status arquivado"
-                          : "status ativo"
+                          : aluno.usuario?.status === "ENABLED"
+                            ? "status ativo"
+                            : "status inativo"
                       }
                     >
-                      {aluno.usuario?.arquivado_at ? "Arquivado" : "Ativo"}
+                      {aluno.usuario?.arquivado_at
+                        ? "Arquivado"
+                        : aluno.usuario?.status === "ENABLED"
+                          ? "Ativo"
+                          : "Inativo"}
                     </span>
                   </td>
                   <td>

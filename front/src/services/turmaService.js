@@ -83,8 +83,26 @@ export async function AtualizarTurma(id, dados) {
 
 export const listarAlunosDaTurma = async (id) => {
     try {
-        const response = await api.get(`/turma/${id}/alunos`);
-        return response.data?.data ?? response.data;
+        const primeira = await api.get(`/turma/${id}/alunos`, { params: { page: 1, limit: 100 } });
+        const body = primeira.data;
+        const lista = Array.isArray(body) ? body : (body?.data ?? []);
+        const totalPages = Array.isArray(body)
+            ? 1
+            : (body?.meta?.totalPages ?? Math.ceil((body?.meta?.total ?? lista.length) / 100));
+
+        if (totalPages <= 1) return lista;
+
+        const demais = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, i) =>
+                api.get(`/turma/${id}/alunos`, { params: { page: i + 2, limit: 100 } })
+                    .then((r) => {
+                        const b = r.data;
+                        return Array.isArray(b) ? b : (b?.data ?? []);
+                    })
+            )
+        );
+
+        return demais.reduce((acc, dados) => acc.concat(dados), lista);
     } catch (error) {
         console.error("Erro ao listar alunos da turma:", error);
         throw error;
