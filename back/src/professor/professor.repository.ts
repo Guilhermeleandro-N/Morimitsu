@@ -99,6 +99,7 @@ export class ProfessorRepository {
         create: {
           faixa: dto.faixa ?? 'BRANCA',
           grau_faixa: dto.grau ?? 0,
+          frequencia_atual: dto.frequencia_atual ?? 0,
           usuarioId: dto.usuarioId,
         },
       });
@@ -173,7 +174,7 @@ export class ProfessorRepository {
         },
       });
       if (!professor) return null;
-      return this.toEntity(professor);
+      return this.enriquecerComFrequencia(professor);
     } catch {
       throw new InternalServerErrorException(
         'Erro ao buscar professor no banco de dados',
@@ -199,7 +200,7 @@ export class ProfessorRepository {
         },
       });
       if (!professor) return null;
-      return this.toEntity(professor);
+      return this.enriquecerComFrequencia(professor);
     } catch {
       throw new InternalServerErrorException(
         'Erro ao buscar professor no banco de dados',
@@ -231,6 +232,24 @@ export class ProfessorRepository {
           },
         },
       });
+
+      // Mantém o registro de aluno (tracking de frequência) sincronizado
+      if (
+        dto.frequencia_atual !== undefined ||
+        dto.faixa !== undefined ||
+        dto.grau !== undefined
+      ) {
+        const alunoData: Record<string, unknown> = {};
+        if (dto.frequencia_atual !== undefined)
+          alunoData.frequencia_atual = dto.frequencia_atual;
+        if (dto.faixa !== undefined) alunoData.faixa = dto.faixa;
+        if (dto.grau !== undefined) alunoData.grau_faixa = dto.grau;
+        await this.prisma.aluno.updateMany({
+          where: { usuarioId: professor.usuarioId },
+          data: alunoData,
+        });
+      }
+
       return this.toEntity(professor);
     } catch (e) {
       if (
@@ -350,6 +369,31 @@ export class ProfessorRepository {
         'Erro ao buscar dashboard do professor',
       );
     }
+  }
+
+  private async enriquecerComFrequencia(
+    professor: {
+      id: string;
+      faixa: string;
+      grau: number;
+      usuarioId: string;
+      usuario?: {
+        nome: string;
+        email: string;
+        telefone: string | null;
+        data_nascimento: Date | null;
+        status: string;
+        arquivado_at: Date | null;
+      };
+    },
+  ): Promise<ProfessorEntity> {
+    const entity = this.toEntity(professor);
+    const aluno = await this.prisma.aluno.findUnique({
+      where: { usuarioId: professor.usuarioId },
+      select: { frequencia_atual: true },
+    });
+    entity.frequencia_atual = aluno?.frequencia_atual ?? 0;
+    return entity;
   }
 
   private toEntity(professor: {

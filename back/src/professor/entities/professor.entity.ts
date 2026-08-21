@@ -10,6 +10,9 @@ export class ProfessorEntity {
   @ApiProperty()
   grau!: number;
 
+  @ApiPropertyOptional({ description: 'Frequência atual (registro de aluno)' })
+  frequencia_atual?: number;
+
   @ApiProperty()
   usuarioId!: string;
 

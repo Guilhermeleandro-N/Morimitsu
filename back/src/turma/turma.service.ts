@@ -15,8 +15,17 @@ import { TurmaRepository } from './turma.repository';
 export class TurmaService {
   constructor(private readonly repository: TurmaRepository) {}
 
-  async criar(dto: CreateTurmaDto): Promise<TurmaEntity> {
-    return this.repository.criar(dto);
+  async criar(
+    dto: CreateTurmaDto,
+    usuario?: JwtPayload,
+  ): Promise<TurmaEntity> {
+    const turma = await this.repository.criar(dto);
+
+    if (usuario && !usuario.roles?.includes('admin')) {
+      await this.repository.adicionarProfessorPorUsuario(usuario.sub, turma.id);
+    }
+
+    return turma;
   }
 
   async listar(

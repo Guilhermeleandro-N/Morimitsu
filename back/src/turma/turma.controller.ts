@@ -48,8 +48,11 @@ export class TurmaController {
   @Permissions('turma.create')
   @ApiOperation({ summary: 'Criar turma' })
   @ApiResponse({ status: 201, type: TurmaEntity })
-  async criar(@Body() dto: CreateTurmaDto): Promise<TurmaEntity> {
-    return this.service.criar(dto);
+  async criar(
+    @Body() dto: CreateTurmaDto,
+    @CurrentUser() usuario: JwtPayload,
+  ): Promise<TurmaEntity> {
+    return this.service.criar(dto, usuario);
   }
 
   @Get()

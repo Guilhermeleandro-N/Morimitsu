@@ -335,6 +335,36 @@ export class TurmaRepository {
     }
   }
 
+  // Vincula o professor (pelo usuário logado) à turma. Necessário para que
+  // o professor veja a turma nas listagens (ativas e arquivadas).
+  async adicionarProfessorPorUsuario(
+    usuarioId: string,
+    turmaId: string,
+  ): Promise<void> {
+    try {
+      const professor = await this.prisma.professor.findUnique({
+        where: { usuarioId },
+        select: { id: true },
+      });
+      if (!professor) return;
+
+      await this.prisma.professorTurma.upsert({
+        where: {
+          professor_id_turma_id: {
+            professor_id: professor.id,
+            turma_id: turmaId,
+          },
+        },
+        update: {},
+        create: { professor_id: professor.id, turma_id: turmaId },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        'Erro ao vincular professor à turma no banco de dados',
+      );
+    }
+  }
+
   async listarAlunosDaTurma(
     turmaId: string,
     skip: number,
