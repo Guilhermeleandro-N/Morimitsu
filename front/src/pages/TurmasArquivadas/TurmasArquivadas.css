@@ -125,3 +125,15 @@
   border-radius: 10px;
   margin-bottom: 20px;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .arquivada-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .arquivada-actions button {
+    width: 100%;
+  }
+}

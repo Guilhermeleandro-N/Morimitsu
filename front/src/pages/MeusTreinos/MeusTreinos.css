@@ -200,3 +200,53 @@
   text-align: center;
   color: #d8d8d8;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 768px) {
+  .treinos-container {
+    padding: 20px;
+  }
+
+  .treinos-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .treinos-header h1 {
+    font-size: 26px;
+  }
+
+  .treinos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .treinos-container {
+    padding: 14px;
+  }
+
+  .treinos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .treino-card-header {
+    padding: 16px 18px;
+  }
+
+  .treino-info {
+    padding: 16px 18px 10px;
+  }
+
+  .treino-semana {
+    padding: 6px 18px 14px;
+  }
+
+  .proximo-treino {
+    margin: 10px 18px 18px;
+    padding: 14px;
+  }
+}

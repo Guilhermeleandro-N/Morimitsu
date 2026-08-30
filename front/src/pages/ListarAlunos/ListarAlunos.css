@@ -80,6 +80,7 @@
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
+  min-width: 880px;
 }
 
 .tabela-alunos th:nth-child(1),
@@ -130,7 +131,7 @@
   text-align: center;
   vertical-align: middle;
 
-  padding: 16px 12px;
+  padding: 18px 16px;
 
   font-size: 14px;
   font-weight: 700;
@@ -141,7 +142,7 @@
 }
 
 .tabela-alunos td {
-  padding: 18px 12px;
+  padding: 20px 16px;
 
   border-bottom: 1px solid #f0f0f0;
 
@@ -320,6 +321,22 @@
 /* RESPONSIVIDADE */
 /* ===================== */
 
+/* Telas menores: mais espaço e tabela rola horizontalmente em vez de espremer */
+@media (max-width: 1100px) {
+  .listar-container {
+    padding: 28px;
+  }
+
+  .listar-card {
+    padding: 26px;
+  }
+
+  .tabela-alunos th,
+  .tabela-alunos td {
+    padding: 17px 14px;
+  }
+}
+
 @media (max-width: 900px) {
   .listar-container {
     padding: 20px;
@@ -331,12 +348,76 @@
 
   .tabela-alunos th,
   .tabela-alunos td {
-    padding: 14px 10px;
+    padding: 16px 14px;
 
     font-size: 13px;
   }
 
   .perfil-btn {
     font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .listar-container {
+    padding: 16px;
+  }
+
+  .listar-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  .listar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .listar-header h2 {
+    font-size: 20px;
+  }
+
+  .listar-header p {
+    font-size: 13px;
+  }
+
+  .status-filter-select {
+    width: 100%;
+  }
+
+  .table-container {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .faixa,
+  .status {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .listar-container {
+    padding: 12px;
+  }
+
+  .listar-card {
+    padding: 12px;
   }
 }

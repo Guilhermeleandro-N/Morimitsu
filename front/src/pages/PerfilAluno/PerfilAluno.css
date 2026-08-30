@@ -324,7 +324,13 @@
 /* Ajuste para Tablets e telas médias */
 @media (max-width: 992px) {
   .profile-grid {
-    grid-template-columns: 1fr; /* Sidebar vai para cima do conteúdo principal */
+    flex-direction: column;
+    max-height: none;
+  }
+
+  .sidebar-card,
+  .content-card {
+    width: 100%;
   }
 
   .page-header {
@@ -363,7 +369,13 @@
     font-size: 22px;
   }
   .profile-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .sidebar-card,
+  .content-card {
+    padding: 20px;
+    min-height: auto;
   }
 
   .page-header {

@@ -254,3 +254,94 @@
 .turma-status-btn.status-inativo:hover {
     background-color: #6b7280;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 768px) {
+    .listar-container {
+        padding: 16px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .page-header h1 {
+        font-size: 24px;
+    }
+
+    .page-header p {
+        font-size: 14px;
+    }
+
+    .listar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .listar-header h2 {
+        font-size: 22px;
+    }
+
+    .listar-header-right {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .filtros-bar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+    }
+
+    .filtro-select {
+        width: 100%;
+        padding: 11px 30px 11px 14px;
+    }
+
+    .turma-status-btn {
+        width: 100%;
+        padding: 11px;
+    }
+
+    .header-actions {
+        width: 100%;
+        gap: 10px;
+    }
+
+    .header-btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .listar-container {
+        padding: 12px;
+    }
+
+    .page-header-left {
+        gap: 10px;
+    }
+
+    .back-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .listar-header h2 {
+        font-size: 21px;
+    }
+
+    .filtros-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .header-actions {
+        flex-wrap: wrap;
+    }
+}

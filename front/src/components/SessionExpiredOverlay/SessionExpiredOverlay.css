@@ -42,3 +42,12 @@
     transform: rotate(360deg);
   }
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .session-expired-card {
+    padding: 24px 20px;
+    max-width: 100%;
+    width: calc(100% - 32px);
+  }
+}

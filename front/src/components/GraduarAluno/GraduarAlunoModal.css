@@ -87,3 +87,31 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .modal-overlay {
+    align-items: flex-end;
+  }
+
+  .graduar-modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 24px 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 23px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+
+  .btn-cancelar,
+  .btn-salvar {
+    width: 100%;
+  }
+}

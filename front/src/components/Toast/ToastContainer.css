@@ -11,6 +11,19 @@
   pointer-events: none;
 }
 
+@media (max-width: 480px) {
+  .toast-container {
+    width: 100%;
+    padding: 0 12px;
+  }
+
+  .toast-message {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 .toast-message {
   display: flex;
   align-items: center;

@@ -166,3 +166,23 @@
   color: #888;
   font-size: 14px;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .notification-bell {
+    margin-right: 8px;
+  }
+
+  .bell-dropdown {
+    position: fixed;
+    top: 70px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: calc(100vh - 90px);
+  }
+
+  .bell-list {
+    max-height: 300px;
+  }
+}

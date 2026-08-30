@@ -103,3 +103,30 @@
   .form__group--full, .form__actions { grid-column: span 1; }
   .form__actions { flex-direction: column-reverse; }
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .register {
+    padding: 20px 12px;
+  }
+
+  .register__container {
+    padding: 24px 16px;
+  }
+
+  .register__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .register__title {
+    font-size: 1.3rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+  }
+}

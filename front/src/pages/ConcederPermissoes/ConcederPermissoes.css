@@ -249,3 +249,69 @@
 .btn-salvar:hover {
   background: #a81818;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 900px) {
+  .permissoes-container {
+    padding: 20px;
+  }
+
+  .permissoes-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .usuarios-card,
+  .config-card {
+    height: auto;
+    max-height: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .permissoes-container {
+    padding: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+  }
+
+  .permissoes-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .config-topo {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .config-topo h2 {
+    font-size: 24px;
+  }
+
+  .tipo-container {
+    width: 100%;
+  }
+
+  .tipo-btn {
+    flex: 1;
+    width: auto;
+  }
+
+  .btn-salvar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .permissoes-container {
+    padding: 12px;
+  }
+
+  .usuario-item,
+  .permissao-card {
+    padding: 14px;
+  }
+}

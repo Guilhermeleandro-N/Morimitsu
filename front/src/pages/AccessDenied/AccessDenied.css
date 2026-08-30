@@ -57,3 +57,28 @@
 .access-denied-btn:hover {
   background: #a81818;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .access-denied-container {
+    padding: 20px;
+  }
+
+  .access-denied-card {
+    padding: 32px 24px;
+    width: 100%;
+  }
+
+  .access-denied-card h2 {
+    font-size: 21px;
+  }
+
+  .access-denied-card p {
+    font-size: 15px;
+  }
+
+  .access-denied-icon {
+    width: 70px;
+    height: 70px;
+  }
+}

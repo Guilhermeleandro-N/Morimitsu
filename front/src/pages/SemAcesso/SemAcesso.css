@@ -57,3 +57,23 @@
 .sem-acesso-btn:hover {
   background: #a81818;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .sem-acesso-container {
+    padding: 20px;
+  }
+
+  .sem-acesso-card {
+    padding: 32px 24px;
+    width: 100%;
+  }
+
+  .sem-acesso-card h2 {
+    font-size: 21px;
+  }
+
+  .sem-acesso-card p {
+    font-size: 15px;
+  }
+}

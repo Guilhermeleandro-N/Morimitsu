@@ -62,3 +62,21 @@
 .btn-cancel:hover {
   background: #d0d0d0;
 }
+
+/* 📱 RESPONSIVO (MOBILE) */
+@media (max-width: 480px) {
+  .confirm-modal-container {
+    width: calc(100% - 32px);
+    padding: 22px 18px;
+  }
+
+  .confirm-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .btn-cancel,
+  .btn-delete {
+    width: 100%;
+    text-align: center;
+  }
+}
